@@ -1,0 +1,211 @@
+\begin{figure}[ht]
+\label{fig:dejavu epochs and dataset}
+\begin{minipage}[t]{0.49\textwidth}
+\centering
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/deja_vu_vs_epochs.png}
+         \vspace{-1.5em}
+         \caption{\dejavu vs. epochs}
+         \label{fig:dejavu v. training epochs}
+     \end{subfigure}
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/deja_vu_vs_n.png}
+         \vspace{-1.5em}
+         \caption{\dejavu vs. train set size}
+         \label{fig:dejavu v. n}
+     \end{subfigure}~
+     \vspace{-0.5em}
+    \caption{
+    Effect of training epochs and train set size with VICReg on \dejavu score (red) in comparison with linear probe accuracy train-test gap (dark blue). 
+    \textbf{Left:} \dejavu score increases with training epochs, indicating growing memorization while the linear probe baseline decreases significantly.  
+    \textbf{Right:} \dejavu score stays roughly constant with training set size suggesting that memorization may be problematic even for large datasets. %By comparison, the baseline \emph{declines} by half, spuriously suggesting less memorization. 
+    %Both trends are not captured according to the linear probe train-test gap---a common method to evaluate generalization of SSL representations.}
+    }
+    \label{fig:dejavu epochs train set size}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\centering
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/vicreg_samples_epochs.pdf}
+         \vspace{-1.5em}
+         \caption{\dejavu vs. epochs}
+         \label{fig:per sample v. training epochs}
+     \end{subfigure}
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/vicreg_samples_datasets.pdf}
+         \vspace{-1.5em}
+         \caption{\dejavu vs. train set size}
+         \label{fig:per sample v. n}
+     \end{subfigure}~
+     \vspace{-0.5em}
+    \caption{
+    \definecolor{part_blue}{rgb}{0.2824, 0.4706, .8157}
+	\definecolor{part_red}{rgb}{0.8392, 0.3725, 0.3725}
+	\definecolor{part_orange}{rgb}{0.9333, 0.5216, 0.2902}
+    Partition of samples $A_i \in \calA$ into the four categories: {\color{gray}unassociated} (not shown), {\color{part_orange}memorized}, {\color{part_red}misrepresented} and {\color{part_blue}correlated} for VICReg. The {\color{part_orange}memorized} samples---those whose labels are predicted by $\KNN_A$ but not by $\KNN_B$---occupy a significantly larger share of the training set than the {\color{part_red}misrepresented} samples---those predicted by $\KNN_B$ but not $\KNN_A$ by chance. %At 1000 epochs, $\approx 15\%$ of the training set is {\color{part_orange}memorized}. The trends across training epochs and training set sizes are consistent with those observed in Figure \ref{fig:dejavu epochs train set size}
+    }
+    \label{fig:partition attack main}
+    \end{minipage}
+\vspace{-1em} 
+\end{figure}
+
+\iffalse
+
+\begin{minipage}[t]{0.49\textwidth}
+\centering
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=0.95\textwidth]{figures/deja_vu_vs_parameters.png}
+         \vspace{-0.4em}
+         \caption{\dejavu vs. capacity}
+         \label{fig:dejavu v. capacity}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.48\textwidth}
+          \tiny
+          \centering
+          \setlength{\tabcolsep}{3pt}
+          \begin{tabular}{|c|c|c|}
+            \hline
+            Criteria & DV & Acc P/B \\
+            \hline
+            Supervised & 8.9 & 55.3/61.1\\
+            \hline
+            Byol\citep{grill2020byol} & 8.0& 54.3/59.4\\
+            \hline
+            SimCLR\citep{chen2020simclr} & 10.0 & 44.2/54.1\\
+            \hline
+            Dino\citep{Dino} & 14.5 & 26.3/55.7 \\
+            \hline
+            Barlow T.\citep{zbontar2021barlow} & 30.5 & 33.7/54.4\\
+            \hline
+            VICReg\citep{vicreg} & \textbf{33.2} & 40.3/55.2\\
+            \hline
+          \end{tabular}
+          \vspace{1.3em}
+          % \caption{\dejavu (DV) vs. SSL Criterion}
+          \caption{\dejavu (DV) vs. Criterion}
+          \label{tab:dejavu vs. criterion}
+    \end{subfigure}
+    \vspace{-0.5em}
+    \caption{
+    Comparison of \dejavu score for different architectures and training criteria. \textbf{Left:} \dejavu score with VICReg for resnet (purple) and vision transformer (green) architectures versus number of model parameters. As expected, memorization grows with larger model capacity. This trend is more pronounced for convolutional (resnet) than transformer (ViT) architectures. \textbf{Right:} Comparison of \dejavu score and ImageNet validation accuracy (P: using projector embeddings, B: using backbone embeddings) for various SSL criteria. \textbf{Nearly all SSL models have more memorization than the supervised baseline.} 
+    % Effect of training epochs and train set size on \dejavu score.
+    % \textbf{Left:} \dejavu score increases with higher number of training epochs, indicating worsening memorization.
+    % \textbf{Right:} \dejavu score stays roughly constant with training set size. Both trends are not captured according to the linear probe train-test gap---a common method to evaluate generalization of SSL representations.
+    }
+\end{minipage}
+\vspace{-2em} 
+\end{figure}
+
+\begin{figure}[ht]
+\begin{minipage}[t]{0.49\textwidth}
+\centering
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/epochs_lb_attk_epochs_acc_top1_legend.pdf}
+         \caption{\dejavu vs. epochs}
+         \label{fig:dejavu v. training epochs}
+     \end{subfigure}
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/epochs_lb_attk_datasets_acc_top1_legend.pdf}
+         \caption{\dejavu vs. train set size}
+         \label{fig:dejavu v. n}
+     \end{subfigure}~
+     \begin{subfigure}[b]{0.32\textwidth}
+         \centering
+         \includegraphics[width=0.8\textwidth]{figures/dejavu_vs_parameters.pdf}
+         \caption{\dejavu vs. capacity}
+         \label{fig:dejavu v. n}
+     \end{subfigure}
+    \caption{
+    Effect of training epochs and train set size on \dejavu score.
+    \textbf{Left:} \dejavu score increases with higher number of training epochs, indicating worsening memorization.
+    \textbf{Right:} \dejavu score stays roughly constant with training set size. Both trends are not captured according to the linear probe train-test gap---a common method to evaluate generalization of SSL representations.}
+    \end{minipage}
+\vspace{-1em} 
+\end{figure}
+
+\begin{table}[ht]
+  \footnotesize
+  \centering
+  \begin{tabular}{|c|c|}
+    \hline
+    Supervised & 8.9\\
+    \hline
+    SimCLR\citep{chen2020simclr} & 10.0\\
+    \hline
+    Byol\citep{grill2020byol} & 8.0\\
+    \hline
+    Dino\citep{Dino} & 14.5\\
+    \hline
+    Barlow T.\citep{zbontar2021barlow} & 30.5\\
+    \hline
+    VICReg\citep{vicreg} & \textbf{33.2}\\
+    \hline
+  \end{tabular}
+  \caption{DejaVu Score 20\% Conf for various SSL methods.}
+  \label{tab:two-row-table}
+\end{table}
+\vspace{-1em} 
+\fi
+
+\iffalse
+\begin{figure}[ht]
+\begin{minipage}[t]{.49\textwidth}
+\centering
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/epochs_lb_attk_epochs_acc_top1_legend.pdf}
+         \caption{\dejavu vs. epochs}
+         \label{fig:dejavu v. training epochs}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/epochs_lb_attk_datasets_acc_top1_legend.pdf}
+         \caption{\dejavu vs. train set size}
+         \label{fig:dejavu v. n}
+     \end{subfigure}
+\caption{
+Effect of training epochs and train set size on \dejavu score.
+\textbf{Left:} \dejavu score increases with higher number of training epochs, indicating worsening memorization.
+\textbf{Right:} \dejavu score stays roughly constant with training set size. Both trends are not captured according to the linear probe train-test gap---a common method to evaluate generalization of SSL representations.}
+\label{fig:dejavu epochs and dataset}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.49\textwidth}
+     \centering
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/criteria_epochs.pdf}
+         \caption{criteria comparison}
+         \label{fig:dejavu v. criteria}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/architecture_epochs.pdf}
+         \caption{architecture comparison}
+         \label{fig:dejavu v. arch}
+     \end{subfigure}
+\caption{
+Effect of SSL training criteria and model architectures on \dejavu score.
+%the accuracy gap between target model (trained on $\calA$) and reference model (trained on $\calB$) making predictions on their 20\% most confident examples.
+\textbf{Left:} \dejavu score for various training criteria.
+%Barlow and VICReg have the heaviest degree of memorization, while SimCLR and BYOL have the least. 
+%Note that we show detailed reconstructions of SimCLR's training data in Section \ref{sec:visualizing} despite its relatively low degree of \dejavu. 
+%Regardless, Although SimCLR and BYOL have the least, we  visualize detailed reconstructions with SimCLR in section \ref{sec:mem v corr} 
+All SSL models have significantly more \dejavu than the supervised baseline. \textbf{Right:} \dejavu score versus epochs for various training architectures. As expected, lower capacity architectures (Resnet18, Resnet34) reduce \dejavu but not completely. 
+}
+\label{fig:dejavu criteria and architecture}
+\end{minipage}
+\vspace{-1em} 
+\end{figure}
+\fi

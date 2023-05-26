@@ -1,0 +1,75 @@
+\section{Introduction}
+\begin{figure*}
+    \centering
+    \begin{subfigure}{.30\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 1.8in, angle = 90]{images/cartoon_mode_dropping.png}
+        \caption{Illustration of over-/under-representation \\ Training sample: $\times$, Generated sample: \textcolor{red}{\textbullet}} \label{fig:cartoon overrep}
+    \end{subfigure}
+    \hspace{0.1in}
+    \begin{subfigure}{.30\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 1.8in, angle = 90]{images/cartoon.png}
+        \caption{Illustration of data-copying/underfitting \\ Training sample: $\times$, Generated sample: \textcolor{red}{\textbullet}} \label{fig:cartoon data-copying}
+    \end{subfigure}
+        \hspace{0.1in}
+    \begin{subfigure}{.32\linewidth}
+        \centering
+        \captionsetup{justification=centering}
+        \includegraphics[height = 0.8in]{images/VAE_90d_ZU-8p540.jpg}
+        \vspace{0.1in}
+        \includegraphics[height = 0.8in]{images/VAE_90d_ZU3p300.jpg}
+        \caption{VAE copying/underfitting on MNIST \\ top: $Z_U = -8.54$, bottom: $Z_U = +3.30$} \label{fig:VAE mnist neighbors}
+    \end{subfigure}
+    \caption{Comparison of data-copying with over/under representation. Each image depicts a single instance space partitioned into two regions. Illustration \textbf{(a)} depicts an over-represented region (top) and under-represented region (bottom). This is the kind of overfitting evaluated by methods like FID score and Precision and Recall. Illustration \textbf{(b)} depicts a data-copied region (top) and underfit region (bottom). This is the type of overfitting focused on in this work. Figure \textbf{(c)} shows VAE-generated and training samples from a data-copied (top) and underfit (bottom) region of the MNIST instance space. In each 10-image strip, the bottom row provides random generated samples from the region and the top row shows their training nearest neighbors. Samples in the bottom region are on average further to their training nearest neighbor than held-out test samples in the region, and samples in the top region are closer, and thus `copying' (computed in embedded space, see Experiments section). }
+    \label{fig:neighbor example}
+\end{figure*} 
+Overfitting is a basic stumbling block of any learning process. While it has been studied in great detail in the context of supervised learning, it has received much less attention in the unsupervised setting, despite being just as much of a problem.
+
+To start with a simple example, consider a classical kernel density estimator (KDE), which given data $x_1, \ldots, x_n \in \R^d$, constructs a distribution over $\R^d$ by placing a Gaussian of width $\sigma > 0$ at each of these points, yielding the density
+\begin{equation}\label{eq:kde}
+q_{\sigma}(x) = \frac{1}{(2\pi)^{d/2}\sigma^d n} \sum_{i=1}^n  \exp\left( -\frac{\|x-x_i\|^2}{2 \sigma^2}\right) .
+\end{equation}
+
+The only parameter is the scalar $\sigma$. Setting it too small makes $q(x)$ too concentrated around the given points: a clear case of overfitting (see Appendix \textbf{Figure \ref{fig:half moon}}). This cannot be avoided by choosing the $\sigma$ that maximizes the log likelihood on the training data, since in the limit $\sigma \rightarrow 0$, this likelihood goes to $\infty$. 
+
+The classical solution is to find a parameter $\sigma$ that has a low {\em{generalization gap}} -- that is, a low gap between the training log-likelihood and the log-likelihood on a held-out validation set. This method however often does not apply to the more complex generative models that have emerged over the past decade or so, such as Variational Auto Encoders (VAEs) \citep{kingma} and Generative Adversarial Networks (GANs)~\citep{goodfellow}. These models easily involve millions of parameters, and hence overfitting is a serious concern. Yet, a major challenge in evaluating overfitting is that these models do not offer exact, tractable likelihoods. VAEs can tractably provide a log-likelihood lower bound, while GANs have no accompanying density estimate at all. Thus any method that can assess these generative models must be based only on the samples produced. 
+
+%The classical solution in this setting is to find a parameter $\sigma$ that has a low {\em{generalization gap}} -- that is, a low gap between the training log-likelihood and the log-likelihood on a held-out validation set. This however suffers from two limitations. The first is that this measure is insensitive to {\em{under-fitting}} -- where the generative model does not adequately capture the intricate structures of the underlying data distribution. A second limitation, of increasing recent interest, is that this method often does not apply to the more modern complex generative models that have emerged over the past decade or so, such as Variational Auto Encoders (VAEs)  \citep{kingma} and Generative Adversarial Networks (GANs)~\citep{goodfellow} -- as they do not offer exact, tractable likelihoods. VAEs can only tractably provide a log-likelihood lower bound, while GANs have no accompanying density estimate at all. Thus any method that can assess these generative models must be based only on samples produced by them. 
+
+A body of prior work has provided tests for evaluating generative models based on samples drawn from them \citep{salimans, mehdi,  Ruslan_et_al, heusel}; however, the vast majority of these tests  focus on `mode dropping' and `mode collapse': the tendency for a generative model to either merge or delete high-density modes of the true distribution. A generative model that simply reproduces the training set or minor variations thereof will pass most of these tests. 
+
+In contrast, this work formalizes and investigates a type of overfitting that we call `data-copying': the propensity of a generative model to recreate minute variations of a subset of training examples it has seen, rather than represent the true diversity of the data distribution. An example is shown in \textbf{Figure \ref{fig:cartoon data-copying}}; in the top region of the instance space, the generative model data-copies, or creates samples that are very close to the training samples; meanwhile, in the bottom region, it underfits. To detect this, we introduce a test that relies on three independent samples: the original training sample used to produce the generative model; a separate (held-out) test sample from the underlying distribution; and a synthetic sample drawn from the generator. 
+
+Our key insight is that an overfit generative model would produce samples that are too close to the training samples -- closer on average than an independently drawn test sample from the same distribution. Thus, if a suitable distance function is available, then we can test for data-copying by testing whether the distances to the closest point in the training sample are on average smaller for the generated sample than for the test sample.
+
+A further complication is that modern generative models tend to behave differently in different regions of space; a configuration as in \textbf{Figure \ref{fig:cartoon data-copying}} for example could cause a global test to fail. To address this, we use ideas from the design of non-parametric methods. We divide the instance space into cells, conduct our test separately in each cell, and then combine the results to get a sense of the average degree of data-copying.
+ 
+Finally, we explore our test experimentally on a variety of illustrative data sets and generative models. Our results demonstrate that given enough samples, our test can successfully detect data-copying in a broad range of settings. 
+ 
+\subsection{Related work}
+\label{sec:better-global-test}
+
+There has been a large body of prior work on the evaluation of generative models \citep{salimans,lopez, richardson, mehdi, Kilian, Ruslan_et_al} . Most are geared to detect some form of mode-collapse or mode-dropping: the tendency to either merge or delete high-density regions of the training data. Consequently, they fail to detect even the simplest case of extreme data-copying -- where a generative model memorizes and exactly reproduces a bootstrap sample from the training set. We discuss below a few such canonical tests.
+%that use ideas similar to ours.  
+
+To-date there is a wealth of techniques for evaluating whether a model mode-drops or -collapses. Tests like the popular Inception Score (IS), Frech\'et Inception Distance (FID) \citep{heusel}, Precision and Recall test \citep{mehdi}, and extensions thereof \citep{Kynk_improved, che_2016} all work by embedding samples using the features of a discriminative network such as `InceptionV3' and checking whether the training and generated samples are similar \emph{in aggregate}. The hypothesis-testing binning method proposed by \cite{richardson} also compares aggregate training and generated samples, but without the embedding step. The parametric Kernel MMD method proposed by \cite{gretton} uses a carefully selected kernel to estimate the distribution of both the generated and training samples and reports the maximum mean discrepancy between the two. All these tests, however, reward a generative model that only produces slight variations of the training set, and do not successfully detect even the most egregious forms of data-copying.
+
+A test that can detect some forms of data-copying is the {\em{Two-Sample Nearest Neighbor}}, a non-parametric test proposed by~\cite{lopez}. Their method groups a training and generated sample of equal cardinality together, with training points labeled `1' and generated points labeled `0', and then reports the Leave-One-Out (LOO) Nearest-Neighbor (NN) accuracy of predicting `1's and `0's. Two values are then reported as discussed by \cite{Kilian} -- the leave-one-out accuracy of the training points, and the leave-one-out accuracy of the generated points. An ideal generative model should produce an accuracy of $0.5$ for each. More often, a mode-collapsing generative model will leave the training accuracy low and generated accuracy high, while a generative model that exactly reproduces the entire training set should produce zero accuracy for both. Unlike this method, our test not only detects exact data-copying, which is unlikely, but estimates whether a given model generates samples closer to the training set than it should, as determined by a held-out test set.
+
+The concept of data-copying has also been explored by \cite{Kilian} (where it is called `memorization') for a variety of generative models and several of the above two-sample evaluation tests. Their results indicate that out of a variety of popular tests, only the two-sample nearest neighbor test is able to capture instances of extreme data-copying. 
+
+\cite{gretton_2} explores three-sample testing, but for comparing the performance of different models, not for detecting overfitting. \cite{reviewer_paper} uses the three-sample test proposed by~\cite{gretton_2} for detecting data-copying; unlike ours, their test is global in nature. 
+
+%We, in contrast, provide a new interpretable test that makes the use of a validation set explicit and identifies over- and underfitting models, and we make the definition of `data-copying' precise. 
+
+ Finally, other works concurrent with ours have explored parametric approaches to rooting out data-copying. A recent work by \cite{GAN_benchmarks} suggests that, given a large enough sample from the model, Neural Network Divergences are sensitive to data-copying. In a slightly different vein, a recent work by \cite{latent_recovery} investigates whether latent-parameter models memorize training data by learning the reverse mapping from image to latent code. The present work departs from those by offering a probabilistically motivated non-parametric test that is entirely model agnostic.
+ 
+ 
+ %Finally, other works contemporary with this have explored parametric approaches to rooting out data-copying. A recent work by \cite{GAN_benchmarks} proposes the use of Neural Network Divergences (NNDs) to test the distance between training and generated samples. They suggest that, with a sizeable enough sample from the generative model, these NNDs can in fact detect data-copying by effectively memorizing the same samples the model has memorized. In a slightly different vein, a recent work by \cite{latent_recovery} investigates data-copying specifically of latent parameter models such as VAEs and GANs by learning the reverse mapping from image to latent code. They then check whether the model has a set of latent codes capable of effectively reproducing the training set better than it can the validation set. The present work departs from those by offering a probabilistically motivated non-parametric test that is entirely model agnostic.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%PRELIMINARIES%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,61 @@
+\section{Preliminaries}
+
+We begin by introducing some notation and formalizing the definitions of overfitting. Let $\X$ denote an instance space in which data points lie, and $P$ an unknown underlying distribution on this space. A training set $T$ is drawn from $P$ and is used to build a generative model $Q$. We then wish to assess whether $Q$ is the result of overfitting: that is, whether $Q$ produces samples that are too close to the training data. To help ascertain this, we are able to draw two additional samples:
+\begin{itemize}
+\item A fresh sample of $n$ points from $P$; call this $P_n$.
+\item A sample of $m$ points from $Q$; call this $Q_m$.
+\end{itemize}
+As illustrated in \textbf{Figures \ref{fig:cartoon overrep}, \ref{fig:cartoon data-copying}}, a generative model can overfit locally in a region $\calC \subseteq \calX$. To characterize this, for any distribution $D$ on $\calX$, we use $D|_{\calC}$ denote its restriction to the region $\calC$, that is, 
+\begin{align*}
+    D|_{\calC}(\calA) = \frac{D(\calA \cap \calC)}{D(\calC)} 
+    \quad \text{for any $\calA \subseteq \X$.}
+\end{align*}
+ 
+
+\subsection{Definitions of Overfitting}
+\label{sec:types of overfitting}
+We now formalize the notion of data-copying, and illustrate its distinction from other types of overfitting. 
+
+Intuitively, data-copying refers to situations where $Q$ is ``too close'' to the training set $T$; that is, closer to $T$ than the target distribution $P$ happens to be. We make this quantitative by choosing a distance function $d: \X \rightarrow \R$ from points in $\X$ to the training set, for instance, $d(x) = \min_{t \in T} \|x - t\|^2$, if $\X$ is a subset of Euclidean space. 
+
+Ideally, we desire that $Q$'s expected distance to the training set is the same as that of $P$'s, namely $\E_{X \sim P}[d(X)] = \E_{Y \sim Q}[d(Y)]$. We may rewrite this as follows: given any distribution $D$ over $\calX$, define $L(D)$ to be the one-dimensional distribution of $d(X)$ for $X \sim D$. We consider data-copying to have occurred if random draws from $L(P)$ are systematically larger than from $L(Q)$. The above equalized expected distance condition can be rewritten as
+\begin{align}
+      \E_{Y \sim Q}[d(Y)] - \E_{X \sim P}[d(X)] 
+      &= \E_{^{A \sim L(P)}_{B \sim L(Q)}}[B - A] 
+      = 0
+      \label{eqn:equal expected distance}
+\end{align}
+However, we are less interested in how \emph{large} the difference is, and more in how \emph{often} $B$ is larger than $A$. Let 
+\begin{align*}
+    \Delta_T(P,Q) &= \pr \left( B > A \ \big|\  B \sim L(Q), A \sim L(P) \right)
+\end{align*}
+where $0 \leq \Delta_T(P,Q) \leq 1$ represents how `far' $Q$ is from training sample $T$ as compared to true distribution $P$. A more interpretable yet equally meaningful condition is
+%\begin{align*}
+%    \Delta_T(P,Q) 
+%    &= \E_{^{A \sim L(P)}_{B \sim L(Q)}}[\mathds{1}_{B > A}] 
+%    \approx 
+%    \frac{1}{2} 
+%\end{align*}
+which guarantees \eqref{eqn:equal expected distance} if densities $L(P)$ and $L(Q)$ have the same shape, but could plausibly be mean-shifted. 
+
+If $\Delta_T(P,Q) \ll \frac{1}{2}$, $Q$ is data-copying training set $T$, since samples from $Q$ are systematically closer to $T$ than are samples from $P$. However, even if $\Delta_T(P,Q) \geq \frac{1}{2}$, $Q$ may still be data-copying. As exhibited in \textbf{Figures \ref{fig:cartoon data-copying}} and \textbf{\ref{fig:VAE mnist neighbors}}, a model $Q$ may data-copy in one region and underfit in others. In this case, $Q$ may be further from $T$ than is $P$ \emph{globally}, but much closer to $T$ \emph{locally}. As such, we consider $Q$ to be data-copying if it is overfit in a subset $\calC \subseteq \calX$:
+
+\begin{definition}[Data-Copying]
+    A generative model $Q$ is \textit{data-copying} training set $T$ if, in some region $\calC \subseteq \calX$, it is systematically closer to $T$ by distance metric $d:\calX \rightarrow \R$ than are samples from $P$ . Specifically, if
+    \begin{align*}
+        \Delta_T(P|_{\calC}, Q|_{\calC}) < \frac{1}{2}
+    \end{align*}
+\end{definition}
+
+Observe that data-copying is orthogonal to the type of overfitting addressed by many previous works \citep{heusel, mehdi}, which we call `over-representation'. There, $Q$ overemphasizes some region of the instance space $\calC \subseteq \calX$, often a region of high density in the training set $T$. For the sake of completeness, we provide a formal definition below.
+
+%For instance, a model $Q$ that generates tree images may be over-representing if it samples images of Christmas trees far more frequently than the true data distribution $P$ does. It will also be under-representing in another region, perhaps deciduous trees. 
+
+\begin{definition}[Over-Representation]
+    A generative model $Q$ is \textit{over-representing} $P$ in some region $\calC \subseteq \calX$, if the probability of drawing $Y \sim Q$ is much greater than it is of drawing $X \sim P$. Specifically, if 
+    \begin{align*}
+        Q(\calC) - P(\calC) \gg 0 
+    \end{align*}
+\end{definition}
+
+Observe that it is possible to over-represent without data-copying and vice versa. For example, if $P$ is an equally weighted mixture of two Gaussians, and $Q$ perfectly models one of them, then $Q$ is over-representing without data-copying. On the other hand, if $Q$ outputs a bootstrap sample of the training set $T$, then it is data-copying without over-representing. The focus of the rest of this work is on data-copying.  

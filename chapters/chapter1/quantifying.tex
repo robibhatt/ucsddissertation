@@ -1,0 +1,107 @@
+\section{Quantifying \emph{Déjà Vu} Memorization}
+\label{sec:quant}
+
+We apply our testing methodology to quantify a specific form of \dejavu memorization: inferring the foreground object (class label) given a crop of the background.
+
+% \paragraph{Extracting model embeddings.} We test \dejavu memorization on two popular SSL algorithms, SimCLR~\citep{chen2020simclr} and VICReg~\citep{vicreg}.
+% %\footnote{We present additional SSL models in \cref{sec:appx simclr results}} 
+% As described in Section \ref{sec:related}, these algorithms produce two embeddings given an input image: a \emph{backbone} embedding and a \emph{projector} embedding that is derived by applying a small fully-connected network on top of the backbone embedding. Unless otherwise noted, all SSL embeddings refer to the projector embedding.
+% To understand whether \dejavu memorization is particular to SSL, we also evaluate embeddings produced by a supervised model $\CLF_A$ trained on $\calA$. We apply the same set of image augmentations as those used in SSL and train $\CLF_A$ using the cross-entropy loss to predict ground truth labels. 
+\vspace{-0.75em}
+\paragraph{Extracting model embeddings.} We test \dejavu memorization on a variety of popular SSL algorithms, with a focus on VICReg~\citep{vicreg}. These algorithms produce two embeddings given an input image: a \emph{backbone} embedding and a \emph{projector} embedding that is derived by applying a small fully-connected network on top of the backbone embedding. Unless otherwise noted, all SSL embeddings refer to the projector embedding. 
+To understand whether \dejavu memorization is particular to SSL, we also evaluate embeddings produced by a supervised model $\CLF_A$ trained on $\calA$. We apply the same set of image augmentations as those used in SSL and train $\CLF_A$ using the cross-entropy loss to predict ground truth labels. 
+\vspace{-0.75em}
+\paragraph{Identifying the most memorized samples.} Prior works have shown that certain training samples can be identified as more prone to memorization than others~\citep{feldman2020does, watson2021importance, ye2021enhanced}. Similarly, we provide a heuristic to identify the most memorized samples in our label inference test using confidence of the KNN prediction.
+Given a periphery crop, $\crop{A_i}$, let $\KNN_A \big( \crop{A_i} \big) \subseteq \calX$ denote its $k$-nearest neighbors in the embedding space of $\SSL_A$. From this KNN subset we can obtain: \textbf{(1)} $\KNNprob_A \big( \crop{A_i} \big)$, the vector of class probabilities (normalized counts) induced by the KNN subset, and \textbf{(2)} $\KNNconf_A \big( \crop{A_i} \big)$, the negative entropy of the probability vector $\KNNprob_A \big( \crop{A_i} \big)$, as confidence of the KNN prediction. When entropy is low, the neighbors agree on the class of $A_i$ and hence confidence is high. 
+% \begin{itemize}[noitemsep, leftmargin=*, topsep=0pt]
+%     \item $\KNN_A \big( \crop{A_i} \big)$: The most prevalent class in the KNN subset as prediction for the class label $\cl(A_i)$. 
+%     \item $\KNNprob_A \big( \crop{A_i} \big)$: The vector of class probabilities (normalized counts) induced by the KNN subset.
+%     \item $\KNNconf_A \big( \crop{A_i} \big)$: Negative entropy of the probability vector $\KNNprob_A \big( \crop{A_i} \big)$ as confidence of the KNN prediction. When entropy is low, the neighbors agree on the class of $A_i$ and hence confidence is high. 
+% \end{itemize}
+We can sort the confidence score $\KNNconf_A \big( \crop{A_i} \big)$ across samples $A_i$ in decreasing order to identify the most confidently predicted samples, which likely correspond to the most memorized samples when $A_i \in \calA$.
+
+\subsection{Population-level Memorization}
+\label{sec:label inference accuracy}
+
+%ORIGINAL FIGURE SETUP IN ARXIV: 
+% \input{dejavu_training_epochs.tex}
+% \input{dejavu_training_set_size.tex}
+%PUT ORIGINAL FIGURES SIDE BY SIDE: 
+% \input{dejavu_training_epochs_set_size.tex}
+%PUT IN NEW FIGURES: 
+
+\begin{wrapfigure}{r}{0.4\textwidth} 
+    \centering
+    \includegraphics[width=0.4\textwidth]{figures/dejavu_main.pdf}
+    \caption{Accuracy of label inference using the target model (trained on $\calA$) vs. the reference model (trained on $\calB$) on the top $\%$ most confident examples $A_i \in \calA$ using only $\crop{A_i}$. For VICReg, there is a large accuracy gap between the two models, indicating a significant degree of \dejavu memorization.}
+    \label{fig:dejavu main}
+    \vspace{-2ex}
+\end{wrapfigure}
+
+Our first measure of \dejavu memorization is population-level label inference accuracy: \emph{What is the average label inference accuracy over a subset of SSL training images given their periphery crops?} 
+To understand how much of this accuracy is due to $\SSL_A$'s \dejavu memorization, we compare with a correlation baseline using the reference model: $\KNN_B$'s label inference accuracy on images $A_i \in \calA$. 
+In principle, this inference accuracy should be significantly above chance level ($1/1000$ for ImageNet) because the periphery crop may be highly indicative of the foreground object through correlation, \emph{e.g.}, if the periphery crop is a basketball player then the foreground object is likely a basketball.
+
+Figure \ref{fig:dejavu main} compares the accuracy of $\KNN_A$ to that of $\KNN_B$ when inferring the labels of images in $A_i \in \calA$\footnote{The sets $\calA$ and $\calB$ are exchangeable, and in practice we repeat this test on images from $\calB$ using $\SSL_B$ as the target model and $\SSL_A$ as the reference model, and average the two sets of results.} using $\crop{A_i}$.
+Results are shown for VICReg and the supervised model; trends for other models are shown in Appendix \ref{sec:appx simclr results}. For both VICReg and supervised models, inferring the class of $\crop{A_i}$ using $\KNN_B$ (dashed line) through correlation achieves a reasonable accuracy that is significantly above chance level. However, for VICReg, the inference accuracy using $\KNN_A$ (solid red line) is significantly higher, and the accuracy gap between $\KNN_A$ and $\KNN_B$ indicates the degree of \dejavu memorization. We highlight two observations: 
+\begin{itemize}
+    \item The accuracy gap of VICReg is significantly larger than that of the supervised model. This is especially notable when accounting for the fact that the supervised model is trained to associate randomly augmented crops of images with their ground truth labels. In contrast, VICReg has no label access during training but the embedding of a periphery crop can still encode the image label. 
+    \item For VICReg, inference accuracy on the $1\%$ most confident examples is nearly $95\%$, which shows that our simple confidence heuristic can effectively identify the most memorized samples. This result suggests that an adversary can use this heuristic to identify vulnerable training samples to launch a more focused privacy attack.
+\end{itemize}
+\vspace{-.75em}
+\paragraph{The \dejavu score. }
+The curves of Figure \ref{fig:dejavu main} show memorization across confidence values for a single training scenario.  To study how memorization changes with different hyperparamters, we extract a single value from these curves: the \dejavu \emph{score} at confidence level $p$. In Figure \ref{fig:dejavu main}, this is the gap between the solid red (or gray) and dashed red (or gray) where confidence ($x$-axis) equal $p\%$. In other words, given the periphery crops of set $\calA$, $\KNN_A$ and $\KNN_B$ separately select and label their top $p\%$ most confident examples, and we report the difference in their accuracy. The \dejavu score captures both the degree of memorization by the accuracy gap and the \emph{ability to identify memorized examples} by the confidence level. If the score is 10\% for $p=33\%$, $\KNN_A$ has 10\% higher accuracy on its most confident third of $\calA$ than $\KNN_B$ does on its most confident third. In the following, we set $p = 20\%$, approximately the largest gap for VICReg (red lines) in Figure \ref{fig:dejavu main}. 
+% Specifically, the \dejavu \emph{score} on the top $p\%$ most confident examples is,  
+% \begin{equation}
+%     \mathrm{DejaVu}(p) = \mathrm{Acc}_{\SSL_A}\big( \calA_{\SSL_A, p}  \big) - \mathrm{Acc}_{\SSL_B}\big( \calA_{\SSL_B, p}  \big) \ ,
+%     \label{eqn:dejavu score}
+% \end{equation}
+% where $\calA_{\SSL_A, p}$
+% Here we introduce a DejaVu memorization metric that quantify how much a target model is able to retrieve more class information from a crop than the reference model. We define it as:
+% where $p$ is a function that take the $p$ purcent most confident samples.
+%Figure \ref{fig:dejavu v. training epochs} shows how \dejavu memorization changes with the number of epochs used to train the embedding model (VICReg and supervised, respectively). The training set size is fixed to 300K samples, and label inference accuracy is computed on the top $20\%$ highest confidence examples. The number of epochs has a very strong influence on the degree of memorization for VICReg as the accuracy gap widens when number of epochs increases. We note that 1000 training epochs is used in several SSL works \citep{vicreg, simclr}. Remarkably, this trend in memorization is \emph{not} reflected in the standard metric for evaluating SSL representations: linear probe accuracy. The gray line in Figure \ref{fig:dejavu v. training epochs} shows the train-test accuracy gap of a linear classifier trained on top of the VICReg embeddings. Although there is a sizeable train-test gap, it does not grow significantly beyond 500 epochs. In contrast, \dejavu memorization (blue line) continues to worsen after 500 epochs. Thus, our test can be used as an alternative to linear probe accuracy to evaluate the memorization of SSL models.
+% \vspace{-.75em}
+
+% \paragraph{Comparison with the generalization gap} A network that perform very well on a training set while performing poorly on a test set (assuming the training set and test set sampled uniformly from the same distribution) is probably memorizing the training examples without being able to generalize on the test data. One could expect that measuring the difference in accuracy between the training and test set could give us insights on the degree of \dejavu memorization. However, we show in Figure  \ref{fig:dejavu v. training epochs} and \ref{fig:dejavu v. n} that this is not the case. In fact \dejavu memorization can significantly increase while the train-test gap decrease. In our experiments, we did not find a correlation between \dejavu and generalization.
+\vspace{-0.75em}
+\paragraph{Comparison with the linear probe train-test gap.} A standard method for measuring SSL performance is to train a linear classifier---what we call a `linear probe'---on its embeddings and compute its performance on a held out test set. From a learning theory standpoint, one might expect the linear probe's train-test accuracy gap to be indicative of memorization: the more a model overfits, the larger is the difference between train set and test set accuracy. However, as seen in Figure \ref{fig:dejavu epochs train set size}, the linear probe gap (dark blue) fails to reveal memorization captured by the \dejavu score (red) \footnote{See section \ref{sec:mitigation} for further discussion of the \dejavu score trends of Figure \ref{fig:dejavu epochs train set size}.}.
+
+% \paragraph{Effect of training epochs.} 
+% Figure \ref{fig:dejavu v. training epochs} shows how \dejavu memorization changes with training epochs for VICReg. The training set size is fixed to 300K samples. We observe that the number of epochs has a very strong influence on the degree of memorization for VICReg. From 250 to 1000 epochs, the \dejavu score (red curve) grows threefold: from under 10\% to over 30\%. Remarkably, this trend in memorization is \emph{not} reflected in the standard metric for evaluating SSL representations: linear probe accuracy. The dark blue curve shows the train-test linear probe accuracy gap. Although there is a sizeable train-test gap, it only changes by a few percent beyond 250 epochs. %Thus, our test can be used as an alternative to linear probe accuracy to evaluate the memorization of SSL models.
+% \vspace{-.75em}
+\input{chapters/chapter1/dejavu_full_content.tex}
+% %\input{partition_attk_figure.tex}
+% \paragraph{Effect of training set size.} 
+% Figure \ref{fig:dejavu v. n} shows how \dejavu memorization responds to the model's training set size. The number of training epochs is fixed to 1000. Interestingly, training set size appears to have almost \emph{no} influence on the \dejavu score (red line), indicating that memorization is equally prevalent with a 100K dataset and a 500K dataset (which suggests that \dejavu memorization may be detectable for larger datasets). Meanwhile, the linear probe train-test accuracy gap \emph{declines} by half as the dataset size grows, failing to represent the memorization quantified by our test. 
+% The trend is completely different according to linear probe accuracy (dark blue line), the train-test gap shrinks substantially when increasing the training set size from 100K to 500K. This highlights that the train-test gap is not able to capture \dejavu memorization. %Our evidence suggests that \dejavu memorization may be detectable even for large-scale training datasets. 
+%\vspace{-.75em}
+
+\vspace{-.75em} 
+\subsection{Sample-level Memorization}
+\label{sec:dissection}
+
+% Section \ref{sec:label inference accuracy} shows the \emph{average} level of \dejavu memorization on a subset of the training set $\calA$. However, this average tell us only what the attacker success rate might be without explicitly describing how much of the datatset is \dejavu memorized.
+The \dejavu score shows, \emph{on average}, how much better an adversary can select and classify images when using the target model trained on them. 
+This average score does not tell us how many individual images have their label successfully recovered by $\KNN_A$ but not by $\KNN_B$. In other words, how many images are exposed by virtue of \emph{being in training set} $\calA$: a risk notion foundational to differential privacy. 
+% However, from the perspective of an individual image $A_i \in \calA$, it is informative to know whether it was correctly classified 
+To better quantify what fraction of the dataset is at risk, we perform a sample-level analysis by fixing a sample $A_i \in \calA$ and observing the label inference result of $\KNN_A$ vs. $\KNN_B$.
+To this end, we partition samples $A_i \in \calA$ based on the result of label inference into four distinct categories: {\color{gray}\textbf{Unassociated}} - label inferred with neither KNN; {\color{part_orange}\textbf{Memorized}} - label inferred only with $\KNN_A$; {\color{part_red}\textbf{Misrepresented}} - label inferred only with $\KNN_B$; {\color{part_blue}\textbf{Correlated}} - label inferred with both KNNs. 
+% \begin{multicols}{2}
+% \begin{itemize}
+%     \vspace{-.75em}
+%     \setlength\itemsep{0.15em}
+%     \item {\color{gray}Unassociated}: label inferred with neither KNN   
+%     \item {\color{part_orange}Memorized}: label only inferred by $\KNN_A$
+%     \item {\color{part_red}Misrepresented}: label only inferred with $\KNN_B$
+%     \item {\color{part_blue}Correlated}: label inferred with both KNNs
+%     \vspace{-.75em}
+% \end{itemize}
+% \end{multicols}
+Intuitively, {\color{gray}unassociated} samples are ones where the embedding of $\crop{A_i}$ does not encode information about the label. {\color{part_blue}Correlated} samples are ones where the label can be inferred from $\crop{A_i}$ using correlation, \emph{e.g.}, inferring the foreground object is basketball given a crop showing a basketball player. Ideally, the {\color{part_red}misrepresented} set should be empty but contains a small portion of examples due to chance.
+\emph{Déjà vu} memorization occurs for {\color{part_orange}memorized} samples where the embedding of $\SSL_B$ does not encode the label but the embedding of $\SSL_A$ does. To measure the pervasiveness of \dejavu memorization, we compare the size of the {\color{part_orange}memorized} and {\color{part_red}misrepresented} sets.
+Figure \ref{fig:partition attack main} shows how the four categories of examples change with number of training epochs and training set size. The {\color{gray}unassociated} set is not shown since the total share adds up to one. The {\color{part_red}misrepresented} set remains under $5\%$ and roughly unchanged across all settings, consistent with our explanation that it is due to chance. In comparison, VICReg's {\color{part_orange}memorized} set surpasses $15\%$ at 1000 epochs. Considering that up to 5\% of these memorized examples could also be due to chance, we conclude that \textbf{at least 10\% of VICReg's training set is \dejavu memorized.} 
+%is many times larger than its {\color{part_red}misrepresented} set, indicating substantial sample-level \dejavu memorization. 
+%In fact, \textbf{it is 15\% of the training set that is \dejavu memorized with VICReg.}
+%The trends across different number of training epochs and training set sizes match those observed in Section \ref{sec:label inference accuracy}. % On the other hand, the supervised model's {\color{part_orange}memorized} set is only marginally larger than its {\color{part_red}misrepresented} set.
+
+% The trends across different number of training epochs and training set sizes match those observed in Section \ref{sec:label inference accuracy}: Increasing the number of epochs increases \dejavu memorization (Figure \ref{fig:per sample v. training epochs}), while increasing the training set size does not appear to reduce \dejavu memorization (Figure \ref{fig:per sample v. n}). 

@@ -1,0 +1,26 @@
+\begin{figure}[ht]
+%%%
+%VICREG
+%%%
+     \centering
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/sample_level_training_epochs.pdf}
+         \caption{Categories of training samples vs. number of epochs}
+         \label{fig:sample level epochs}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/sample_level_training_set_size.pdf}
+         \caption{Categories of training samples vs. training set size}
+         \label{fig:sample level training size}
+     \end{subfigure}
+\caption{
+\definecolor{part_blue}{rgb}{0.2824, 0.4706, .8157}
+\definecolor{part_red}{rgb}{0.8392, 0.3725, 0.3725}
+\definecolor{part_orange}{rgb}{0.9333, 0.5216, 0.2902}
+Partition of samples $A_i \in \calA$ into the four categories: {\color{gray}unassociated} (not shown), {\color{part_orange}memorized}, {\color{part_red}misrepresented} and {\color{part_blue}correlated}. The {\color{part_orange}memorized} samples---ones whose labels are predicted by $\KNN_A$ but not by $\KNN_B$---occupy a significantly larger share for VICReg compared to the supervised model, indicating that sample-level \dejavu memorization is more prevalent in VICReg. %The trends across number of training epochs and training set sizes are consistent with those observed in Figures \ref{fig:dejavu epochs and dataset} and \ref{fig:dejavu criteria and architecture}.
+}
+\label{fig:partition attack main appendix}
+\end{figure}

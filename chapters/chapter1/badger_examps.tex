@@ -1,0 +1,25 @@
+\begin{figure}[t!]
+%%%
+%BADGER
+%%%
+     \centering
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/euro_badgers.png}
+         \caption{{\color{part_orange}Memorized} European badgers}
+         \label{fig:euro badgers}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{figures/amer_badgers.png}
+         \caption{{\color{part_orange}Memorized} American badgers}
+         \label{fig:amer badgers}
+     \end{subfigure}
+\caption{
+Visualization of \dejavu memorization beyond class label. Both $\SSL_A$ and $\SSL_B$ are VICReg models. 
+The four images shown belong to the {\color{part_orange}memorized} set of $\SSL_A$ from the \emph{badger} class. RCDM reconstruction using embeddings from $\SSL_A$ can reveal not only the correct class label, but also the specific badger species: \emph{European} (left) and \emph{American} (right). Such information does not appear to be memorized by the reference model $\SSL_B$.
+} 
+\label{fig:in class badger}
+\vspace{-1.5em} 
+\end{figure}
