@@ -1,0 +1,39 @@
+\begin{wrapfigure}{R}{0.47\textwidth}
+    \vspace{-3.5em}
+    \IncMargin{1em}
+    \setlength{\textfloatsep}{-1pt}
+    \begin{algorithm}[H]
+    \caption{\name-private Shuffling Mech.}
+    \setstretch{1.25}
+    \KwIn{\ldp sequence \scalebox{0.9}{$\by=\langle y_1, \cdots, y_n \rangle$}\;
+    \hspace{3em}Public aux. info. $\bt=\langle t_1, \cdots t_n \rangle$\;
+    \hspace{3em}Dist. threshold $r$; Priv. param. $\alpha$\;
+    }
+    %\hspace{1cm} 
+    \KwOut{$\bz$ - Shuffled output sequence\;}
+    \vspace{0.1em}
+    \nl $\calG=$ \scalebox{0.9}{$ComputeGroupAssignment$} $(\bt,r)$\;
+    % \hspace{0.7cm}\textcolor{blue}{$\rhd$} Assign groups for each data owner using Eq.~\eqref{eq:group2}\vspace{0.05cm}
+    \nl Construct graph $\mathbb{G}$ with \\
+     \hspace{1em} a) vertices \scalebox{0.9}{$V=\{1,2,\cdots,n\}$}\\ 
+     \hspace{1em} b) edges \scalebox{0.9}{$E = \{(i,j): j \in G_i, G_i \in \calG\}$} \\
+    %  \Statex\hfill \textcolor{blue}{$\rhd$} Translate the group assignment $\calG$ to a graph $\mathbb{G}$ 
+    \nl \scalebox{0.95}{$root=\arg \max_{i \in [n]} |G_i|$}\;
+    %  \Statex\hfill \textcolor{blue}{$\rhd$} \scalebox{0.95}{$root$} corresponds to the node with the largest group \vspace{0.05cm}
+    \nl \scalebox{0.95}{$\sigma_0=\textsf{BFS}(\mathbb{G},root)$}\;
+    %  \Statex\hfill \textcolor{blue}{$\rhd$} Compute reference permutation via a BFS traversal on $\mathbb{G}$ 
+    \nl $\Delta$= \scalebox{0.9}{$ComputeSensitivity$}$(\sigma_0,\calG)\;$
+      
+    % \hfill\textcolor{blue}{$\rhd$} Using Prop. \ref{prop:1} 
+    \nl \scalebox{0.9}{$\theta=\alpha/\Delta$}\; 
+    % \hfill\textcolor{blue}{$\rhd$} Compute the dispersion parameter 
+    \nl \scalebox{0.9}{$\hat{\sigma} \sim \mathbb{P}_{\theta,\textswab{d}}(\sigma_0) $ }\;
+    %  \hfill\textcolor{blue}{$\rhd$} Sampling from the Mallows model
+    \nl $\sigma^*=\sigma_0^{-1}\hat{\sigma}$\; 
+    \nl $\bz=\langle y_{\sigma^*(1)}, \cdots y_{\sigma^*(n)}\rangle$\; 
+    % \hfill\textcolor{blue}{$\rhd$} Shuffle the output   
+    \nl Return $\bz$\;
+    \label{algo:main}
+    \end{algorithm}
+    \vspace{-2em}
+\end{wrapfigure}

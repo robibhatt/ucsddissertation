@@ -1,0 +1,137 @@
+\newcommand{\calib}{\texttt{Cal}}
+\section{Evaluation}\label{sec:eval}
+\vspace{-1.5em}
+\begin{figure*}[ht]
+   \begin{subfigure}[b]{0.25\linewidth}
+       \centering
+       \includegraphics[width=0.95\linewidth]{./figures/Texas_attack.png}
+    %  \vspace{-0.15cm}
+       \caption{\textit{PUDF}: Attack}
+       \label{fig:Texas:attack}
+    \end{subfigure}%%
+    % \begin{subfigure}[b]{0.24\linewidth}
+    %     \centering
+    %     \includegraphics[width=\linewidth]{./figures/Adult_attack_new.png}
+    %     %\vspace{-0.15cm}
+    %     \caption{\textit{Adult}: Attack }%($r$)}
+    %     \label{fig:Adult:attack}
+    % \end{subfigure}%%
+    \begin{subfigure}[b]{0.25\linewidth}
+        \centering
+        \includegraphics[width=0.95\linewidth]{./figures/Twitch_attack.png}
+        \caption{\textit{Twitch}: Attack}
+        \label{fig:Twitch:attack}
+    \end{subfigure}%%
+    %   \begin{subfigure}[b]{0.24\linewidth}
+    %     \centering
+    %     \includegraphics[width=\linewidth]{./figures/Adult_alpha.png}
+    %     %   \vspace{-0.15cm} 
+    %     \caption{\textit{Adult}: Attack ($\alpha$)}
+    %     \label{fig:Adult:alpha}
+    % \end{subfigure}\\
+    \begin{subfigure}[b]{0.25\linewidth}
+        \centering
+        \includegraphics[width=0.95\linewidth]{./figures/Texas_utility_1.png}
+        %\vspace{-0.15cm}
+        \caption{\textit{PUDF}: Learnability}
+        \label{fig:Texas:utility}
+    \end{subfigure}%%
+    % \begin{subfigure}[b]{0.24\linewidth}
+    %     \centering
+    %     \includegraphics[width=\linewidth]{./figures/Adult_utility_1.png}
+    %     %\vspace{-0.15cm}
+    %     \caption{\textit{Adult}: Learnability}
+    %     \label{fig:Adult:utility}
+    % \end{subfigure}
+    \begin{subfigure}[b]{0.25\linewidth}
+        \centering
+        \includegraphics[width=0.95\linewidth]{./figures/Twitch_utility.png}
+        \caption{\textit{Twitch}: Learnability}
+        \label{fig:Twitch:utility}
+    \end{subfigure}
+    % \begin{subfigure}[b]{0.24\linewidth}
+    %     \centering
+    %     \includegraphics[width = \linewidth]{./figures/Syn_utility.png}
+    %     %\vspace{-0.15cm}
+    %     \caption{\textit{Syn}: Learnability}% that acts as the public auxiliary information.}
+    %     \label{fig:Syn:utility}
+    % \end{subfigure}
+    \vspace{-0.2cm}
+   \caption{
+   Our scheme interpolates between standard LDP (orange line) and uniform shuffling (blue line) in both privacy and data learnability. All plots increase group size along x-axis (except (d)). 
+   (a) $\rightarrow$ (b): The fraction of participants vulnerable to an inferential attack.  
+   %(d): Attack success with varying $\alpha$ for a fixed $r$. 
+   (c) $\rightarrow$ (d): The accuracy of a calibration model trained on $\bz$ predicting the distribution of \ldp outputs at any point $t \in \calT$, such as the distribution of medical insurance types used specifically in the Houston area (not possible when uniformly shuffling across Texas). 
+   %(h): Test accuracy of a classifier trained on $\bz$ for the synthetic dataset in Fig. \ref{fig:demonstration}. 
+   }
+   \label{fig:results}
+   \vspace{-0.3cm}
+\end{figure*}
+
+
+The previous sections describe how our shuffling framework interpolates between standard \ldp and uniform random shuffling. We now experimentally evaluate this asking the following two questions -- 
+
+\textbf{Q1.} Does the Alg. 1 mechanism protect against realistic inference attacks? \\\textbf{Q2.} How well can Alg. 1 tune a model's ability to learn trends within the shuffled data, i.e., tune \emph{data learnability}?
+
+We evaluate on four datasets.  We are not aware of any prior work that provides comparable local inferential privacy. Hence, we baseline our mechanism with the two extremes: standard \textsf{LDP} and uniform random shuffling.  For concreteness, we detail our procedure with the \textit{PUDF} dataset~\citep{PUDF} \href{https://www.dshs.state.tx.us/THCIC/Hospitals/Download.shtm}{(license)}, which comprises $n \approx 29$k psychiatric patient records from Texas. Each data owner's sensitive value $x_i$ is their medical payment method, which is reflective of socioeconomic class (such as medicaid or charity). Public auxiliary information $t \in \calT$ is the hospital's geolocation. Such information is used for understanding how payment methods (and payment amounts) vary from town to town for insurances in practice \citep{insurance}. Uniform shuffling across Texas precludes such analyses. Standard \ldp risks inference attacks, since patients attending hospitals in the same neighborhood have similar socioeconomic standing and use similar payment methods, allowing an adversary to correlate their noisy $y_i$'s. To trade these off, we apply Alg. 1 with $d(\cdot)$ being distance (km) between hospitals, $\alpha = 4$ and Kendall's $\tau$ rank distance measure for permutations. %For each $r$, we recompute the grouping $\calG$, and produce a new shuffled $\bz$. 
+
+Our inference attack predicts $\DO_i$'s $x_i$ by taking a majority vote of the $z_j$ values of the $25$ data owners within $r^*$ of $t_i$ and who are most similar to $\DO_i$ w.r.t some additional privileged auxiliary information $t^p_j \in \calT_p$. For PUDF, this includes the $25$ data owners who attended hospitals that are within $r^*$ km of $\DO_i$'s hospital, and are most similar in payment amount $t^p_j$. Using an \scalebox{1}{$\epsilon = 2.5$} randomized response mechanism, we resample the \ldp sequence $\by$ 50 times, and apply Alg. 1's chosen permutation to each, producing 50 $\bz$'s. We then mount the majority vote attack on each $x_i$ for each $\bz$. If the attack on a given $x_i$ is successful across $\geq 90\%$ of these \ldp trials, we mark that data owner as vulnerable -- although they randomize with \textsf{LDP}, there is a $\geq 90\%$ chance that a simple inference attack can recover their true value. We record the fraction of vulnerable data owners as $\rho$. %(an adversary could very feasibly know which data owners are vulnerable a priori). 
+We report 1-standard deviation error bars over 10 trials.   
+
+Additionally, we evaluate \emph{data learnability} --  how well the underlying statistics of the dataset are preserved across $\calT$. %how well a model trained on $\bz$ can infer the distribution of $x_i$'s at any point $t \in \calT$. 
+For \textit{PUDF}, this means training a model on the shuffled $\bz$ to predict the distribution of payment methods used near, for instance, $t_i=$ Houston for $\DO_i$. For this, we train a calibrated model, \scalebox{1}{$\calib:\calT \rightarrow \mathcal{D}_x$}, on the shuffled outputs where \scalebox{1}{$\mathcal{D}_x$} is the set of all distributions on the domain of sensitive attributes \scalebox{1}{$\calX$}. We implement $\calib$ as a gradient boosted decision tree (GBDT) model \citep{gradientboosting} calibrated with Platt scaling \citep{calibration}. For each location $t_i$, we treat the empirical distribution of $x_i$ values within $r^*$ as the ground truth distribution at $t_i$, denoted by \scalebox{1}{$\mathcal{E}(t_i) \in \mathcal{D}_x$}. Then, for each $t_i$, we measure the Total Variation error between the predicted and ground truth distributions \scalebox{1}{$\text{TV}\big( \mathcal{E}(t_i), \calib_r(t_i) \big)$}. We then report $\lambda(r)$ -- the average TV error for distributions predicted at each $t_i \in \bt$ normalized by the TV error of naively guessing the uniform distribution at each $t_i$. With standard \textsf{LDP}, this task can be performed relatively well at the risk of inference attacks. With uniformly shuffled data, it is impossible to make geographically localized predictions unless the distribution of payment methods is identical in every Texas locale. 
+ 
+
+
+
+% \textbf{Datasets.} We use the following datasets: 
+%  \vspace{-0.3cm}
+% \squishlist 
+% \item \textit{PUDF}~\cite{PUDF}. This is a medical dataset of $\approx29K$ psychiatric patient discharge records from Texas. %Each entry has 31 attributes.
+% \item \textit{Adult}~\cite{UCI}. This dataset is derived from the 1994 Census and has $\approx33$K records. 
+% \item \textit{Twitch}~\cite{twitch}. This dataset, gathered from the \emph{Twitch} social media platform, includes a graph of 9,498 edges (mutual friendships) along with node features. 
+% \item \textit{Syn}~\cite{Syn}. A synthetic dataset of size $20K$ which can be classified at three granularities -- 8-way, 4-way and 2-way as represented by Fig. \ref{fig:data} (which shows a scaled down version of the dataset). 
+% \squishend
+% \vspace{-0.3cm}
+% Due to space constraints, we present the results for Twitch in App. \ref{app:extraresults}.\\
+% \textbf{Setup.} In our experiments, the adversary $\mathbb{A}$ has access to (1) public auxiliary information $\bt\in\mathcal{T}^n$  (2) privileged auxiliary information $\bt_P\in{\mathcal{T}_{P}}^n$ which is \textit{not used} by Alg. \ref{algo:main}. For each $\DO_i$, the adversary (1) constructs a group $G_i^{\mathbb{A}}$ based on $\calT$ and threshold $r^*$, (2) finds a subset of $k=25$ members from $G_i^{\mathbb{A}}$ based on $\calT_P$ (denoted as $K_i^{\mathbb{A}}$),  (3)  predicts $\DO_i$'s sensitive attribute by a majority vote over the noisy (\textsf{LDP}) values corresponding to $K_i^{\mathbb{A}}$ ($k$-NN classifier). The attack is considered a success if it predicts correctly with probability $\geq 0.9$ for our trials. We report the efficacy of the attack in terms of the \% of total data owners inferred, $\rho$. 
+% \newcommand{\calib}{\texttt{Cal}}
+% %To demonstrate the practical privacy/utility tradeoff of our method, we compare the risk of a $k$ Nearest Neighbor ($k$NN) correlation attack with the utility of a model calibration task. 
+% \\We measure the learnability of the data (w.r.t $\bt$) by computing how well the underlying statistics of the dataset are preserved across $\calT$. For this, we train a calibrated model, \scalebox{1}{$\calib:\calT \rightarrow \mathcal{D}_x$}, on the shuffled outputs where \scalebox{1}{$\mathcal{D}_x$} is the set of all distributions on the domain of sensitive attributes \scalebox{1}{$\calX$}. We implement $\calib$ as a gradient boosted decision tree (GBDT) model \cite{gradientboosting} calibrated with Platt scaling \cite{calibration}. We treat the empirical distribution of \scalebox{1}{$\bx_{G_i}$}(data corresponding to $G_i$), denoted by \scalebox{1}{$\mathcal{E}(t_i) \in \mathcal{D}_x$}, as the ground truth distribution at $t_i$, where $G_i$ is define w.r.t threshold $r^*$. Then, for each $t_i$, we measure the Total Variation (TV) distance between the predicted and ground truth distributions. For each privacy radius $r$, we generate $\bz$, train \scalebox{1}{$\calib_r$} on \scalebox{1}{$(\bz, \bt)$}, and report  \scalebox{0.87}{$\lambda(r) \hspace{-0.1cm}= \hspace{-0.01cm} \sum_{i=1}^n  \hspace{-0.1cm}\text{TV}\big( \mathcal{E}(t_i), \calib_r(t_i) \big) \Big/ n \lambda_o$}  \hspace{-0.1cm}-- the mean TV error normalized by the TV error of uniform distribution, \scalebox{1}{$\lambda_o$}.
+% \squishlist \vspace{-0.25cm} \item \textit{PUDF}.  The payment method (which can be reflective of social class) is considered private $\calX = \{$ medicare, medicaid, charity, private$\}$. $\calT$ is the hospital zipcode and $\calT_P$ is the charge amount. In fact, this correlation is used for medical insurances in practice \cite{insurance}. \vspace{-0.05cm}
+% \item \textit{Adult}. Whether $\DO_i$'s annual income is $\geq 50$k is considered private, $\calX = \{\geq 50k, <50k\}$. $\calT = [17, 90]$ is age and $\calT_P$ is the  individual's marriage status.\vspace{-0.05cm}
+% %\item \textit{Twitch}. The user's history of explicit language is private $\calX = \{0,1\}$. $\calT$ is a user's mutual friendships as represented by a public social media graph, i.e. $t_i$ is the $i$'th row of the graph's adjacency matrix. We do not have any $\calT_P$ here, and select the 25 nearest neighbors randomly. 
+% \item \textit{Syn}. The eight color labels are private $\calX = [8]$; the 2D-positions are public $\calT = \R^2$. For learnability, we measure the accuracy of $8$-way, $4$-way and $2$-way GBDT models trained on $\bz$ on an equal sized test set at each $r$.\vspace{-0.1cm}
+% \squishend  \vspace{-0.2cm}
+% All experiments have been implemented in Python and we report the mean over $10$ trials. Additionally, we use $\epsilon=2.5$, $\alpha=4$, and Kendall's $\tau$ rank distance measure. We are not aware of any prior works with mechanisms that provide comparable locally private guarantees. As such we baseline our mechanism with the two extremes of shuffling: no shuffling at all (standard \ldp), and uniform random shuffling as in \cite{shuffle2, shuffling1}. Our mechanism offers interpolation between these two baselines. 
+
+We additionally perform the above experiments on the following three datasets 
+\squishlistfour \vspace{-0.25cm} 
+% \item \textit{PUDF}.  The payment method (which can be reflective of social class) is considered private $\calX = \{$ medicare, medicaid, charity, private$\}$. $\calT$ is the hospital zipcode and $\calT_P$ is the charge amount. In fact, this correlation is used for medical insurances in practice \cite{insurance}. \vspace{-0.05cm}
+\item \textit{\href{http://snap.stanford.edu/data/twitch-social-networks.html}{Twitch}}~\citep{twitch}. This dataset, gathered from the \emph{Twitch} social media platform, includes a graph of $\approx 9K$ edges (mutual friendships) along with node features. The user's history of explicit language is private $\calX = \{0,1\}$. $\calT$ is a user's mutual friendships, i.e. $t_i$ is the $i$'th row of the graph's adjacency matrix. We do not have any $\calT_P$ here and select the 25 neighbors randomly. 
+\item \textit{Syn}. This is a synthetic dataset of size $20K$ which can be classified at three granularities -- 8-way, 4-way and 2-way  (Fig. \ref{fig:data} shows a scaled down version of the dataset). The eight color labels are private $\calX = [8]$; the 2D-positions are public $\calT = \R^2$. For learnability, we measure the accuracy of $8$-way, $4$-way and $2$-way GBDT models trained on $\bz$ on an equal sized test set at each $r$.
+\item \textit{\href{https://archive.ics.uci.edu/ml/datasets/Adult}{Adult}}~\citep{adult}. This dataset is derived from the 1994 Census and has $\approx33$K records.  Whether $\DO_i$'s annual income is $\geq 50$k is considered private, $\calX = \{\geq 50k, <50k\}$. $\calT = [17, 90]$ is age and $\calT_P$ is the  individual's marriage status. Due to lack of space figures are in App. \ref{app:adult experiments}. %\textcolor{blue}{Trends observed on Adult reinforce those of the three datasets included here, see  for figures.}
+\vspace{-0.05cm}
+\vspace{-0.1cm}
+\squishendfour 
+
+%\vspace{-0.3cm}
+\textbf{Experimental Results.}
+%The plots of Figure \ref{fig:results} indicate that our scheme successfully interpolates between standard \ldp and uniform shuffling. We return to our two primary questions: 
+\\\textbf{Q1.} Our formal guarantee on the inferential privacy loss (Thm. \ref{thm: semantic guarantee}) is described w.r.t to a `strong' adversary (with access to  \scalebox{1}{$\{y_{G_i}\},\by_{\overline{G}_i}$}). Here, we test how well does our proposed scheme (Alg. 1) protect against inference attacks on real-world datasets without any such assumptions. Additionally, to make our attack more realistic, the adversary has access to extra privileged auxiliary information $\calT_P$ which is \textit{not used} by Alg. \ref{algo:main}.  Fig. \ref{fig:Texas:attack}$\rightarrow$ \ref{fig:Twitch:attack} show  that our scheme significantly reduces the attack efficacy. For instance, $\rho$ is reduced by \scalebox{1}{$2.7X$} at the attack distance threshold $r^*$ for \textit{PUDF}.  \begin{wrapfigure}{r}{0.3\linewidth}
+     \vspace{-0.4cm}
+    \hspace{-0.8cm}
+    \centering
+    \includegraphics[height=3cm]{./figures/Syn_utility.png} 
+    \vspace{-0.3cm}
+    \caption{\textit{Syn}: Learnability}% that acts as the public auxiliary information.}
+    \label{fig:Syn:utility}
+    \vspace{-1.5em}
+\end{wrapfigure} Additionally, $\rho$ for our scheme varies from that of \textsf{LDP}\footnote{Our scheme gives lower $\rho$ than \ldp at \scalebox{1}{$r=0$} because the resulting groups are non-singletons. For instance, for PUDF, $G_i$ includes all individuals with the same zipcode as $\DO_i$.} (minimum privacy)   to uniform shuffle (maximum privacy) with increasing $r$ (equivalently group size as in Fig. \ref{fig:Twitch:attack}) thereby spanning the entire privacy spectrum. As expected, $\rho$ decreases with decreasing privacy parameter $\alpha$ (Fig. \ref{fig:Adult:alpha}).
+\\\textbf{Q2.} Fig.\ref{fig:Texas:utility} \scalebox{1}{$\rightarrow$} \ref{fig:Twitch:utility} show that $\lambda$ varies from that of \ldp (maximum learnability) to that of uniform shuffle (minimum learnability) with increasing $r$ (equivalently, group size), thereby providing tunability.  Interestingly, for \textit{Adult} our scheme reduces $\rho$ by \scalebox{1}{$1.7X$} at the same $\lambda$ as that of \ldp for \scalebox{1}{$r=1$} (Fig. \ref{fig:Adult:utility}). Fig. \ref{fig:Syn:utility} shows that the distance threshold $r$ defines the granularity at which the data can be classified. \ldp allows 8-way classification while uniform shuffling allows none. The granularity of classification can be tuned by our scheme -- $r_8$, $r_4$ and $r_2$ mark the thresholds for $8$-way, $4$-way and $2$-way classifications, respectively. %Experiments on evaluation of \scalebox{1}{$(\eta,\delta)$}-preservation are in  App. \ref{app:extraresults}.
+
+\section{Conclusion}
+We have proposed a new privacy definition, \name-privacy that casts new light on the inferential privacy benefits of shuffling and a novel shuffling mechanism to achieve the same. %Additionally, we propose a generalized shuffle framework that interpolates between \ldp and uniform shuffling in terms of the protection afforeded against inference attacks and data learnability.
+
+
+

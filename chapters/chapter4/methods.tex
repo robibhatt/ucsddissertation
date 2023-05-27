@@ -1,0 +1,382 @@
+\begin{wrapfigure}{r}{0.4\linewidth}
+%    \vspace{-1.5cm}
+    % \hspace{-1cm}
+    \centering
+    \includegraphics[height=2.8cm]{figures/shuffle_image.png} 
+%    \vspace{-1em}
+    \caption{\small{Trusted shuffler mediates on $\by$}} 
+%    \vspace{-2.5em}
+    \label{fig:problemsetting}
+\end{wrapfigure}
+%\vspace{-0.5cm}
+\section{Data Privacy and Shuffling}\vspace{-0.2cm}
+In this section, we present \name-privacy and a shuffling mechanism capable of achieving the \name-privacy guarantee. 
+%First, we describe the problem setting. Next, we present our novel privacy definition,  \name-privacy, followed by a semantic understanding of its privacy implications. A utility metric for shuffling mechanisms is presented next. Finally, we introduce a novel shuffling  mechanism capable of achieving the \name-privacy guarantee. 
+\vspace{-0.3cm}
+\subsection{Problem Setting} \vspace{-0.1cm}
+
+In our problem setting, we have $n$ data owners $\DO_i, i \in [n]$ each with a private input $x_i \in \mathcal{X}$ (Fig. \ref{fig:problemsetting}).  
+ The data owners first randomize their inputs via a $\epsilon$-\ldp mechanism to generate $y_i=\mathcal{M}(x_i)$. 
+ %I think we can cut out anything about the adv having side information until the experiments? It's just distracting reviewers? 
+ %We consider an informed adversary with public auxiliary information $\mathbf{t}=\langle t_1, \cdots, t_n \rangle, t_i \in \mathcal{T}$ about each individual. 
+ Additionally, just like in the shuffle model, we have a trusted shuffler. It mediates upon the noisy responses $\mathbf{y}=\langle y_1,\cdots,y_n \rangle$ 
+ %and systematically shuffles them based on $\bt$ (since $\bt$ is public, it is also accessible to the shuffler) 
+ to obtain the final output sequence $\bf{z}=\mathcal{A}(\bf{y})$ ($\mathcal{A}$ corresponds to Alg. 1) 
+ which is sent to the untrusted data analyst. The shuffler can be implemented via trusted execution environments (TEE) just like Google's Prochlo. 
+ %The underlying data correlations in $\mathbf{t}$ is modeled as a prior distribution $\calP$ on $\bf{x}$. 
+ Next, we formally discuss the notion of order and its implications. 
+\begin{defn}(Order) The order of a sequence $\mathbf{x}=\langle x_1,\cdots, x_n\rangle$ refers to the indices of its set of values $\{x_i\}$ and is represented by permutations from $\mathrm{S}_n$.\vspace{-0.2cm}\end{defn} 
+% \begin{figure}
+%     \centering
+%     \begin{subfigure}[b]{0.49\textwidth}
+%          \centering
+%          \includegraphics[height = 3.5cm]{shuffle_image.png}
+%          \caption{Trust model (similar to shuffle model)}
+%          \label{fig:problemsetting}
+%      \end{subfigure}
+%      \begin{subfigure}[b]{0.49\textwidth}
+%          \centering
+%          \includegraphics[height = 3.5cm]{graph.png}
+%          \caption{An example social media connectivity graph $\bt_{e.g}$}% that acts as the public auxiliary information.}
+%          \label{fig:example}
+%      \end{subfigure}
+%      \caption{how data is privately collected (a) in the face of auxiliary information (b) that can be leveraged to correlate \ldp responses $\langle y_1, \dots, y_n \rangle$}
+% \end{figure}
+
+When the noisy response sequence $\mathbf{y}=\langle y_1, \cdots, y_n\rangle$ is represented by the identity permutation $\sigma_{I}=(1 \: 2 \: \cdots \: n)$, the value at index $1$ corresponds to $\DO_1$ and so on. Standard \ldp releases the identity permutation w.p. 1. The output of the shuffler, $\bf{z}$, is some permutation of the sequence $\bf{y}$, i.e.,
+% \vspace{-0.5em}
+\begin{align*}
+\mathbf{z}=\sigma(\by)=
+\langle y_{\sigma(1)},\cdots,y_{\sigma(n)}\rangle
+%\vspace{-1em}
+\end{align*}
+where $\sigma$ is determined via $\calA(\cdot)$. For example, for $\sigma=(4 \: 5\: 2 \:3 \: 1)$, we have $\mathbf{z}=\langle y_4, y_5, y_2, y_3, y_1\rangle$ which means that the value at index $1$ ($\DO_1$) now corresponds to that of $\DO_4$ and so on.
+%\arc{define analyst ' goal concretely here} \vspace{-0.3cm}
+
+%\textcolor{blue}{The shuffler's distribution over permutations $\sigma$ satisfies \name-privacy by thoroughly shuffling within each data owner's group $G_i$ (formalized in the following section). The analyst, meanwhile, wishes to indefinitely query the statistics of \ldp values at the level of a group or union of groups. To enhance their utility, we optimize the mechanism to preserve statistics within groups (i.e. minimize the extent to which \ldp values shuffle between groups). More on this in Section \ref{sec:mechanism}. In this way, every choice of grouping results in a unique privacy/utility tradeoff. }
+   \vspace{-0.1cm}
+\subsection{Definition of \name-privacy}\label{sec:privacy:def}
+ \vspace{-0.3cm}
+% \arc{Make groups more general}
+Inferential risk captures the threat of an adversary who infers $\DO_i$'s private $x_i$ using all or a subset of other data owners' released $y_j$'s. Since we cannot prevent all such attacks and maintain utility, our aim is to formally limit \emph{which data owners} can be leveraged in inferring $\DO_i$'s private $x_i$. To make this precise, each $\DO_i$ may choose a corresponding group, $G_i \subseteq [n]$, of data owners.
+\begin{wrapfigure}{r}{0.3\linewidth}
+    \centering
+    \vspace{-1.5em}
+    \includegraphics[height=2cm]{./figures/graph.png}
+    \vspace{-1.25em}
+    \caption{An example social media connectivity graph $\bt_{e.g}$}
+    \vspace{-2em}
+    \label{fig:example}
+\end{wrapfigure}
+ \name-privacy guarantees that $y_j$ values originating from a data owner's group $G_i$ are shuffled together. In doing so, the \ldp values corresponding to subsets of $\DO_i$'s group $I \subset G_i$ cannot be reliably identified, and thus cannot be singled out to make inferences about $\DO_i$'s $x_i$. If Alice's group includes her whole neighborhood, \ldp data originating from her household cannot be singled out to recover her private $x_i$. %We formalize this guarantee in Sec. \ref{sec:privacy:implications}. 
+\\Any choice of grouping $\calG = \{G_1, G_2, \dots, G_n\}$ can be accommodated under \name-privacy. Each data owner may choose a group large enough to hide anyone they feel sufficient risk from.  We outline two systematic approaches to assigning groups as follows: %If one feels inferential risk from their close friends, perhaps their group ought to include all of their first-order social media connections. If one feels inferential risk from their close colleagues, perhaps their group should include their entire company. In turn, the analyst may still access aggregate statistics roughly at the group level. 
+   \vspace{-0.1cm}\squishlistfour    \vspace{-0.1cm}
+\item Let $\mathbf{t}=\langle t_1, \cdots, t_n \rangle, t_i \in \mathcal{T}$ denote some public auxiliary information about each individual. $\DO_i$'s group, $G_i$, could consist of all those $\DO_j$'s who are similar to $\DO_i$ w.r.t. the public auxiliary information $t_i, t_j$ according to some distance measure $d:\calT \times \calT \rightarrow \R$. Here, we define `similar' as being under a threshold\footnote{We could also have different thresholds, $r_i$, for every data owner, $\DO_i$.} $r \in \R$ such that $G_i = \{j \in [n] \big| d(t_i,t_j) \leq r\},     \forall i \in [n]$.
+For example, $d(\cdot)$ can be Euclidean distance if $\calT$ corresponds to geographical locations, thwarting inference attacks leveraging one's household or immediate neighbors.
+If $\calT$ represents a social media connectivity graph, $d(\cdot)$ can measure the path length between two nodes, thwarting inference attacks using specifically one's close friends. For the example social media connectivity graph depicted in Fig. \ref{fig:example}, assuming distance metric path length and $r=2$, the groups are defined as  $G_1=\{1,7,8,2,5,6\}, G_2=\{2,1,7,5,6,3\}$ and so on. 
+
+\item  Alternatively, the data owners might opt for a group of a specific size $r < n$. Collecting private data from a social media network, we may set $r = 50$, where each $G_i$ is encouraged to include the $50$ data owners $\DO_i$ interacts with most frequently. 
+\squishendfour 
+   \vspace{-0.3cm}
+Intuitively, \name-privacy protects $\DO_i$ against inference attacks that leverages correlations at a finer granularity than $G_i$. In other words, under \name-privacy, one subset of $k$ data owners $\subset G_i$ (e.g. household) is no more useful for targeting $x_i$ than any other subset of $k$ data owners $\subset G_i$ (e.g. some combination of neighbors). 
+This leads to the following key insight for the formal privacy definition. 
+
+\textbf{Key Insight.} Formally, our privacy goal is to prevent the leakage of ordinal information from within a group. We achieve this by  systematically \textit{bounding the dependence of the mechanism's output on the relative ordering (of data values corresponding to the data owners) within each group}. \\First, we introduce the notion of neighboring permutations. 
+
+%By (non-uniformly) shuffling within each group $G_i \in \calG$, we prevent an adversary from learning whether a set of $k$ \ldp values from $G_i$ correspond to one subset within $G_i$ or another. An adversary cannot distinguish whether these $k$ values came from $\DO_i$'s close friends vs. their distant relatives or from their close neighbors vs. residents on the other side of town. However, an analyst can still observe how the distribution of \ldp values changes across neighborhoods or social circles. 
+\begin{defn}   (Neighboring Permutations) Given a group assignment $\mathcal{G}$,  two permutations \scalebox{0.9}{$\sigma, \sigma' \in \mathrm{S}_n$}  are defined to be neighboring w.r.t. a group $G_i \in \calG$ (denoted as \scalebox{0.9}{$\sigma\hspace{-0.1cm} \approx_{G_i}\hspace{-0.1cm} \sigma'$}) if  $\sigma(j) = \sigma'(j) \ \forall j \notin G_i$.
+\end{defn} \vspace{-0.25cm}
+% \begin{gather} 
+% \vspace{-0.2cm}
+% \sigma(j) = \sigma'(j) \ \forall j \notin G_i 
+% \vspace{-0.4cm}
+% \end{gather} 
+% \end{defn}
+ %\vspace{-0.2cm}
+Neighboring permutations differ only in the indices of its corresponding group $G_i$.
+ For example, \scalebox{0.9}{$\sigma=(\underline{1} \:\underline{ 2} \: 4 \: 5 \: \underline{7} \: \underline{6} \: \underline{10} \: \underline{3} \: 8 \:9)$} and \scalebox{0.9}{$\sigma'=(\underline{7} \:\underline{3} \: 4 \: 5 \: \underline{6} \: \underline{2} \: \underline{1} \: \underline{10} \: 8 \: 9 )$} are neighboring w.r.t \scalebox{0.9}{$G_1$} (Fig. \ref{fig:example}) since they differ only in \scalebox{0.9}{$\sigma(1), \sigma(2), \sigma(5), \sigma(6), \sigma(7)$} and \scalebox{0.9}{$\sigma(8)$}. We denote the set of all neighboring permutations as %\vspace{-0.2cm}
+    \vspace{0.1cm}\begin{gather}      \mathrm{N}_{\calG}=\{(\sigma,\sigma')|\sigma \approx_{G_i} \sigma', \exists G_i \in \calG \}     \vspace{0.2cm}\end{gather}    \vspace{0.2cm}
+Now, we formally define \name-privacy as follows.
+ \vspace{-0.1cm}\begin{defn}[\name-privacy] For a given group assignment $\calG$ on a set of $n$ entities and a privacy parameter $\alpha \in \R_{\geq0}$, a randomized  mechanism $\calA: \mathcal{Y}^n \mapsto \mathcal{V} $ is $(\alpha,\mathcal{G})$-\name~private if for all $\mathbf{y} \in \mathcal{Y}^n$ and neighboring permutations $\sigma, \sigma' \in \mathrm{N}_\calG$ and any subset of output $O\subseteq \mathcal{V}$, we have
+\vspace{0.1cm} 
+\begin{equation} 
+    %\vspace{-0.5cm}
+    \mathrm{Pr}[\calA\big(\sigma(\mathbf{y})\big) \in O] \leq e^\alpha \cdot \mathrm{Pr}\big[\calA\big(\sigma'(\mathbf{y})\big) \in O \big] \label{eq:privacy} 
+\end{equation}   
+%where $\bz=\pi(\by)=\langle y_{\pi(1)},\cdots, y_{\pi(n)}\rangle, \pi \in \mathrm{S}_n$
+ $\sigma(\mathbf{y})$ and $\sigma'(\mathbf{y})$  are defined to be \textit{neighboring sequences}. 
+\label{def:privacy}\end{defn} \vspace{-0.2cm}
+ \name-privacy states that, for any group $G_i$,  the mechanism is (almost) agnostic of the order of the data within the group.  Even after observing the output, an adversary cannot learn about the relative ordering of the data within any group. Thus, two neighboring sequences are indistinguishable to an adversary. %For example, for any data sequence $\mathbf{y}\in \mathcal{Y}^{10}$, $\sigma=(1 \: 2 \: 4 \: 5 \: 7 \: 6 \: 10 \: 3 \: 8 \:9)$ and $\sigma'=(7 \:3 \: 4 \: 5 \: 6 \: 2 \: 1 \: 10 \: 8 \: 9 )$, $\sigma(\mathbf{y})$ and $\sigma'(\mathbf{y})$ are indistinguishable to an adversary ($\sigma\approx_{G_1}\sigma'$ for Fig. \ref{fig:example}). 
+ %In other words, a \name-private mechanism is (almost) order-agnostic for any group in $\mathcal{G}$. 
+An important property of \name-privacy is that post-processing computations does not degrade privacy. Additionally, when applied multiple times, the privacy guarantee degrades gracefully. Both the properties are analogous to \DP and are presented in App. \ref{app:post-processing}. %Interestingly, \ldp mechanisms achieve a weak degree of \name-privacy. 
+ \begin{comment}
+    
+\begin{lem} 
+    An $\epsilon$-\ldp mechanism is $(k\epsilon, \calG)$-\name~ private for any group assignment $\calG$ such that $
+        k \geq \max_{G_i \in \calG} |G_i|
+$ (proof in App. \ref{app:post-processing}).\label{lemma:LDP} \vspace{-0.2cm}
+\end{lem} 
+ \end{comment}
+
+\textbf{Note.} Any data sequence $\mathbf{x}=\langle x_1,\cdots, x
+_n\rangle$ can be viewed as a two-tuple,  $\big(\{x\}, \sigma\big)$, where $\{x\}$ denotes the \textit{bag} of values and $\sigma \in S_n$ denotes the corresponding indices of the values which represents the \textit{order} of the data.
+ The $\epsilon$-LDP protects the bag of data values, $\{x\}$, while $d_\sigma$-privacy protects the order, $\sigma$. Thus, the two privacy guarantees cater to orthogonal parts of a data sequence (see Thm. \ref{thm: decision theoretic} ). Also, $\alpha=\infty~(0), r = 0~(n)$ represents the standard $\ldp$(shuffle \textsf{DP}) setting.
+ 
+
+%The proof of the above lemma is presented in App. \ref{app}. 
+%So, if a mechanism satisfies $(\epsilon = 2)$-\ldp, then it also satisfies $(10,\calG)$ \name-privacy for any group assignment $\calG$ whose largest group contains $5$ individuals.
+
+
+ \vspace{-1em}
+\subsection{Privacy Implications}
+\label{sec:privacy:implications}
+\vspace{-0.2cm} 
+% In this section, we describe the implications of the \name-privacy guarantee in our setting. As discussed above, \name-privacy  delineates the \textit{granularity at which the underlying data correlation can be leveraged} by the adversary. Specifically, the group assignment $\mathcal{G}$ delineates a threshold of learnability as follows
+%We now turn to \name-privacy's semantic guarantees: what can/cannot be learned from the released sequence $\bz$? 
+The group assignment $\mathcal{G}$ delineates a threshold of learnability which determines the privacy/utility tradeoff as follows.
+% As with \DP, the \name-privacy definition alone does not communicate a meaningful notion of privacy. For this, we introduce two semantic guarantees --- limiting what an adversary may do and learn --- that result from satisfying \name-privacy. Each of these is a precise way of stating the same concept: \name-privacy prevents adversaries from reconstructing any $x_i$ using the any specific subset of sanitized $y_j$ values in $\DO_i$'s group, $G_i$. 
+
+%\name-privacy offers a form of local inferential privacy: informed Bayesian adversaries learn very little about $\DO_i$'s private value $x_i$ from the shuffled \sequence $\bz$. 
+
+\vspace{-0.3cm}
+\squishlistfour
+    \item \textbf{Learning allowed (Analyst's goal)}. 
+    % Anything that can be learned about $\DO_i$ from (1) the correlations at the granularity of $G_i$, and (2) individuals outside $\DO_i$ is allowed -- this encodes the utility of the data from the analyst's perspective. The former allows learning of information which can be extracted from just the \textit{bag} of the corresponding (noisy) data values, denoted as  $\{y_{G_i}\}$.  The latter allows learning of information from $\by_{\overline{G}_i}$, the (ordered and noisy) data sequence for all data owners outside $G_i$. The rationale for allowing this is that individuals outside $G_i$ are not similar to $\DO_i$ (w.r.t auxiliary information $\bt$) and hence, not very informative about $\DO_i$ (not a potential privacy threat).
+  \name-privacy can answer queries that are order agnostic within groups, such as aggregate statistics of a group. In Alice's case, the analyst can estimate the disease prevalence in her neighborhood. 
+    \item  \textbf{Learning disallowed (Adversary's goal)}. 
+    %Utilizing correlation within the group $G_i$ (i.e., for a given set of values $\{y_{G_i}\}$, additional information extractable from the order of $\by_{G_i}$) to learn about $\DO_i$ is disallowed. This encodes the privacy threat from the adversary's perspective.
+    Adversaries cannot identify (noisy) values of individuals  within any group. While they may learn the disease prevalence in Alice's neighborhood, they cannot determine the prevalence within her household and use that to recover her value $x_i$.
+\squishendfour  
+\vspace{-0.2cm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%BAYESIAN BACKGROUND
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To make this precise, we first formalize the privacy implications of the \name~guarantee in the standard Bayesian framework, typically used for studying inferential privacy. Next, we formalize the privacy provided by the combination of \ldp and \name~guarantees by way of a decision theoretic adversary. %against $(1)$ a Bayesian adversary trying to infer $\DO_i$'s true value, $x_i$ and $(2)$ a decision theoretic adversary who wants to identify the $z_i$ values corresponding to a given subset of $k$ data owners, such as the $k$ members of Alice's household. \\
+\\\textbf{Bayesian Adversary.} Consider a Bayesian adversary with any prior $\calP$ on the joint distribution of noisy responses, $\Pr_\calP[\by]$, which models their beliefs on the correlation between the participants (such as the correlation between Alice and her households' disease status). Their goal is to infer $\DO_i$'s private input $x_i$. As with early \DP works \citep{dwork_early}, we consider an \emph{informed} adversary. Here, the adversary %With \textsf{DP}, informed adversaries know the private input $x_j$ of every data owner $\DO_j$ except $x_i$. 
+ knows %$(1)$ the (unordered) bag of noisy values $\{y_{G_i}\}$ in $i$'s group, and $(2)$ the (ordered) sequence of noisy values $\mathbf{y}_{\overline{G}_i}$ outside $i$'s group. 
+ $(1)$ the sequence (assignment) of noisy values outside $G_i$, $\by_{\overline{G}_i}$, and $(2)$ the (unordered) bag of noisy values in $G_i$, $\{y_{G_i}\}$. \name-privacy bounds the prior-posterior odds gap on $x_i$ for such as informed adversary as follows:  
+\begin{thm}
+\label{thm: semantic guarantee}
+For a given group assignment $\calG$ on a set of $n$ data owners, if a shuffling mechanism $\calA:\calY^n\mapsto \calY^n$ is $(\alpha,\calG)$-\name private, then for each data owner $\DO_i, i \in [n]$, %\vspace{-0.1cm}
+\begin{align*}
+   \max_{\substack{i\in [n]\\ a,b \in \calX}} \bigg|\log \frac{\Pr_\calP [x_i = a | \bz, \{y_{G_i}\},\by_{\overline{G}_i}]}{\Pr_\calP [x_i = b | \bz, \{y_{G_i}\},\by_{\overline{G}_i}]} - \log \frac{\Pr_\calP [x_i = a | \{y_{G_i}\},\by_{\overline{G}_i}]}{\Pr_\calP [x_i = b | \{y_{G_i}\},\by_{\overline{G}_i}]} \bigg| \leq \alpha  %\vspace{-0.5cm}
+\end{align*}
+for a prior distribution $\calP$, where \scalebox{0.9}{$\bz=\calA(\by)$} and \scalebox{0.9}{$\by_{\overline{G}_i}$} is the noisy sequence for data owners outside \scalebox{0.9}{$G_i$}. %(proof in App. \ref{app:thm:semantic}). 
+\end{thm}
+\vspace{-1em}
+% The above privacy loss variable differs slightly from that of Def. \ref{def:ip}, since the informed adversary already knows $\{y_{G_i}\}$ and $\by_{\overline{G}_i}$. %, much like a \DP informed adversary knowing every other datapoint $\bx_{-i}$. 
+ %Equivalently, this bounds the prior-posterior odds gap on $x_i$: 
+%\vspace{-0.2em}
+See App \ref{app:bayesian proof} for the proof and further discussion on the semantic meaning of the above guarantee. 
+ %\vspace{-1em}
+%The above Bayesian analysis measures what can be learned about a data owner $\DO_i$'s private data $x_i$ from the released output $\bz$ relative to some conditioned information. %With \ldp alone, we condition on every other data owner's private value $x_j$. This implies that releasing the private sequence $\by$ cannot provide much more information about $x_i$ than releasing every other $\DO_j$'s $x_j$ would. So, only modest information unique to $x_i$ can be garnered by any Bayesian adversary. For Alice, this may be a concern, since making inferences on her disease state from those of her household is indeed a privacy violation. 
+%Under \name-privacy, we condition on the bag of \ldp values in Alice's group $\{y_{G_i}\}$ as well as the sequence of $\ldp$ values outside her group $\by_{\overline{G_i}}$. 
+%Eq. \ref{eq:Bayesian} implies that releasing the shuffled sequence $\bz$ cannot provide more information about Alice's private data $x_i$ than releasing the output sequence (data value and order)  of members outside her neighborhood (her group $G_i$) and the bag of (noisy) values inside her neighborhood. This disallows the adversary from leveraging any specific subset of Alice's group (such as her household) to infer her private disease state $x_i$ since they fail to link the data values in $\{y_{G_{i}}\}$ to the members of $G_i$. We re-identfication attack in the following section.  %Thus Thm. \ref{thm: semantic guarantee} formalizes the privacy afforded by protecting the ordering information within her group -- the exact target of \name-privacy. 
+%Contrast this with plain \ldp where the the order (analogously identity) of the data responses of Alice's group is also known to the adversary thereby allowing them to use the data of Alice's household to violate her privacy.  See App \ref{app:} for more illustrations. %The adversary can learn about $x_i$ from the disease prevalence outside her neighborhood and, on average, inside her neighborhood but not much beyond that. 
+
+% We illustrate this with the following example on \scalebox{0.9}{$\bt_{e.g}$} (Fig. \ref{fig:example}). The adversary knows (i.e. prior \scalebox{0.9}{$\mathrm{Pr}_\calP[\by | \bt_{e.g.}]$}) that data owner \scalebox{0.9}{$\DO_1$} is strongly correlated with their close friends \scalebox{0.9}{$\DO_2$} and \scalebox{0.9}{$\DO_7$}. Let \scalebox{0.9}{$\by=\langle 1, 1, y_3, y_4, 0,0, 1, 0, y_9, y_{10} \rangle$} and \scalebox{0.9}{$\by'=\langle  0, 0, y_3, y_4, 1,1, 0, 1, y_9, y_{10}\rangle$} represent two neighboring sequences w.r.t \scalebox{0.9}{$G_1=\{1,7,8,2,6,5\}$}, for any \scalebox{0.9}{$y_3,y_4,y_9,y_{10}\in \{0,1\}^4$}. Under \name-privacy, the adversary cannot distinguish between  $\by$  (data sequence where \scalebox{0.9}{$\DO_1$}, \scalebox{0.9}{$\DO_2$} and \scalebox{0.9}{$\DO_7$} have value $1$) and $\by'$ (data sequence where \scalebox{0.9}{$\DO_1$}, \scalebox{0.9}{$\DO_2$} and \scalebox{0.9}{$\DO_7$} have value $0$).  Hence, after seeing the shuffled sequence, the adversary can only know the `bag' of values \scalebox{0.9}{$\{y_{G_1}\}=\{0,1,0,1,0,1\}$} and cannot specifically leverage \scalebox{0.9}{$\DO_1$}'s immediate friends' responses \scalebox{0.9}{$\{y_2,y_7\}$} to target \scalebox{0.9}{$x_1$}. However, analysts may still answer queries that are order-agnostic in \scalebox{0.9}{$G_1$}, which could not be achieved with uniform shuffling. 
+
+% \textbf{Note.} 
+% By the post-processing \cite{Dwork} property of \textsf{LDP}, the shuffled sequence $\bz$ retains the $\epsilon$-\ldp guarantee. The granularity of the group assignment determined by distance threshold $r$ and the privacy degree $\alpha$ act as control knobs of the privacy spectrum. For instance w.r.t. $\bt_{e.g}$ (Fig. \ref{fig:example}), for \scalebox{0.9}{$r=0$}, we have \scalebox{0.9}{$G_i=\{i\}$} and the problem reduces to the pure \ldp setting. For \scalebox{0.9}{$r=\infty, \alpha=0$}, we get \scalebox{0.9}{$G_i=[n]$} which corresponds to the case of uniform random shuffling (standard shuffle model). All other pairs of \scalebox{0.9}{$(r, \alpha)$} represent intermediate points in the privacy spectrum which are achievable via \name-privacy. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%END BAYESIAN BACKGROUND
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%DECISION THEORETIC EXPLANATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\Aunif}{\calA_{\text{unif}}}
+\newcommand{\Ashuff}{\calA_{\text{shuff}}}
+\newcommand{\Pzo}{P_{0 \rightarrow 1}}
+\newcommand{\Poz}{P_{1 \rightarrow 0}}
+\textbf{Decision Theoretic Adversary.} Here, we analyse the privacy provided by the combination of \ldp and \name~guarantees.
+%The guarantee above formalizes this by comparing what a Bayesian adversary learns about $x_i$ from $\bz$ to what they learn from the bag of $\ldp$ values inside $\DO_i$'s group and the sequence of \ldp values outside it. 
+%We make this concrete by showing that no adversary can reliably find which released %For instance, in combination with a low $\epsilon$, \name-privacy guarantees that no adversary can reliably pick out which $z_i$ values originated from Alice's household, and thus cannot specifically leverage those to make inferences on her. 
+Consider a decision theoretic adversary who aims to identify the noisy responses, $\{z_I\}$, that originated from a specific subset of data owners, $I \subset G_i$ (such as the members of Alice's household). %This re-identification attack is a key step in carrying out the inference attack  %observes the output sequence $\bz$ and chooses which indices in $\bz$ correspond to a subset of data owners $I \subset G_i$. 
+We denote the adversary by a (possibly randomized) function mapping from the output $\bz$ sequence to a set of $k$ indices, $\mathcal{D}_{Adv}: \calY^n \rightarrow [n]^k$, where $k = |I|$. These $k$ indices, $H \in [n]^k$, represent the elements of $\bz$ that $\mathcal{D}_{Adv}$ believes originated from the data owners in $I$. $\mathcal{D}_{Adv}$ wins if $> k/2$ of the chosen indices indeed originated from $I$, i.e,  $|\sigma(H) \cap I| > k/2 $, where $z_i = y_{\sigma(i)}$ and $\sigma(H) = \{\sigma(i) : i \in H\}$. $\mathcal{D}_{Adv}$ loses if most of $H$ did not originate from $I$, i.e.,  $|\sigma(H) \cap I| \leq k/2 $.
+% \footnote{$k \ll r$; the adversary must recover the \ldp values of the entire subgroup $I \subset G_i$ to make inferences on $x_i$.} 
+We choose the above adversary because this re-identification is a key step in carrying out inference attacks -- in failing to reliably re-identify the noisy values originating from $I$, one cannot make inferences on $x_i$ specifically from the subset $I \subset G_i$. 
+
+%We assume that $k < \frac{r}{2}$, where $r$ is the size of Alice's group, $r = |G_i|$. 
+
+% $A_I$ wins if at least $l$ of the $k$ indices it selects in $\bz$, $H$, indeed originated from $l$ of the $k$ data owners in $I$. $A_I$ loses if less than $l$ of the $k$ indices it selects originated from data owners in $I$. We assume that $l < \frac{k}{2}$ and that $k < \frac{r}{2}$, where $r$ is the size of the group, $r = |G_i|$. 
+
+% This notion that the \ldp $y_i$ values of a specific subset of $G_i$ cannot be leveraged is made even more concrete by considering 
+
+% Consider the original notation where the mechanism is not split into bag of values and order. We can also provide a guarantee against any adversary trying to identify the indices of $\bz$ originating from data owners $I \subset G_i$ (non differentially). 
+
+% Formally, consider an adversary who tries to identify the \ldp datapoints originating from subset $I \subset G_i$, $A_I:\calZ^{n} \rightarrow [n]^{k}$, where $|I| = k$ and $|G_i| = r > k$. Upon observing any partially-shuffled sequence $\bz$, $A_I$ returns $H\subset [n]$, a set of $k$ indices in $\bz$ which it believes originated from data owners $I$. We lower bound the error rate of $A_I$: 
+
+\begin{thm}
+\label{thm: decision theoretic}
+   For $\mathcal{A}(\mathcal{M}(\bx))=\bz$ where $\mathcal{M}(\cdot)$ is $\epsilon$-\ldp and $\mathcal{A}(\cdot)$ is $\alpha$ - \name private, we have  
+ \begin{align*}
+     \Pr[\mathcal{D}_{Adv} \text{ loses}] \geq \big\lfloor \frac{r-k}{k} \big\rfloor e^{-(2k\epsilon+\alpha)} \cdot \Pr[\mathcal{D}_{Adv} \text{ wins}]
+ \end{align*}
+ for any input subgroup $I \subset G_i, r = |G_i|$ and  $k < r/2$. 
+\end{thm}
+\vspace{-0.3cm}
+The adversary's ability to re-identify the $\{z_I\}$ values comes partially from the \textit{bag of values } (quantified by $\epsilon$) and partially from the \textit{order} (quantified by $\alpha$). We highlight two implications of this fact. 
+\vspace{-0.4cm}
+\squishlistfour
+    \item When $\epsilon$ is small ($\ll 1$), an adversary's ability to re-identify the noisy values $\{z_I\}$ originating from $I$ may very well be dominated by $\alpha$. For instance, if $\epsilon = 0.2$ and $k = 5$, the adversary's advantage is dominated by $\alpha$ for any $\alpha > 2$. When using $\ldp$ alone (no shuffling), $\alpha = \infty$ and the adversary can exactly recover which values came from Alice's household. As such, even a moderate $\alpha$ value (obtained via \name-privacy) significantly reduces the ability to re-identify the values. 
+    \item When the loss is dominated by $\epsilon$ ($2k \epsilon \gg \alpha$), the above expression allows us to disentangle the \textit{source of privacy loss}. In this regime, adversaries get most of their advantage from the bag of values released, not from the order of the release. That is, even if $\alpha = 0$ (uniform random shuffling), participants still suffer a large risk of re-identification simply due to the noisy values being reported. Thus, no shuffling mechanism can prevent re-identification in this regime. %One could imagine that if the group size $r$ is small and $\epsilon$ is large, no shuffling mechanism can prevent re-identification if the adversary has a strong prior on the user's values. 
+\squishendfour \vspace{-0.2cm}
+\textbf{Discussion.} In spirit, \DP does not guarantee protection against recovering $\DO_i$'s private $x_i$ value. It guarantees that -- had a user not participated (or equivalently submitted a false value $x_i'$) -- the adversary would have about the same ability to learn their true value, potentially from the responses of other data owners. In other words, the choice to participate is unlikely to be responsible for the disclosure of $x_i$. Similarly, \name-privacy does not prevent disclosure of $x_i$. By requiring indistinguishability of neighboring permutations, it guarantees that -- had the data owners of any group $G_i$ completely swapped identities -- the adversary would have about the same ability to learn $x_i$. So most likely, Alice's household is not uniquely responsible for a disclosure of her $x_i$: had her household swapped identities with any of her neighbors, the adversary would probably draw the same conclusion on $x_i$. 
+Or, as detailed in Thm.\ref{thm: decision theoretic}, an adversary cannot reliably resolve which $\{z\}$ values originated from Alice's household, so they cannot draw conclusions based on her household's responses. 
+In a nutshell,    \vspace{-0.4cm}\squishlistfour   \vspace{-0.3cm}
+    \item Inference attacks can recover a data owner $\DO_i$'s private data $x_i$ from the responses of other data owners. The order of the data acts as the proxy for the data owner's identity which can aid an adversary in corralling the subset of other data owners who correlate with $\DO_i$ (required to make a reliable inference of $x_i$). 
+    \item  \DP alleviates concerns that \underline{$\DO_i$'s choice to share data} ($y_i$) will result in disclosure of $x_i$, and \name-privacy alleviates concerns that $\DO_i$'s \underline{group's ($G_i$) choice to share their identity} will result in disclosure of $x_i$.
+    \vspace{-0.2cm}
+\squishendfour
+   \vspace{-0.3cm}%As such, \DP alleviates concerns that $\DO_i$'s \emph{choice to share data} ($y_i$) will result in disclosure of $x_i$, and \name-privacy alleviates concerns that $\DO_i$'s group's \emph{choice to share their identity} will result in disclosure of $x_i$.
+
+
+% The signficance of the above results are that 1) a significant amount of re-identification privacy loss derives from transmitting the values alone, 2) that the privacy loss from the act of transmitting data that can be identified along with an individual (e.g. from ones device or from their ISP hub) is limited by $\alpha$ and 3) that groups much larger than the subset size $r \gg k$ can offer significant resistance to reidentification. 
+
+% To formalize this, we rewrite our shuffling mechanism $\mathcal{A}$ as the composition of two mechanisms: $\Aunif$ which outputs $\bv$, a uniformly shuffled sequence of the LDP values $\by$ and $\Ashuff$ which outputs the random permutation $\gamma$, which partially reorders $\bv$ to produce a sequence with the same distribution as $\bz$, above. Specifically, $\Aunif$ samples a uniformly random permutation $\sigma^* \sim \mathrm{S}_n$ and releases $\bv = \sigma^*(\by)$. Then, $\Ashuff(\sigma^*)$ samples a permutation $\sigma$ from a \name-private shuffling mechanism as before and releases $\gamma = \gamma^* \sigma$ where $\gamma^*$ is the inverse of $\sigma^*$. 
+
+% By dissecting the released sequence into a bag of values $\bv$ and an order $\gamma$, we are able to show how \name-privacy formally prevents an adversary from matching \ldp releases with their data owners. For $\DO_i$, an adversary cannot reliably distinguish which subset of $k$ data owners in $G_i$ are responsible for a given set of $k$ values in $\bv$. To make this precise, take any two subsets of $k$ data owners in group $G_i$, $I$ and $J$. If $G_i$ represents $\DO_i$'s neighbors, then $I$ could represent the $k$ members of their household, and $J$ could represent $k$ members of their neighbors' household. The indices $\sigma^*(I)$ then indicate which $\bv$ values originated in $\DO_i$'s household and $\sigma^*(J)$ indicate which values originated in the neighbor's. 
+
+% The adversary, $A$, receives the bag of values $\bv$, the partial reordering $\gamma$, and a set of $k$ indices $H$. Under the null hypothesis, $H = \sigma^*(J)$, i.e. $H$ tells which values of $\bv$ belong to the neighbors, and $A$ must return a 0 to win. Under the alternative hypothesis, $H = \sigma^*(I)$, indicating which $\bv$ values belong to $\DO_i$'s household, and $A$ must return a 1 to win. \name-privacy formally limits how much an adversary can leverage the order, $\gamma$, to determine whether values $\bv_H$ belong to individuals $I$ or $J$. We let $\Pzo$ ($\Poz$) be the probability that, under the null (alternative) hypothesis $A$ errantly chooses the alternative (null) hypothesis. 
+
+% \begin{thm}
+% A $\alpha$-\name-private pair of mechanisms $\Aunif, \Ashuff$, operating on an $\epsilon$-\ldp sequence $\by$ guarantees that 
+% \begin{align*}
+%     \Pzo + e^{2k \epsilon + \alpha} \Poz &\geq 1, \text{ and, } \\
+%     e^{2k \epsilon + \alpha} \Pzo +  \Poz &\geq 1
+% \end{align*}
+% for any adversary $A(\bv, \gamma, H)$, any pair of subsets $I, J \subset G_i$ of size $k$, and any group $G_i \in \calG$. 
+% \end{thm}
+
+% The above theorem formally bounds how successfully any adversary can distinguish which \ldp values in $\bv$ belong to which subsets of any group $G_i$. This provides two key insights:
+% \begin{enumerate}
+%     \item For any shuffling mechanism, there is an inherent limit to how well we can prevent re-identification. Even with uniform random shuffling ($\alpha = 0$), we experience a $2k \epsilon$ loss in privacy simply as a result of the \emph{values} of the data we are transmitting $\bv$. The class of adversaries with a prior on users' true values can use this re-identify their anonymized $\ldp$ releases. 
+%     \item The privacy loss contributed by the shuffling mechanism itself is isolated to $\alpha$. This has an intuitive interpretation. With a low $\alpha$, a data owner is assured that data can only be reliably identified at the level of their group. As such, they need not worry that their data and neighbors' data can be identified by any side information e.g. their device IDs, or their IP addresses. 
+% \end{enumerate}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%END DECISION THEORETIC EXPLANATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%\vspace{-0.2cm}
+
+% \subsection{Utility of a Shuffling Mechanism}
+% \label{sec:utility}
+% \vspace{-0.2cm}
+% We now introduce a novel metric, $(\eta,\delta)$-preservation, for assessing the utility of any shuffling mechanism. Let $S\subseteq [n]$ correspond to a set of indices in $\by$. The metric is defined as follows.
+% %representing data owners in Alice's neighborhood for instance.  
+% %$(\eta,\delta)$-preservation measures how well the shuffling mechanism preserves the original indices in $S$ after shuffling, i.e. the fraction of data owners in Alice's neighborhood that still correspond to datapoints from the neighborhood after shuffling:
+% \begin{defn}($(\eta,\delta)$-preservation) A shuffling mechanism $\calA:\calY^n\mapsto\calY^n$ is defined to be $(\eta,\delta)$-preserving $(\eta, \delta 
+% \in [0,1])$ w.r.t to a given subset $S\subseteq [n]$, if \begin{gather}\Pr\big[|S_{\sigma}\cap S|\geq \eta\cdot|S|\big]\geq 1-\delta,  \sigma \in \mathrm{S}_n\end{gather} where $\bz=\calA(\by)=\sigma(\by)$ and $S_{\sigma}=\{\sigma(i)|i \in S\}$. \label{def:utility} 
+% % \vspace{-0.2cm}
+% \end{defn}
+% For example, consider \scalebox{0.9}{$S=\{1,4,5,7,8\}$}. If \scalebox{0.9}{$\calA(\cdot)$} permutes the output according to  \scalebox{0.9}{$\sigma=(\underline{5}\:3\:2\:\underline{6}\:\underline{7}\:9\:\underline{8}\:\underline{1}\:4\:10)$}, then  \scalebox{0.9}{$S_{\sigma}=\{5,6,7,8,1\}$}  which preserves \scalebox{0.9}{$4$} or \scalebox{0.9}{$80\%$} of its original indices.  This means that for any data sequence $\by$, at least \scalebox{0.9}{$\eta$} fraction of its data values corresponding to the subset \scalebox{0.9}{$S$} overlaps with that of shuffled sequence $\bz$ with high probability \scalebox{0.9}{$(1-\delta)$}. Assuming, \scalebox{0.9}{$\{y_S\}=\{y_{i}|i
+% \in S\}$} and \scalebox{0.9}{$\{z_S\}=\{z_i|i \in S\}=\{y_{\sigma(i)}| i \in S\}$} denotes the set of data values corresponding to $S$ in data sequences $\by$ and $\bz$ respectively, we  have \scalebox{0.9}{$\Pr\big[|\{y_S\}\cap \{z_S\}|\geq \eta \cdot |S|\big]\geq 1-\delta, \: \forall \by $}.
+% % \vspace{-0.2cm}
+% % \begin{gather}
+% % \vspace{-0.2cm} 
+% % \Pr\big[|\{y_S\}\cap \{z_S\}|\geq \eta \cdot |S|\big]\geq 1-\delta, \: \forall \by 
+% % \vspace{-0.2cm}
+% % \end{gather} 
+
+% For example, let $S$ be the set of individuals from Nevada. Then, for a shuffling mechanism that provides \scalebox{0.9}{$(\eta =0.8, \delta=0.1)$}-preservation to $S$, with probability \scalebox{0.9}{$\geq 0.9$}, \scalebox{0.9}{$\geq 80\%$} of the values that are reported to be from Nevada in $\bz$ are genuinely from Nevada. The rationale behind this metric is that it captures the utility of the learning allowed by \name-privacy -- if $S$ is equal to some group \scalebox{0.9}{$G \in \calG$}, \scalebox{0.9}{$(\eta, \delta)$} preservation allows overall statistics of \scalebox{0.9}{$G$} to be captured. Note that this utility metric is \textit{agnostic of both the data distribution and the analyst's query}. Hence, it is a conservative analysis of utility which serves as a lower bound for learning from $\{z_S\}$. %We suspect that with the knowledge of the data distribution and/or the query, a tighter utility analysis is possible. 
+% % \vspace{-1em}
+\subsection{\name-private Shuffling Mechanism}
+\label{sec:mechanism}\vspace{-0.2cm}
+%\vspace{2cm}
+
+We now describe our novel shuffling mechanism that can achieve \name-privacy. In a nutshell, our mechanism samples a permutation from a suitable Mallows model and shuffles the data sequence accordingly. We can characterize the \name-privacy guarantee of our mechanism in the same way as that of the \DP guarantee of classic mechanisms \citep{Dwork} -- with variance and sensitivity. Intuitively, a larger dispersion parameter $\theta \in \R$ (Def. \ref{def: mallows}) reduces randomness over permutations, increasing utility and increasing (worsening) the privacy parameter $\alpha$. The maximum value of $\theta$ for a given $\alpha$ guarantee depends on the sensitivity of the rank distance measure $\textswab{d}(\cdot)$ over all neighboring permutations $N_\calG$. Formally, we define the sensitivity as 
+\resizebox{0.95\linewidth}{!}{
+\begin{minipage}{\linewidth}
+\begin{align*}
+    \Delta(\sigma_0 : \textswab{d}, \calG) =
+    \max_{(\sigma, \sigma') \in N_\calG} |\textswab{d}(\sigma_0 \sigma, \sigma_0) - \textswab{d}(\sigma_0 \sigma', \sigma_0)|~, 
+\end{align*}
+\end{minipage}
+}
+%\vspace{-0.2cm}
+% \begin{prope}
+% For group assignment $\calG$, a  mechanism $\calA(\cdot)$ that shuffles according to a permutation sampled from the Mallows model $\mathbb{P}_{\theta,\textswab{d}}(\cdot)$, satisfies $(\alpha, \calG)$-\name privacy where
+% \vspace{-0.1cm}
+% \begin{gather}
+% \vspace{-0.2cm}
+%  \hspace{-0.5cm}\Delta(\sigma_0 : \textswab{d}, \calG) = \max_{(\sigma, \sigma') \in N_\calG} |\textswab{d}(\sigma, \sigma_0) - \textswab{d}(\sigma', \sigma_0)|\\
+%     \alpha 
+%     = \theta \cdot \Delta(\sigma_0 : \textswab{d}, \calG)
+% \vspace{-0.2cm} 
+% \end{gather} 
+% We refer to $\Delta(\sigma_0 : \textswab{d}, \calG) $ as the sensitivity of the rank-distance measure $\textswab{d}(\cdot)$ (details in App. \ref{app:prop}).
+% \label{prop:1}
+% \end{prope}
+% \vspace{-0.2cm}
+  the maximum change in distance $\textswab{d}(\cdot)$ from the reference permutation $\sigma_0$ for any pair of neighboring permutations $(\sigma,\sigma') \in N_\calG$ permuted by $\sigma_0$. The privacy parameter of the mechanism is then proportional to its sensitivity \scalebox{1}{$\alpha = \theta \cdot \Delta(\sigma_0 : \textswab{d}, \calG)$}. 
+  
+  Given $\mathcal{G}$ and a reference permutation $\sigma_0$, the sensitivity of a rank distance measure $\textswab{d}(\cdot)$ depends on the \emph{width}, $\omega_{\calG}^{\sigma}$, which measures how `spread apart' the members of any group of $\mathcal{G}$ are in $\sigma_0$:\vspace{-0.2cm}
+ \begin{align*}
+     \omega_{G_i}^{\sigma}= \max_{(j,k) \in G_i \times G_i} \Big| \sigma^{-1}(j) - \sigma^{-1}(k) \Big|, i \in [n];  \hspace{0.5cm}
+    \omega_{\calG}^{\sigma} = \max_{G_i \in \calG} \omega_{G_i}^{\sigma}
+     \vspace{-1em}
+ \end{align*}
+% \begin{defn}(Width) 
+% For a permutation $\sigma$, the width of a group assignment, $\omega_{\calG}^{\sigma}$, is defined as the maximum separation in $\sigma$ between any two members of a group in $\calG$. 
+%  \begin{gather*}
+%  %\vspace{-0.3cm}
+%  \hspace{-0.5cm}\omega_{G_i}^{\sigma}= \max_{(j,k) \in G_i \times G_i} \Big| \sigma^{-1}(j) - \sigma^{-1}(k) \Big|, i \in [n];  \hspace{0.5cm}
+%     \omega_{\calG}^{\sigma} = \max_{G_i \in \calG} \omega_{G_i}^{\sigma}%\vspace{-0.3cm}
+% \end{gather*}
+% %\vspace{-0.3cm}
+% \label{def:width}
+% \end{defn}
+% \vspace{-0.4cm}
+% $\omega_{G_i}^{\sigma}$ measures how `spread apart' the members of $G_i$ in permutation $\sigma$ are. 
+For example, for \scalebox{0.9}{$\sigma=(1\:3\:7\:8\:6\:4\:5\:2\:9\:10)$} and \scalebox{0.9}{$G_1=\{1,7,8,2,5,6\}$}, \scalebox{0.9}{$\omega_{G_1}^{\sigma}=|\sigma^{-1}(1)-\sigma^{-1}(2)|=7$}. The sensitivity is an increasing function of the width. For instance, for Kendall's \scalebox{0.9}{$\tau$} distance \scalebox{0.9}{$\textswab{d}_\tau(\cdot )$} we have \scalebox{0.9}{$\Delta(\sigma_0 : \textswab{d}_\tau, \calG)
+    =\omega_{\calG}^{\sigma_0}(\omega_{\calG}^{\sigma_0} + 1)/2$}. \\If a reference permutation clusters the members of each group closely together (low width), then the groups are more likely to permute within themselves. This has two benefits. First, for the same $\theta$ ($\theta$ is an indicator of utility as it determines the dispersion of the sampled permutation), a lower value of width gives lower $\alpha$ (better privacy).  Second, if a group is likely to shuffle within itself, it will have better \scalebox{0.9}{$(\eta, \delta)$}-preservation -- a novel utility metric, we propose, for a shuffling mechanism. Intuitively, a mechanism is $(\eta,\delta)$-preserving w.r.t a subset of indices \scalebox{0.9}{$S \subset [n]$} if at least \scalebox{0.9}{$\eta\%$}  of its indices are shuffled within itself with probability \scalebox{0.9}{$(1-\delta)$}. The rationale behind this metric is that it captures the utility of the learning allowed by \name-privacy -- if \scalebox{0.9}{$S$} is equal to some group \scalebox{0.9}{$G \in \calG$}, high \scalebox{0.9}{$(\eta, \delta)$}-preservation allows overall statistics of \scalebox{0.9}{$G$} to be captured since $\eta\%$ of the correct data values remain preserved.   We present the formal discussion in App. \ref{app:utility}. 
+    
+\input{chapters/chapter4/shuff_algo}
+
+Unfortunately, minimizing $\omega_\calG^\sigma$ is an NP-hard problem (Thm. \ref{thm:NP} in App. \ref{app:NP}). Instead, we estimate the optimal $\sigma_0$ using the following heuristic\footnote{The heuristics only affect $\sigma_0$ (and utility). Once $\sigma_0$ is fixed, $\Delta$ is computed exactly as discussed above.} approach based on a graph breadth first search. 
+
+\textbf{Algorithm Description.}
+Alg. 1 above proceeds as follows. We first compute the group assignment, $\calG$, based on the public auxiliary information and desired threshold $r$ following discussion in Sec. \ref{sec:privacy:def} (Step 1). Then we construct $\sigma_0$ with a breadth first search (BFS) graph traversal. 
+\\We translate $\calG$ into an undirected graph \scalebox{0.9}{$(V,E)$}, where the vertices are indices \scalebox{0.9}{$V = [n]$} and two indices \scalebox{0.9}{$i,j$} are connected by an edge if they are both in some group (Step 2). Next, \scalebox{0.9}{$\sigma_0$} is computed via a breadth first search traversal (Step 4) --  if the \scalebox{0.9}{$k$}-th node in the traversal is \scalebox{0.9}{$i$}, then \scalebox{0.9}{$\sigma_0(k) = i$}. The rationale is that neighbors of \scalebox{0.9}{$i$} (members of \scalebox{0.9}{$G_i$}) would be traversed in close succession. Hence, a neighboring node \scalebox{0.9}{$j$} is likely to be traversed at some step \scalebox{0.9}{$h$} near \scalebox{0.9}{$k$} which means \scalebox{0.9}{$|\sigma_0^{-1}(i) - \sigma_0^{-1}(j)| = |h - k|$} would be small (resulting in low width). Additionally, starting from the node with the highest degree (Steps 3-4) which corresponds to the largest group in $\calG$ (lower bound for $\omega_{\calG}^{\sigma}$ for any  $\sigma$) helps to curtail the maximum width in $\sigma_0$. See App. \ref{apx:heuristic eval} for evaluations of this heuristic's approximation.  
+% \vspace{-0.25cm}
+% \squishlist 
+% \item We translate $\calG$ into an undirected graph $(V,E)$, where the vertices are indices $V = [n]$ and two indices $i,j$ are connected by an edge if they are both in some group (Step 2). Next, $\sigma_0$ is computed via a breadth first search traversal (Step 4) --  if the $k$-th node in the traversal is $i$, then $\sigma_0(k) = i$. The rationale is that neighbors of $i$ (members of $G_i$) would be traversed in close succession. Hence, a neighboring node $j$ is likely to be traversed at some step $h$ near $k$ which means $|\sigma_0^{-1}(i) - \sigma_0^{-1}(j)| = |h - k|$ would be small (resulting in low width).  \vspace{-0.03cm} \item  We start from the node with the highest degree (Steps 3-4) which corresponds to the largest group in $\calG$ (lower bound for $\omega_{\calG}^{\sigma}$ for any  $\sigma$). This is a good heuristic since it curtails the spread out of largest group.  \vspace{-0.25cm}
+% \squishend
+
+This is followed by the computation of the dispersion parameter, \scalebox{0.9}{$\theta$}, for our Mallows model (Steps 5-6). 
+Next, we sample a permutation from the Mallows model (Step 7) \scalebox{0.9}{$\hat{\sigma} \sim  \mathbb{P}_{\theta}(\sigma:\sigma_0) $} and we apply the inverse reference permutation to it, \scalebox{0.9}{$\sigma^* = \sigma_0^{-1} \hat{\sigma}$} to obtain the desired permutation for shuffling. Recall that $\hat{\sigma}$ is (most likely) close to $\sigma_0$, which is unrelated to the original order of the data. \scalebox{0.9}{$\sigma_0^{-1}$} therefore brings \scalebox{0.9}{$\sigma^*$} back to a shuffled version of the original sequence (identity permutation $\sigma_I$). Note that since Alg. 1 is publicly known, the adversary/analyst knows $\sigma_0$. Hence, even in the absence of this step from our algorithm, the adversary/analyst could perform this anyway. Finally, we permute $\by$ according to $\sigma^*$ and output the result \scalebox{0.9}{$\bz = \hat{\sigma}(\by)$} (Steps 9-10).  
+%\vspace{-0.03cm} 
+\begin{thm} Alg. 1 is $(\alpha,\calG)$-\name~private where $\alpha = \theta \cdot \Delta(\sigma_0 : \textswab{d}, \calG)$.
+% \vspace{-0.25cm} 
+\label{thm:privacy} 
+\end{thm} 
+The proof is in App. \ref{app:thm:privacy}.
+Note that Alg.  1 provides the same level of privacy \scalebox{0.9}{$(\alpha)$} for any two group assignment \scalebox{0.9}{$\calG, \calG'$} as long as they have the same sensitivity, i.e, \scalebox{0.9}{$\Delta(\sigma_0 : \textswab{d}_\tau, \calG)=\Delta(\sigma_0 : \textswab{d}_\tau, \calG')$}. This leads to the following theorem which generalizes the privacy guarantee for any group assignment. 
+
+\begin{thm} Alg. 1 satisfies 
+$(\alpha',\calG')$-\name privacy for any group assignment $\calG'$ with $ \alpha'=\alpha\frac{\Delta(\sigma_0 : \textswab{d}, \calG')}{\Delta(\sigma_0 : \textswab{d}, \calG)}$ (proof in App. \ref{app:thm:generalized}.) %For instance, for Kendall $\tau$'s distance we have $\alpha'=\alpha\frac{\omega^{\sigma_0}_{\calG'}(\omega^{\sigma_0}_{\calG'}-1)}{\omega^{\sigma_0}_{\calG}(\omega^{\sigma_0}_{\calG}-1)}$. 
+ \vspace{-0.2cm}
+\label{thm:generalized:privacy}
+\end{thm} 
+% Next, we present a utility theorem for Alg. 1 that formalizes the $(\eta,\delta)$-preservation for Hamming distance $\textswab{d}_{H}(\cdot)$  (we chose $\textswab{d}_{H}(\cdot)$ for the ease of numerical computation).
+% \begin{thm} For a given set $S \subset [n]$ and Hamming distance metric,  $\textswab{d}_H(\cdot)$,   Alg. \ref{algo:main} is $(\eta,\delta)$-preserving for $\delta=\frac{1}{\psi(\theta, \textswab{d}_H)}\sum_{h=2k+1}^{n} (e^{-\theta\cdot h} \cdot c_h)$ where \scalebox{0.9}{$k=\lceil(1-\eta)\cdot |S|\rceil$} and $c_h$ is the number of permutations with hamming distance $h$ from the reference permutation that do not preserve \scalebox{0.9}{$\eta\%$} of $S$ (exact formula and proof in App. \ref{app:utility}).
+% \label{thm:utility}
+% \end{thm}
+% \vspace{-0.25cm}
+
+% The time complexity of Alg. 1 is dominated by \scalebox{0.9}{$\calG$}'s computation. Regardless of the method for selecting the reference permutation, the time complexity for the shuffling mechanism is at least \scalebox{0.9}{$\Omega(\sum_i|G_i|)$} (minimum computation for listing \scalebox{0.9}{$\calG$}). Note that Alg. \ref{algo:main}'s computation of the reference permutation takes \scalebox{0.9}{$O(|V|+|E|)=O(\sum_i|G_i|)$}. Another observation is that 
+
+
+%The proof is in  App. \ref{app:thm:generalized}. %A utility theorem for Alg. 1 that formalizes the $(\eta,\delta)$- preservation for Hamming distance $\textswab{d}_{H}(\cdot)$  (we chose $\textswab{d}_{H}(\cdot)$ for the ease of numerical computation) is in App. \ref{app:utility:formal}. 
+
+\textbf{Note.} Producing $\sigma^*$ is completely data ($\by$) independent. It only requires access to the public auxiliary information $\bt$. Hence, Steps $1-6$ can be performed in a pre-processing phase and do not contribute to the actual running time. See App. \ref{app:alg:illustration} for an illustration of Alg. 1 and runtime analysis. \nocite{RIM}
