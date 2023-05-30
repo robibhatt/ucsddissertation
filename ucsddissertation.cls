@@ -262,6 +262,15 @@
 	\newpage
 }
 
+\newenvironment{dissertationconclusion}{%
+	\newpage
+	\csuse{phantomsection}%
+	\addcontentsline{toc}{chapter}{Concluding Remarks}%
+	\chapter*{Concluding Remarks}%
+}{%
+	\newpage
+}
+
 % Facing caption pages
 \newbox\ucsd@captionbox
 \newenvironment{facingcaption}[1]{%
