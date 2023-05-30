@@ -1,0 +1,175 @@
+\section{Optimized Privacy Mechanisms}
+\label{sec: algorithms}
+
+Theorem \ref{thm:GP bound} characterizes the privacy loss for GP conditional priors. We next show how to use this Theorem to design mechanisms that can strategically reduce CIP loss given a utility constraint. We measure `utility loss' as the total mean squared error (MSE) between the released ($Z$) and true ($X$) traces: $\text{MSE}(\Sigmag) = \sum_{i=1}^n \E[Z_i - X_i] = \trace(\Sigmag)$. We bound the utility loss by $\trace(\Sigmag) \leq n o_t$, where $o_t$ is the average per-point utility loss.
+
+It can be shown that optimizing the privacy loss under this utility constraint can be described by a semidefinite program (SDP) (formalization/derivation of SDPs in Appendix \ref{apx: algorithmns}). For a given trace $X$, define its covariance matrix $\Sigma$ using the the kernel of the GP conditional prior $\Sigma_{ij} = k(i,j)$. Then pass $\Sigma$, the secret set $\Is$, and the utility constraint $o_t$ to our first program, $\text{SDP}_\text{A}$, which returns noise covariance $\Sigmag$. This defines an additive noise mechanism $G \sim \calN(0, \Sigmag)$ that minimizes CIP loss to $\Is$. 
+\begin{align*}
+	\Sigmag = \text{SDP}_\text{A}(\Sigma, \Is, o_t)
+\end{align*} 
+We can thus use a SDP to minimize the CIP loss to any single compound or basic secret. However, a trace may contain multiple locations or combinations thereof that one wishes to protect. It remains to produce a single mechanism $\Sigmag$ that bounds the CIP loss to multiple basic and/or compound secrets in a single trace. 
+
+For this we propose $\text{SDP}_\text{B}$, which uses the fact that if ${\Sigmag}' \succ \Sigmag$ it will have lower CIP loss (see Appendix \ref{apx: SDP B}). $\text{SDP}_\text{B}$ takes in a set of covariance matrices $\calF = \{\Sigmag_1, \dots, \Sigmag_m\}$, each designed to minimize CIP loss for a single compound or basic secret $\Is_i$. It then returns a single covariance matrix $\Sigmag \succeq \Sigmag_i, i \in [m]$ that maintains the privacy guarantee each $\Sigmag_i$ offered its corresponding $\Is_i$, while minimizing utility loss. 
+
+\begin{figure*}[h]
+    \centering
+    \begin{subfigure}{.24\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 1\linewidth]{./images/figure_2a.png}
+        \caption{}
+        \label{fig: RBF basic}
+    \end{subfigure}
+    \begin{subfigure}{.24\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 0.95\linewidth]{./images/figure_2b.png}
+        \caption{}
+        \label{fig: RBF compound}
+    \end{subfigure}
+    \begin{subfigure}{.24\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 0.95\linewidth]{./images/figure_2c.png}
+        \caption{}
+        \label{fig: RBF all}
+    \end{subfigure}
+    \begin{subfigure}{.24\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 0.95\linewidth]{./images/figure_2d.png}
+        \caption{}
+        \label{fig: RBF misspec}
+    \end{subfigure}
+    \begin{subfigure}{.24\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 1\linewidth]{./images/figure_2e.png}
+        \caption{}
+        \label{fig: PER basic}
+    \end{subfigure}
+    \begin{subfigure}{.24\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 0.95\linewidth]{./images/figure_2f.png}
+        \caption{}
+        \label{fig: PER compound}
+    \end{subfigure}
+    \begin{subfigure}{.24\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 0.95\linewidth]{./images/figure_2g.png}
+        \caption{}
+        \label{fig: PER all}
+    \end{subfigure}
+    \begin{subfigure}{.24\linewidth}
+        \centering 
+        \captionsetup{justification=centering}
+        \includegraphics[width = 0.95\linewidth]{./images/figure_2h.png}
+        \caption{}
+        \label{fig: PER misspec}
+    \end{subfigure}
+    \caption{$^1$Posterior uncertainty interval (higher$=$better privacy) on $\Xs$ of a GP Bayesian adversary. A larger $\leff$ corresponds to greater inter-dependence and reduces posterior uncertainty. The gray interval depicts the middle 50\% of the MLE $\leff$ among traces in each dataset, and the black dotted line the median $\leff$. \textbf{(a)}$\rightarrow$\textbf{(c)}, \textbf{(e)}$\rightarrow$\textbf{(g)} show SDP mechanisms (blue) maintaining relatively high uncertainty compared to two GI (Approach C) baselines of equal utility (MSE). \textbf{(d)}, \textbf{(h)} show the (minor) change in posterior uncertainty when the prior covariance $\Sigma$  used in $\text{SDP}_{\text{A}}$ is misspecified: when it is identical to the true covariance $\Sigma^*$ known to the adversary (blue), is more correlated (orange), or is less correlated (green).
+    }
+    \label{fig: experiments}
+\end{figure*} 
+
+\SetKwInput{KwInput}{Input}                % Set the Input
+\SetKwInput{KwOutput}{Output}              % set the Output
+
+\begin{algorithm}
+		\SetAlgoLined
+		\KwInput{$\Is_1, \dots, \Is_m, o_t, \Sigma$}
+		\KwOutput{$\Sigmag$}
+			\vskip 1mm
+			$\calF = \emptyset$\;
+			
+			\For{$i \in [m]$}
+			{
+				$\Sigmag_i =$ $\text{SDP}_\text{A}(\Sigma, \Is_i, o_t)$\; 
+				
+				$\calF = \calF \cup \Sigmag_i$\;
+			}
+			\vskip 1mm
+			$\Sigmag= \text{SDP}_{\text{B}}(\calF)$\;
+			
+			\Return $\Sigmag$\;
+		\caption{Multiple Secrets}
+\label{alg: Multiple Secrets}
+\end{algorithm}
+In our experiments, we use Algorithm \ref{alg: Multiple Secrets} to design a single mechanism that protects all locations in the trace --- all basic secrets --- while minimizing utility loss.
+
+
+
+
+
+\section{Experiments}
+\label{sec: experiments}
+%\textcolor{blue}{
+Here, we aim to empirically answer: \textbf{1)} 
+Do our SDP mechanisms maintain high posterior uncertainty of sensitive locations? How do they compare to Approach C baselines of equal MSE? 
+%What privacy improvements do our SDP-based mechanisms offer over Approach C baselines of identical MSE? 
+\textbf{2)} How robust is the $\text{SDP}_\text{A}$ mechanism when the prior covariance $\Sigma$ is misspecified? 
+%}
+
+\paragraph{Methods} To answer these questions, we look at the range of conditional prior classes that fit real-world data. For location trace data, we use the GeoLife GPS Trajectories dataset \citep{geolife} containing 10k human mobility traces after preprocessing (see Appendix \ref{apx: experiments} for details). We also consider the privacy risk of room temperature data \citep{home_monitoring}, using the SML2010 dataset \citep{sml2010}, which contains approximately 40 days of room temperature data sampled every 15 minutes. 
+
+For the location data, having observed that the correlation between latitude and longitude is low ($ \approx 0.06$) we treat each dimension as independent. By way of Corollary \ref{cor: independence}, this allows us to bound privacy loss and design mechanisms for each dimension separately. Furthermore, having observed that each dimension fits nearly the same conditional prior, we treat our dataset of 10k 2-dimensional traces as a dataset of 20k 1-dimensional traces, where each trace represents one dimension of a 2d location trajectory.
+
+We model the location trace data with a Radial Basis Function (RBF) kernel GP and the temperature series data with a periodic kernel GP:
+\begin{align*}
+	k_{\text{RBF}}(t_i, t_j) 
+	&=  \sigma_x^2 \exp \Big( -\frac{(t_i - t_j)^2}{2 l^2} \Big) \\
+	k_{\text{PER}}(t_i, t_j) 
+	&=  \sigma_x^2 \exp \Big(  \frac{-2 \sin^2(\pi |t_i - t_j| / p)}{l^2} \Big)
+\end{align*}
+In both kernels, the intrinsic degree of dependence between points is captured by the lengthscale $l$. However, the fact that sampling rates vary significantly between traces means that traces with equal length scales can have very different degrees of correlation. To encapsulate both of these effects, we study the empirical distribution of \emph{effective} length scale of each trace
+\begin{align*}
+	l_{\text{eff},x} = \frac{l_x}{P}
+	\quad
+	l_{\text{eff},y} = \frac{l_y}{P}
+\end{align*}
+where $P$ is the trace's sampling period and $l_x,l_y$ are the its optimal length scales for each dimension. 
+
+$l_{\text{eff},x},l_{\text{eff},y}$ tell us the average number of neighboring locations that are highly correlated, instead of time period. For instance, a given trace with an optimal $l_{\text{eff},x} = 8$ tells us that every eight neighboring location samples in the $x$ dimension have correlation $> 0.8$. The empirical distribution of effective length scales across all traces describes -- over a range of logging devices (sampling rates), users, and movement patterns -- how many neighboring points are highly correlated in location trace data. After this preprocessing, we are able to use the kernels that take indices (not time) as arguments: 
+\begin{align*}
+	k_{\text{RBF}}(i, j) 
+	&=  \exp \Big( -\frac{(i - j)^2}{2\leff^2} \Big) \\
+	k_{\text{PER}}(i, j) 
+	&=  \exp \Big(  \frac{-2 \sin^2(\pi |i - j| / p)}{\leff^2} \Big)
+\end{align*}
+See Appendix \ref{apx: experiments} for a more detailed discussion of how the empirical distribution of $\leff$ across traces is measured. 
+
+To impart the range of realistic conditional priors the gray interval of each plot depicts the middle 50\% of the empirical $\leff$ among traces in each dataset. The dashed vertical line reports the median $\leff$. 
+
+
+
+%Details of preprocessing and definition of $\leff$ are presented in Appendix \ref{apx: experiments}. 
+
+%\begin{align}
+%	\label{eqn: kernels}
+%	k_{\text{RBF}}(i, j) 
+%	&=  \exp \Big( -\frac{(i - j)^2}{2\leff^2} \Big), \notag \\
+%	k_{\text{PER}}(i, j) 
+%	&=  \exp \Big(  \frac{-2 \sin^2(\pi |i - j| / p)}{\leff^2} \Big)
+%\end{align}
+Each figure increases the degree of dependence, $\leff$, used by the kernel to compute the prior covariance $\Sigma(\leff)$. $\Sigma(\leff)$ is then used in one of the SDP routines of Section \ref{sec: algorithms} to produce a mechanism $\Sigmag(\leff)$ that protects a basic secret ($\text{SDP}_\text{A}$), a compound secret ($\text{SDP}_\text{A}$), or the union of all basic secrets (Multiple Secrets). We then observe the 68\% confidence interval of the Gaussian posterior on sensitive points $\Xs$ (blue line). This is the $2\sigma$ uncertainty of a Bayesian adversary with a GP prior represented by $\Sigma(\leff)$ (see Appendix \ref{apx: experiments} for how this is computed). As $\leff$ increases, their posterior uncertainty will reduce. Our aim is to mitigate this as much as possible with the given utility constraint. For scale, recall that prior variance $\textbf{diag}(\Sigma)$ is normalized to one. In the case of all basic secrets, we report the average posterior uncertainty over locations. 
+
+We compare the SDP mechanisms with two mechanisms using the logic of Approach C (all three of equal MSE utility loss): \emph{independent/uniform} and \emph{independent/concentrated}. The uniform approach adds independent Gaussian noise evenly along the whole trace regardless of $\Is$, $\Sigmag = o_tI$. The concentrated approach allocates the entire noise budget to the sensitive set $\Is$. 
+\paragraph{Results}
+For our first question, see \textbf{Figures \ref{fig: RBF basic}$\rightarrow$\ref{fig: RBF all}, \ref{fig: PER basic}$\rightarrow$\ref{fig: PER all}}. For both location and temperature data, our SDP mechanisms maintain higher posterior uncertainty than the baselines with identical utility cost for a single basic secret, a compound secret, and all basic secrets. By actively considering the conditional prior class parametrized by $\Sigma$, the SDP mechanisms can strategize to both correlate noise samples and concentrate noise power such that posterior inference is thwarted at the sensitive set $\Is$. For an intuitive illustration of the chosen $\Sigmag$'s, see Appendix \ref{apx: juxtaposition}. 
+
+To answer our second question, see \textbf{Figures \ref{fig: RBF misspec}} and \textbf{\ref{fig: PER misspec}}. When the prior covariance $\Sigma$ does not represent the true data distribution known to the adversary, a smaller posterior uncertainty may be achieved. The orange line indicates the uncertainty interval of an adversary who knows the data is \emph{less} correlated than we believe i.e. the true $\Sigma^* = \Sigma(0.5 \leff)$. The blue line represents an adversary who knows the data is \emph{more} correlated than we believe i.e. the true $\Sigma^* = \Sigma(1.5 \leff)$. Both plots confirm the robustness of our privacy guarantees stated by Theorem \ref{thm: prior misspecification}. Particularly around the median $\leff$ we see that the change in posterior uncertainty with this change in prior is indeed marginal. 
+
+\section{Discussion}
+\paragraph{Related Work}
+Few works have proposed solutions to the \emph{local} guarantee when releasing individual traces. A mechanism offered in \cite{synthesizing_plausible_deniability} releases synthesized traces satisfying the notion of \emph{plausible deniability} \citep{plausible_deniability}, but this is distinctly different from providing a radius of privacy to sensitive locations. Meanwhile, the frameworks proposed in \cite{temporal} and \cite{priste} nicely characterize the risk of inference in location traces, but use only first-order Markov models of correlation between points, do not offer a radius of indistinguishability as in this work, and are not suited to continuous-valued spatiotemporal traces.
+
+Perhaps more technically similar to this work, \cite{song_pufferfish_2017} provide a general mechanism that applies to any Pufferfish framework, as well as a more computationally efficient mechanism that applies when the joint distribution of an individual's features can be described by a graphical model. The first is too computationally intensive. The second is for discrete settings, and cannot accommodate spatiotemporal effects.
+%The first mechanism is too computationally intensive for our setting, and the second only looks at discrete or categorical functions of data, and cannot (at least directly) accommodate spatiotemporal effects. 
+
+\paragraph{Conclusion}
+This work proposes a framework for both identifying and quantifying the \emph{inferential} privacy risk for highly dependent sequences of spatiotemporal data. As a starting point, we have provided a simple bound on the privacy loss for Gaussian process priors, and an SDP-based privacy mechanism for minimizing this bound without destroying utility. We hope to extend this work to other data domains with different conditional priors, and different sets of secrets.
+
+\subsubsection*{Acknowledgements}
+KC and CM would like to thank ONR under N00014-20-1-2334 and UC Lab Fees under LFR 18-548554  for research support. We would also like to thank our reviewers for their insightful feedback. 

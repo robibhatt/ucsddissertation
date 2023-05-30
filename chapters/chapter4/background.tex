@@ -49,6 +49,19 @@ A permutation of a set $S$ is a bijection $S\mapsto S$. The set of permutations 
 \\Mallows model is a popular probabilistic model for permutations \citep{MM}.  %It is an exponential location model and is usually referred to as the Gaussian distribution for permutations. 
 The mode of the distribution is given
 by the reference permutation $\sigma_0$ -- the probability of a permutation increases as we move `closer' to $\sigma_0$ as measured by rank distance metrics, such as the Kendall's tau distance (Def. \ref{def:kendall}). The dispersion parameter $\theta$ controls how fast this increase happens.  %The formal definition of the Mallows model is as follows.
+
+%\begin{wrapfigure}{r}{0.4\textwidth}
+%%    \vspace{-1.5cm}
+%    % \hspace{-1cm}
+%    \begin{center}
+%    \includegraphics[width=0.38\textwidth]{figures/shuffle_image.png} 
+%    \end{center}
+%%    \vspace{-1em}
+%    \caption{\small{Trusted shuffler mediates on $\by$}} 
+%%    \vspace{-2.5em}
+%    \label{fig:problemsetting}
+%\end{wrapfigure}
+
 \begin{defn}
 \label{def: mallows}
 For a dispersion parameter $\theta$, a reference permutation $\sigma_o \in \mathrm{S}_n$, and a rank distance measure $\textswab{d}: \mathrm{S}_n \times \mathrm{S}_n \mapsto \R $,   

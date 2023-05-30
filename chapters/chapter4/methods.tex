@@ -1,15 +1,17 @@
-\begin{wrapfigure}{r}{0.4\linewidth}
-%    \vspace{-1.5cm}
-    % \hspace{-1cm}
-    \centering
-    \includegraphics[height=2.8cm]{figures/shuffle_image.png} 
-%    \vspace{-1em}
-    \caption{\small{Trusted shuffler mediates on $\by$}} 
-%    \vspace{-2.5em}
-    \label{fig:problemsetting}
-\end{wrapfigure}
 %\vspace{-0.5cm}
 \section{Data Privacy and Shuffling}\vspace{-0.2cm}
+
+\begin{wrapfigure}{r}{0.44\textwidth}
+	\vspace{-3em} 
+%     \hspace{-1cm}
+%    \begin{center}
+    \includegraphics[width=0.43\textwidth]{figures/shuffle_image.png} 
+%    \end{center}
+    \caption{\small{Trusted shuffler mediates on $\by$}} 
+    \label{fig:problemsetting}
+    \vspace{-3em} 
+\end{wrapfigure}
+
 In this section, we present \name-privacy and a shuffling mechanism capable of achieving the \name-privacy guarantee. 
 %First, we describe the problem setting. Next, we present our novel privacy definition,  \name-privacy, followed by a semantic understanding of its privacy implications. A utility metric for shuffling mechanisms is presented next. Finally, we introduce a novel shuffling  mechanism capable of achieving the \name-privacy guarantee. 
 \vspace{-0.3cm}
@@ -57,9 +59,8 @@ where $\sigma$ is determined via $\calA(\cdot)$. For example, for $\sigma=(4 \: 
    \vspace{-0.1cm}
 \subsection{Definition of \name-privacy}\label{sec:privacy:def}
  \vspace{-0.3cm}
-% \arc{Make groups more general}
-Inferential risk captures the threat of an adversary who infers $\DO_i$'s private $x_i$ using all or a subset of other data owners' released $y_j$'s. Since we cannot prevent all such attacks and maintain utility, our aim is to formally limit \emph{which data owners} can be leveraged in inferring $\DO_i$'s private $x_i$. To make this precise, each $\DO_i$ may choose a corresponding group, $G_i \subseteq [n]$, of data owners.
-\begin{wrapfigure}{r}{0.3\linewidth}
+ 
+ \begin{wrapfigure}{r}{0.3\linewidth}
     \centering
     \vspace{-1.5em}
     \includegraphics[height=2cm]{./figures/graph.png}
@@ -68,6 +69,9 @@ Inferential risk captures the threat of an adversary who infers $\DO_i$'s privat
     \vspace{-2em}
     \label{fig:example}
 \end{wrapfigure}
+ 
+% \arc{Make groups more general}
+Inferential risk captures the threat of an adversary who infers $\DO_i$'s private $x_i$ using all or a subset of other data owners' released $y_j$'s. Since we cannot prevent all such attacks and maintain utility, our aim is to formally limit \emph{which data owners} can be leveraged in inferring $\DO_i$'s private $x_i$. To make this precise, each $\DO_i$ may choose a corresponding group, $G_i \subseteq [n]$, of data owners.
  \name-privacy guarantees that $y_j$ values originating from a data owner's group $G_i$ are shuffled together. In doing so, the \ldp values corresponding to subsets of $\DO_i$'s group $I \subset G_i$ cannot be reliably identified, and thus cannot be singled out to make inferences about $\DO_i$'s $x_i$. If Alice's group includes her whole neighborhood, \ldp data originating from her household cannot be singled out to recover her private $x_i$. %We formalize this guarantee in Sec. \ref{sec:privacy:implications}. 
 \\Any choice of grouping $\calG = \{G_1, G_2, \dots, G_n\}$ can be accommodated under \name-privacy. Each data owner may choose a group large enough to hide anyone they feel sufficient risk from.  We outline two systematic approaches to assigning groups as follows: %If one feels inferential risk from their close friends, perhaps their group ought to include all of their first-order social media connections. If one feels inferential risk from their close colleagues, perhaps their group should include their entire company. In turn, the analyst may still access aggregate statistics roughly at the group level. 
    \vspace{-0.1cm}\squishlistfour    \vspace{-0.1cm}

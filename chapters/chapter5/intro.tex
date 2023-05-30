@@ -1,0 +1,57 @@
+\section{Introduction}
+\label{sec:introduction}
+
+%motivation + specification 
+Location data is acutely sensitive information, detailing where we live, work, eat, shop, worship, and often when, too. Yet increasingly, location data is being uploaded for smartphone services such as ride hailing and weather forecasting and then being brokered in a thriving user location aftermarket to advertisers and even investors \citep{nyt}. Users share location `traces' when they release a sequence of locations, often across a short period of time. These traces are then used by central servers to monitor traffic trends, track individual fitness, target marketing, and even to study the effectiveness of social-distancing ordinances \citep{wash_post}. Here, we aim to provide a \emph{local} privacy guarantee, wherein traces are sanitized at the user level before being transmitted to a centralized service. Note that this requires different guarantees and mechanisms than in \emph{aggregate} applications making queries on large location trace databases. 
+
+Specifically, we guarantee a radius $r$ of privacy at any sensitive time point or combination of time points within a given trace. This is challenging due to the fact that the locations within traces are highly inter-dependent. Informally, traces tend to follow relatively smooth trajectories in time. If not sanitized carefully, that knowledge alone may be exploited to infer actual locations from the released version of the trace. This work centers on designing meaningful privacy definitions and corresponding mechanisms that takes this dependence into account. 
+
+
+Broadly speaking, the vast majority of prior work on rigorous data privacy can be divided into two classes that differ by the kind of guarantee offered: differential and inferential privacy. Differential privacy (DP) guarantees that the participation of a single person in a dataset does not change the probability of any outcome by much. In contrast, inferential privacy guarantees that an adversary who has a certain degree of prior knowledge cannot make certain sensitive inferences.
+
+DP for releasing aggregate statistics of a spatio-temporal dataset has been well studied \citep{traffic_monitoring, quantifying_dp_cao, bayesian_DP, dependent_dp}. There, the idea is to add enough noise to released statistics such that the effect of any user's participation is obscured, even if their locations are highly correlated to each other or to those of other users. Here, such a guarantee does not apply since we aim to release a sanitized version of a single user's trace.
+
+In this local case we cannot rule out the possibility that the data curator knows who each individual is and who participated. Instead, we want to guarantee that event level information \emph{about} each trace remains private. In this work, at any sensitive time $t$ we mask whether the user visited location A or location B for any A,B less than $r$ apart. Without \emph{ad hoc} modifications, standard DP tools are insufficient for achieving this for the primary reasons that 1) the domain of location is virtually unbounded and 2) locations are highly dependent across a short period of time. To see this, consider the following instinctual approaches to achieving location trace privacy. 
+
+\paragraph{Approach A:} apply Local Differential Privacy (LDP) to each trace. Imagine a dataset of traces, each from a separate individual. Applying LDP implies that every trace has nearly the same probability of releasing the same sanitized version. This would be robust to arbitrary side information about dependence between locations in any one trace. Unfortunately, the amount of additive noise needed to achieve this would destroy nearly all utility: sanitized traces from California would have almost the same probability of showing up in Connecticut as do those from New York. Even if we constrained the domain to just Manhattan, this definition would not permit enough utility to perform e.g. traffic monitoring. 
+
+\paragraph{Approach B:} apply LDP to each location within a trace. To preserve some utility, imagine a single trace as a dataset of $n$ locations, each of which enjoys $\varepsilon$-LDP guarantees. This alone is not robust to arbitrary dependence between locations. By the logic of group LDP, it does satisfy $k \varepsilon$-LDP regardless of the dependence between any $k$ locations. This approach has two setbacks. First, how to set $k$ is unclear. Technically, all points in the trace are correlated, so to ward off worst-case correlations one might set it to the length of the trace, which is identical to Approach A. Second, even if location is bounded to a single city or county, satisfying this definition would still destroy nearly all utility. We cannot use sanitized traces for traffic monitoring if locations from either side of town have about same probability of being sanitized to the same value. 
+
+\paragraph{Approach C:} apply LDP guarantees to each location within a trace, but only within any region less than width $r$. This definition is known as Geo-Indistinguishability (GI) \citep{GI}. GI provides a substitute for restricting the domain of location allowing us to salvage some utility. Here, only locations within $r$ of each other are required to have $\varepsilon$-LDP guarantees. In DP parlance, we might say that `neighboring traces' have one location altered by $\leq r$ and are identical everywhere else. This gives us the guarantee we want for a trace with one location, but not with more than one location. To see why, compare with Approach B. Analogously, $(\varepsilon, r)$-GI along a trace provides $(k \varepsilon, r)$-GI to any subset of $k$ locations. Like Approach B, setting $k$ is unclear. Yet unlike Approach B, GI is not resistant to arbitrary dependence between any $k$ locations. Any dependence where a change in one or more location(s) by $r$ implies a change in some other location(s) by $\geq r$ breaks the GI guarantee. Even with the simplest models of dependence (e.g. if we know the true trace ought to move in a straight line) this is a problem. 
+
+To reiterate, applying LDP to traces or to locations within traces (Approaches A \& B) does not provide a principled method for meaningful privacy with reasonable utility. GI adapts LDP by giving guarantees only within a radius $r$. But in relaxing LDP, GI compromises the standard DP tools for handling obvious dependences between data-points like group DP. In our eyes, this warrants an \emph{inferentially private} approach. Here, we continue to provide privacy within a radius $r$, thus allowing for utility. Yet instead of providing resistance to arbitrary dependence across any $k$ locations, we aim to provide resistance to natural models of dependence between all locations. One may view such models as an adversary's prior beliefs about what traces are likely, like the straight-line prior mentioned earlier. 
+
+
+In contrast with differential privacy, providing inferential privacy guarantees is more complex, and has been less studied. It is however appropriate for applications such as ours, where information must be released based on a single person's data, the features of which are private and dependent. \cite{pufferfish} provide a formal inferential privacy framework called Pufferfish, and design mechanisms for specific Pufferfish instances. As these instances do not apply to our setting, we adapt the Pufferfish framework to location privacy and more broadly to releasing any sequence of real-valued private information. 
+
+%GRAPHICAL MODEL
+\begin{figure*}[h]
+	\centering
+	\begin{subfigure}[b]{.45\textwidth}
+		\centering
+		\inputTikZ{0.8}{chapters/chapter5/graphical_model.tex}
+		\caption{}
+		\label{fig:full model}
+	\end{subfigure}
+	\begin{subfigure}[b]{.45\textwidth}
+		\centering
+		\inputTikZ{0.8}{chapters/chapter5/graphical_model-1.tex}
+		\caption{}
+		\label{fig:condensed model}
+	\end{subfigure}
+	\caption{(a) An example graphical model of a four point trace $X$. (b) The more general grouped version of the model in (a), with the secret set $\Xs = \{X_1, X_2\}$ and the remaining set $\Xu = \{X_3, X_4\}$. 
+	%$Z_u$, $\Zs$ are shown.
+	}
+	\label{fig:graphical models}
+\end{figure*}
+
+\paragraph{Contributions:}In this work, we propose an inferentially private approach to guaranteeing a radius $r$ of privacy for sensitive points in location traces in three parts: 
+\begin{itemize}
+	\item First, we propose an adaptable privacy framework tailored to sequences of highly dependent datapoints that adapts Pufferfish privacy \citep{Pufferfish} to use R\'enyi Differential Privacy (RDP) \citep{renyi}. Given a model of dependence between points, this framework more appropriately estimates the risk of inference within radius $r$ on points of interest than do vanilla LDP approaches. 
+	\item We then demonstrate how to implement our framework for the highly flexible and expressive setting of Gaussian process (GP) priors. These nonparametric models capture the spatiotemporal aspect of location data \citep{PCS_GP, ATM_GP, Traffic_GP}. GPs have a natural synergy with R\'enyi privacy enabling an interpretable upper bound on privacy loss for additive Gaussian privacy mechanisms (that add Gaussian noise to each point). Using this, we design a semidefinite program (SDP) that optimizes the correlation of such mechanisms to minimize privacy loss without destroying utility, efficiently thwarting the inference of sensitive locations. 
+	\item Finally, we provide experiments on both location trace and home temperature data to demonstrate the advantage of these techniques over Approach C mechanisms like GI. We find that our mechanisms successfully obscure sensitive locations while respecting utility constraints, even when the prior model is misspecified. 
+\end{itemize}
+ 
+Ultimately, by resisting only reasonable kinds of dependence in the data we are able to offer both meaningful privacy and utility. We show that our framework is robust to misspecification of this reasonable dependence and offers a privacy loss that is both tractable and interpretable. 
+
+

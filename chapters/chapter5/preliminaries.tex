@@ -1,0 +1,76 @@
+\section{Preliminaries and Problem Setting}
+\label{sec:preliminaries}
+%notation / definitions
+A user transmits a sequence of $N$ 2-dimensional locations along with their corresponding timestamps, collectively forming a `trace'. We `unroll' the trace into $n$ real-valued random variables $X = \{X_1, X_2, \dots, X_n\}$. A trace of 10 2d locations has $n = 2 \times 10 = 20$ random variables $X_i$. Instead of releasing the raw trace $X$, the user releases a private version $Z = \{Z_1, Z_2, \dots, Z_n\}$, by way of an additive noise mechanism $Z = X + G$, where $G = \{G_1,G_2, \dots, G_n\}$ is random noise produced by a privacy mechanism.
+
+%notation / definitions 
+An adversary, receiving the obscured trace $Z$, then reasons about the true locations at some sensitive time(s). To reference the sensitive times, we use index set $\Is$. If the sensitive indices are $\Is = \{1,2\}$, the corresponding location values are $\Xs = \{X_{1}, X_{2}\}$ (e.g. referring to the two coordinates of one location). When inferring the true value of $\Xs$, the adversary makes use of the remaining points in the trace at indices $\mathbb{I}_U = [n] \backslash \Is$, denoted $\Xu$, with obscured values $\Zu$. This separation of points into $\Xs$ and $\Xu$ is represented in \textbf{Figure \ref{fig:graphical models}}. 
+
+We use location as a guiding example, but such inter-dependent traces $X$ could take the form of home temperature time series data or spatial data like 3D facial maps used for identification. Going forward, we will continue to denote $X = \{X_1, X_2, \dots, X_n\}$ with the understanding that \emph{any} subsequence of $d$ points e.g. $\Xs = \{X_2, X_6, \dots\}$ could represent a $d$-dimensional sensitive value, or $Nd$ points could represent $N$ $d$-dimensional sensitive values. 
+
+For the real-valued distributions considered here, $P_{\times}( \bullet )$ refers to a density of distribution $\times$ on r.v. $\bullet$ and $P_{\times}(\bullet | *)$ is its regular conditional density given $*$. 
+
+\subsection{Background}
+GI limits what can be inferred about the sensitive $\Xs$ from its corresponding $\Zs$, but not from the remaining locations $\Zu$. To do so we need a privacy definition that specifies what events of random variable $\Xs$ we wish to obscure, which realistic priors of inter-dependence to protect against, and a privacy loss. 
+
+\subsection{Basic and Compound Secrets}
+
+We borrow heavily from the Pufferfish framework \citep{pufferfish}, and specialize it for the setting of location traces. We define our own set of \emph{secrets} --- the collection of events we wish to obscure --- and \emph{discriminative pairs}, the pairs of secret events we do not want an adversary to tell between. 
+%To give privacy within a radius $r$, we do not want an adversary to be able to infer whether one visited any two locations A vs. B within $r$ of each other. To formalize this, we define two classes of secrets: 
+
+\paragraph{Basic Secrets \& Pairs} 
+After releasing $Z$, we do not want an adversary with a reasonable prior on $X$, $\calP \in \Theta$, to have sharp posterior beliefs about the user's location at some sensitive time (e.g. one of the sensitive times in \textbf{Figure \ref{fig:nyc_example}} of Appendix \ref{apx: Illustrations}). As such, the adversary cannot distinguish whether the user visited location A or some nearby location B at that time. Let $x_s\in \R^2$ represent a possible assignments to $\Xs$, hypothesizing the true sensitive location. Any such assignment is secret, $\calS = \{ \Xs = x_s  : x_s \in \R^2\}$. Specifically, we want the posterior probability of any two assignments to $\Xs$ within a radius $r$ to be close: $\Spairs = \{(x_s, x_s'):\|x_s - x_s'\|_2 \leq r\}$. This protects a single time within a trace of locations. More generally, in the context of spatiotemporal data of any dimension, we call this a \emph{basic secret}. 
+
+\paragraph{Compound Secrets \& Pairs} 
+%\textbf{Figure \ref{fig:nyc_trace}} has not one but three time points that have sensitive locations in the trace. Let their index sets be ${\Is}_1$, ${\Is}_2$, and ${\Is}_3$. 
+Suppose we have three sensitive times (again as in \textbf{Figure \ref{fig:nyc_example}}). A mechanism that blocks inference on each of these separately does not prevent inference on the combination of them simultaneously. To obscure hypotheses on \emph{all three} of these, we modify our set of secrets to any combination of assignments to each secret location: 
+\begin{align*}
+	\calS = \big\{ \{\Xs_1 = x_{s1}\} \cap \{\Xs_2 = x_{s2}\} \cap \{\Xs_3 = x_{s3} &\} \\
+	: x_{si} \in \R^2, i \in [3] &\big\} \ .
+\end{align*} 
+Now, the set of discriminative pairs is any two assignments to all three secret locations: 
+\begin{align*}
+	\Spairs = \Big\{\big( \{x_{s1}, x_{s2}, x_{s3}\} &, \{x_{s1}', x_{s2}', x_{s3}'\}\big) \\
+	&: \| x_{si} - x_{si}' \|_2 \leq r, \ i \in [3] \Big\}
+\end{align*}
+This protects against compound hypotheses: if daycare and work are within $r$ of each other, this keeps an adversary from inferring $\Xs_1 = $ `daycare' \emph{and} $\Xs_2 = $ `work' versus $\Xs_1 = $ `work' \emph{and} $\Xs_2 = $ `daycare'. More generally, in the context of spatiotemporal data of any dimension, we call this a \emph{compound secret}. Intuitively, a mechanism that protects a compound secret of locations close together in time prevents a Bayesian adversary from leveraging the remainder of the trace to infer direction of motion at those sensitive times. Note that bounding the privacy loss of a compound secret does not bound the privacy loss of its constituent basic secrets.
+
+Going forward, we refer to $\Is$ as the `secret set'. 
+
+\subsubsection{Gaussian Processes}
+For the purpose of location privacy, it is important to choose a prior class $\Theta$ such that the conditional distribution $P_\calP(\Xu | \Xs)$ is simple to compute for any secret set $\Is$ and any prior $\calP \in \Theta$. Of course, it is also critical that the prior class naturally models the data, and thus consists of `reasonable assumptions' for adversaries. GPs satisfy both these requirements. We model a full $d$-dimensional trace sampled at $N$ times by `unrolling' it into a $n = dN$ dimensional GP. 
+\begin{definition}\emph{Gaussian process} 
+	A trace $X$ is a Gaussian process if $X_{\mathbb{I}_M}$ has a multivariate normal distribution for any set of indices $\mathbb{I}_M \subset [n]$. If $X$ is a gaussian process, then the function $i \rightarrow \E[X_i]$ is called the mean function and the function $(i,j) \rightarrow \text{Cov}(X_i, X_j)$ is called the kernel function. 
+\end{definition}
+In this work, the kernel uses locations' time stamps to compute their covariance $(t_i, t_j) \rightarrow \text{Cov}(X_i, X_j)$, but generally could use any side information provided with each location. 
+%Let $(X_t^x)_{t \geq 0}$ be the continuous representation of one dimension of trace $X$ in time $t$. 
+%\begin{definition}\emph{Gaussian process} 
+%	A stochastic process $(X_t^x)_{t \geq 0}$ is considered a Gaussian process if $[X_{t_1}^x, X_{t_1}^x, \dots, X_{t_n}^x]$ has a multivariate normal distribution for any set of times $t_1, t_2, \dots t_n \geq 0$. If $(X_t^x)_{t \geq 0}$ is a gaussian process, then the function $t \rightarrow \E[X_t]$ is called the mean function and the function $(s,t) \rightarrow \text{Cov}(X_s, X_t)$ is called the kernel function. 
+%\end{definition}
+
+%This is particularly nice since, if different dimensions are independent, we may treat them as separate traces. If not, correlation across dimensions can be modeled into the covariance matrix. We will describe this in greater detail in the following sections. 
+
+GPs have simple, closed form conditional distributions. Let $X \sim \calN(\mu, \Sigma)$, where $\mu \in \R^{n}$ and $\Sigma \in \R^{{n} \times {n}}$. Then, the random variable $\Xu | \{\Xs = x_s\} \sim \calN(\mu_{u|s}, \Sigma_{u|s})$, where $\mu_{u|s} = \mu_u + \Sigma_{us} \Sigma_{ss}^{-1} (x_s - \mu_s)$ and $\Sigma_{u|s} = \Sigma_{uu} - \Sigma_{us}\Sigma_{ss}^{-1} \Sigma_{su}$. Here, $\mu_s$ denotes the mean vector $\mu$ accessed at indices $\Is$ and $\Sigma_{su}$ denotes the covariance matrix $\Sigma$ accessed at rows $\Is$ and columns $\mathbb{I}_U$. 
+
+For GP priors, we will use additive noise $G \sim \calN(\mathbf{0}, \Sigmag)$. Thus $Z = X + G$, too, is multivariate normal. Furthermore, the distribution of any set of variables conditioned on any other set of variables in \textbf{Figure \ref{fig:graphical models}} belongs to some multivariate normal distribution.
+
+GPs have been shown to successfully model mobility \citep{Traffic_GP, PCS_GP, ATM_GP}, even in the domain of surveillance video \citep{surveillance_GP}.  Furthermore, although these non-parametric models are characterized by second order statistics, GPs are capable of complexity rivaling that of deep neural networks \citep{Deep_NN_GP}, allowing for scalability to more complex models and domains. Our proposed results and algorithms may be applied regardless of the complexity of the chosen GP. 
+
+
+\subsubsection{R\'enyi Differential Privacy}
+\label{sec:renyi_dp}
+In the following section, we propose a privacy definition that adapts R\'enyi Differential Privacy (RDP) \citep{renyi} to the Pufferfish framework. RDP resembles Differential Privacy \citep{DP}, except instead of bounding the maximum probability ratio or \emph{max divergence} of the distribution on outputs for two neighboring databases, it bounds the \emph{R\'enyi divergence} of order $\lambda$, defined in Equation \eqref{eqn: renyi} for distributions $\calP_1$ and $\calP_2$. The R\'enyi divergence bears a nice synergy with Gaussian processes. If $\calP_1 = \calN(\mu_1, \Sigma)$ and $\calP_2 = \calN(\mu_2, \Sigma)$ --- two mean-shifted normal distributions --- the R\'enyi divergence takes on a simple closed form shown in Equation \eqref{eqn: normal renyi}. 
+%For distributions $\calP_1$ and $\calP_2$ on random variable $X$, recall that the R\'enyi Divergence is defined as in Equation --- (left). Additionally, R\'enyi divergence bears nice synergy with Gaussian processes, since the R\'enyi divergence of any two mean-shifted multivariate normal distributions has a simple closed form. If  as seen below in Equation --- (right). 
+\begin{align}
+	\label{eqn: renyi}
+	D_\lambda \binom{\calP_1}{\calP_2} 
+	&= \frac{1}{\lambda - 1} \log \E_{x \sim \calP_2} \Big( \frac{P_{\calP_1}(X = x)}{P_{\calP_2}(X = x)} \Big)^\lambda \\
+	\label{eqn: normal renyi}
+	&= \frac{\lambda}{2} (\mu_1 - \mu_2)^\intercal \Sigma^{-1} (\mu_1 - \mu_2)
+\end{align}
+%As shown in \citep{subsampled_renyi}, $(\lambda, \varepsilon)$-RDP can be directly translated into the language of $(\varepsilon, \delta)$-DP, if the DP interpretation is preferred. 
+%\begin{align*}
+%	D_\lambda \binom{\calN(\mu_1, \Sigma)}{\calN(\mu_1, \Sigma)}
+%	&= \frac{\lambda}{2} (\mu_1 - \mu_2)^\intercal \Sigma^{-1} (\mu_1 - \mu_2)
+%\end{align*}
+We will make use of this in defining and bounding privacy loss in the next section. 

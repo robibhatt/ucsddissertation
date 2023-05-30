@@ -1,0 +1,17 @@
+\begin{tikzpicture}
+
+  % Define nodes
+  \node[obs]                       (s) {$\Xs$};
+  \node[latent, below=of x1]			  (zs) {$\Zs$};
+  \node[latent, right=of x1]             (u) {$\Xu$};
+  \node[latent, below=of x2]			  (zu) {$\Zu$};
+
+  % Connect the nodes
+  \edge {s} {zs};
+  \edge {u} {zu}; 
+  \edge [-] {s} {u}; 
+
+  % Plates
+%  \plate {yx} {(x)(y)} {$n$} ;
+
+\end{tikzpicture}

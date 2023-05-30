@@ -1,0 +1,803 @@
+\graphicspath{{./chapters/chapter5/}}
+\chapter{ }
+
+\section{Appendix}
+For documented code demonstrating our SDP mechanisms used to generate the plots of \textbf{Figure \ref{fig: experiments}} please visit our repo: \url{https://github.com/casey-meehan/location_trace_privacy} 
+
+The following sections will include proofs of results, derivations of algorithms, and explanations of experimental procedures. 
+\subsection{Illustrations}
+\label{apx: Illustrations}
+
+\subsubsection{NYC Mayoral Staff Member Location Trace}
+
+\begin{figure*}[h]
+	\centering
+	\begin{subfigure}[b]{.32\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/nyc_trace.png}
+		\caption{}
+		\label{fig:nyc_trace}
+	\end{subfigure}
+	\begin{subfigure}[b]{.32\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/nyc_trace_isotropic.png}
+		\caption{}
+		\label{fig:nyc_trace_iso}
+	\end{subfigure}
+	\begin{subfigure}[b]{.32\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/nyc_trace_opt.png}
+		\caption{}
+		\label{fig:nyc_trace_opt}
+	\end{subfigure}
+	\caption{Example of sensitive location trace of NYC mayoral staff member exposed by \citep{nyt}. (b) and (c) depict the posterior uncertainty (green) $P_{\calA,\calP}(X_i | Z)$ for each 2d location. (a) depicts three sensitive times (red with blue outline): Gracie Mansion (Mayor's home), an event on Staten Island that the mayor attended, and finally the staff member's home on long island. (b) provides an example of Approach C: adding independent Gaussian noise to each location (red dotted line). A GP posterior still maintains high confidence within a small radius along the trace, including at the sensitive times. (c) provides an example of the optimized noise of Multiple Secrets of identical aggregate MSE as (b). By focusing \textit{correlated} noise around the three sensitive times, there is high uncertainty at sensitive times and high confidence elsewhere.}
+	\label{fig:nyc_example}
+\end{figure*}
+
+\subsubsection{Juxtaposition of Mechanisms' Covariance Matrices}
+\label{apx: juxtaposition}
+The following figures aim to illustrate the difference between the covariance matrices used in the experimental baselines (indep./uniform and indep./concentrated) and those chosen by our SDP algorithms for both the RBF and periodic prior. Note that here we presume the different dimensions of location to be independent and --- by Corollary \ref{cor: independence} --- are able to treat a 2d location trace as two 1d traces. As such, the following examples are demonstrating mechanism covariance matrices and additive noise samples used for either a single dimension of location data (for RBF kernel) or for the one dimension of temperature data (for periodic kernel). 
+
+The first figure \textbf{(a)} shows the covariance of the Approach C baselines used in the experiments. The second figure \textbf{(b)} shows the covariance of our SDP mechanisms for the RBF kernel used on location data. The third figure \textbf{(c)} shows the covariance of our SDP mechanisms for the periodic kernel used for temperature data. 
+
+In each figure the covariance matrix is depicted as a heat map with warmer colors indicating higher values (normalized to largest and smallest value in the covariance matrix). The drawn noise samples $G$ are plotted against their time index. So, the sequence of plotted $(x,y)$ values is $\big[(1, G_1), (2, G_2), \dots, (n, G_n)\big]$, where $n = 50$ for the RBF case and $n = 48$ for the periodic case. 
+
+\begin{figure*}[h]
+	\centering
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/cov_table_header.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/cov_table_baselines.png}
+		\caption{Covariance matrices and mechanism samples for the baselines used in experiments. 
+		\vspace{2mm}\\
+		The first figure demonstrates the uniform approach that distributes the independent Gaussian noise budget along the entire trace, regardless of $\Is$. 
+		\vspace{2mm}\\
+		The second and third show the concentrated approach that allocates the entire noise budget to only the sensitive locations in $\Is$: first for a basic secret (one location) and then for a compound secret of 3 evenly spaced locations.} 
+		\label{fig: cov table baselines}
+	\end{subfigure}
+\end{figure*}
+
+\begin{figure*}[h] \ContinuedFloat
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/cov_table_header.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/cov_table_RBF_1.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/cov_table_RBF_2.png}
+		\caption{
+			Covariance matrices and mechanism samples for the median RBF prior ($\leff \approx 6$). 
+			\vspace{2mm} \\
+			The first noise mechanism (Mech. basic) demonstrates the covariance matrix chosen by $\text{SDP}_\text{A}$ for a basic secret of a single location $X_i$ in the middle of the trace. The uncorrelated dot in the middle of the covariance matrix, $\Sigmag_{ii}$, represents the independent noise $G_i$ added at the sensitive location to mitigate \emph{direct} loss. To mitigate \emph{inferential} loss, the SDP optimizes the remainder of the matrix to be positively correlated with maximum variance allocated to locations near $X_i$ in time. This thwarts GP inference of the true location at time $t_i$. 
+			\vspace{2mm} \\
+			The second mechanism (Mech. comp.) depicts the covariance chosen by $\text{SDP}_\text{A}$ to protect a compound secret of two adjacent locations in the trace (visible as the uncorrelated `$+$' through the middle consuming 2 rows/columns). Recall that a compound secret ought to protect directional information: \emph{did the user visit B first and then A, or A and then B?} That is precisely what this mechanism does by randomizing the angle of approach to the two locations in the middle with positively and negatively correlated noise. Also note that the SDP does not allocate a large share of noise budget to the actual locations themselves. This highlights the fact that protecting a compound secret does not protect its constituent basic secrets.
+			\vspace{2mm} \\
+			The third and final mechanism (Mech. all basic) is the noise covariance chosen by $\text{SDP}_\text{B}$ in the Multiple Secrets algorithm. To protect all basic secrets with a utility constraint, the SDP converges to a mechanism that looks similar to the uniform baseline. However, this mechanism adds a subtle degree of off-diagonal correlation along with greater noise power towards the beginning and end of the trace. The off-diagonal correlation is noticeable when the samples are compared to those of the uniform baseline in the previous figure. While this change appears to be minor, it makes a significant change in the posterior confidence of a GP adversary (as seen in \textbf{Figure \ref{fig: RBF all}}). 
+			}
+		\label{fig: cov table rbf}
+	\end{subfigure}
+\end{figure*}
+
+\begin{figure*}[h] \ContinuedFloat
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/cov_table_header.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/cov_table_PER_1.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{1\textwidth}
+		\centering
+		\includegraphics[width = \linewidth]{./images/cov_table_PER_2.png}
+		\caption{
+			Covariance matrices and mechanism samples for the median periodic prior ($\leff \approx 1.1$), and a period of half the trace length. 
+			\vspace{2mm} \\
+			The first noise mechanism (Mech. Basic) shows the covariance chosen by $\text{SDP}_\text{A}$ to protect a single location (temperature) in the middle of the trace. As in the RBF case, significant noise power is allocated to the sensitive location itself, $X_i$, to limit \emph{direct} privacy loss. However, the noise added to the remainder of the trace is significantly different. It is tailored to thwart inference by a periodic prior, wherein the location one period away has correlation 1. 
+			\vspace{2mm}\\
+			The second noise mechanism (Mech. comp.) shows the covariance chosen by $\text{SDP}_\text{A}$ to protect a compound secret of two locations, $X_i, X_j$, 16 timesteps apart (not quite a full period). Here, we see the SDP randomize the phase of the additive noise such that periodic inference cannot tell directional information like $X_i > X_j$ or vice versa. 
+			\vspace{2mm}\\
+			The third noise mechanism (Mech. all basic) is identical to the all basic secrets mechanism chosen for the RBF case above, except using a periodic prior $\Sigma$. The mechanism chosen looks similar to the uniform baseline, except with slightly periodic off-diagonal correlation imitating the prior covariance. Additionally, noise power is mitigated towards the middle and ends of the trace. Again, \textbf{Figure \ref{fig: PER all}} indicates that this subtle change makes a significant difference in thwarting Bayesian adversaries. 
+			}
+		\label{fig: cov table rbf}
+	\end{subfigure}
+\end{figure*}
+
+\clearpage
+
+\subsection{Proof of results}
+\label{apx: proofs} 
+\subsubsection{Proof of Theorem \ref{thm: prior misspecification}} 
+\textbf{Theorem \ref{thm: prior misspecification}} Prior-Posterior Gap:
+\textit{
+An $(\varepsilon, \lambda)$-CIP mechanism with conditional prior class $\Theta$ guarantees that for any event $O$ on sanitized trace $Z$
+	\begin{align*}
+		\bigg| \log \frac{P_{\calP, \calA}(s_i | Z \in O)}{P_{\calP, \calA}(s_j | Z \in O)} - \log \frac{P_{\calP}(s_i)}{P_{\calP}(s_j)} \bigg| \leq \varepsilon'
+	\end{align*}
+	for any $\calP \in \Theta$ with probability $\geq 1 - \delta$ over draws of $Z|\Xs=s_i$ or $Z|\Xs=s_j$, where $\varepsilon'$ and $\delta$ are related by
+	\begin{align*}
+		\varepsilon' = \varepsilon + \frac{\log \nicefrac{1}{\delta}}{\lambda - 1} \ .
+	\end{align*}
+	This holds under the condition that $Z|\Xs = s_i$ and $Z|\Xs = s_j$ have identical support. 
+}
+
+\begin{proof}
+	This result makes use of a R\'enyi divergence property identified in \cite{renyi}: 
+	\begin{lemma}
+		\label{lem: renyi to eps delt}
+		Let $\calP,\calQ$ be two distributions on $X$ of identical support such that  
+		\begin{align*}
+			\max \bigg\{ D_\lambda \binom{P_\calP(X)}{P_\calQ(X)}, 
+			D_\lambda \binom{P_\calQ(X)}{P_\calP(X)} \bigg\}
+			\leq \varepsilon 
+		\end{align*}
+		Then for any event $O$,
+		\begin{align*}
+			P_\calP(X \in O) \leq \max \big\{ e^{\varepsilon'} P_\calQ(X \in S), \delta \big\}
+		\end{align*} 
+		and
+		\begin{align*}
+			P_\calQ(X \in O) \leq \max \big\{ e^{\varepsilon'} P_\calP(X \in S), \delta \big\}
+		\end{align*} 
+		where 
+		\begin{align*}
+			\varepsilon' = \varepsilon + \frac{\log \nicefrac{1}{\delta}}{\lambda - 1}
+		\end{align*}
+	\end{lemma}
+	CIP guarantees that for all $\calP \in \Theta$ and all discriminative pairs $(s_i, s_j) \in \Spairs$ (which also includes $(s_j, s_i)$) 
+	\begin{align*}
+		D_\lambda \binom{P_{\calP, \calA}(Z | \Xs = s_i)}{P_{\calP,\calA}(Z | \Xs = s_j)} \leq \varepsilon
+	\end{align*}
+	and thus by Lemma \ref{lem: renyi to eps delt} we have for any event $O$ on $Z$
+	\begin{align*}
+		P_{\calP, \calA}(Z \in O | \Xs = s_i) 
+		\leq \max \big\{ e^{\varepsilon'} P_{\calP, \calA}(Z \in O | \Xs = s_j), \delta \big\}
+	\end{align*}
+	and
+	\begin{align*}
+		P_{\calP, \calA}(Z \in O | \Xs = s_j) 
+		\leq \max \big\{ e^{\varepsilon'} P_{\calP, \calA}(Z \in O | \Xs = s_i), \delta \big\}
+	\end{align*}
+	As such, given that $\Xs = s_i$ the probability of some event $\{Z \in W\}$ such that 
+	\begin{align*}
+		P_{\calP, \calA}(Z \in W | \Xs = s_i) 
+		\geq  e^{\varepsilon'} P_{\calP, \calA}(Z \in W | \Xs = s_j)
+	\end{align*}
+	is no more than $\delta$. The same is true swapping $s_j$ for $s_i$. So, over draws of $Z | \Xs = s_i$ or $Z | \Xs = s_j$ we have that 
+	\begin{align*}
+		 \frac{P_{\calP, \calA}(Z \in O | \Xs = s_i)}{P_{\calP,\calA}(Z \in O | \Xs = s_j)} \leq e^{\varepsilon'}
+		 \quad \text{and} \quad
+		 \frac{P_{\calP, \calA}(Z \in O | \Xs = s_j)}{P_{\calP,\calA}(Z \in O | \Xs = s_i)} \leq e^{\varepsilon'}
+	\end{align*}
+	with probability $\geq 1 - \delta$, which is equivalent to the statement that 
+	\begin{align*}
+		-\varepsilon' 
+		\leq \log  \frac{P_{\calP, \calA}(Z \in O | \Xs = s_i)}{P_{\calP,\calA}(Z \in O | \Xs = s_j)}
+		&\leq \varepsilon' \\
+		\bigg| \log \frac{P_{\calP, \calA}(s_i | Z \in O)}{P_{\calP, \calA}(s_j | Z \in O)} - \log \frac{P_{\calP}(s_i)}{P_{\calP}(s_j)} \bigg| 
+		&\leq \varepsilon'
+	\end{align*}
+\end{proof}
+
+\subsubsection{Proof of Lemma \ref{lem: renyi additive loss}}
+\textbf{Lemma \ref{lem: renyi additive loss}} (CIP loss for additive mechanisms)
+\textit{
+	For an additive noise mechanism, a fully dependent trace as in \textbf{Figure \ref{fig:condensed model}}, and any prior $\calP$ on $X$ the CIP loss may be expressed as
+	\begin{align}
+		&D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = s_i)}{P_{\calA, \calP}(Z | \Xs = s_j)}  
+		&= \sum_{i \in \Is} \bigg[ D_\lambda \binom{P_\calA(Z_i | X_i = s_i)}{P_\calA(Z_i | X_i = s_j)} \bigg]
+		+ D_\lambda \binom{P_{\calA, \calP}(\Zu | \Xs = s_i)}{P_{\calA, \calP}(\Zu | \Xs = s_j)} \notag
+	\end{align}
+%	where $\Xu_{|x_s} \sim P_\calP(\Xu | \Xs = x_s)$ and $\Xu_{|x_s'} \sim P_\calP(\Xu | \Xs = x_s')$. 
+}
+\begin{proof}
+\begin{align}
+	D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = x_s)}{P_{\calA, \calP}(Z | \Xs = x_s')} 
+	&= D_\lambda \binom{P_{\calA}(\Zs | \Xs = x_s)P_{\calA, \calP}(\Zu | \Xs = x_s)}{P_{\calA}(\Zs | \Xs = x_s')P_{\calA, \calP}(\Zu | \Xs = x_s')} \tag{1} \\
+	&=  D_\lambda \binom{P_{\calA}(\Zs | \Xs = x_s)}{P_{\calA}(\Zs | \Xs = x_s')} + D_\lambda \binom{P_{\calA, \calP}(\Zu | \Xs = x_s)}{P_{\calA, \calP}(\Zu | \Xs = x_s')} \tag{2} \\
+	&= D_\lambda \binom{\prod_{i \in \Is } P_{\calA}(Z_i | X_i = x_i)}{\prod_{i \in \Is } P_{\calA}(Z_i | X_i = x_i')} + D_\lambda \binom{P_{\calA, \calP}(\Zu | \Xs = x_s)}{P_{\calA, \calP}(\Zu | \Xs = x_s')} \tag{3} \\
+	&= \sum_{i \in \Is} \bigg[ D_\lambda \binom{P_\calA(Z_i | X_i = x_i)}{P_\calA(Z_i | X_i = x_i')} \bigg]
+	+ D_\lambda \binom{P_{\calA, \calP}(\Zu | \Xs = x_s)}{P_{\calA, \calP}(\Zu | \Xs = x_s')} \tag{4}
+\end{align}
+Where line (1) uses the conditional independence seen in the graphical model of \textbf{Figure \ref{fig:graphical models}}. Line (2) is due to the fact that the two terms in line (1) are conditionally independent, allowing for separating into the sum of two separate divergences (which is an easily verifiable property of R\'enyi divergence evident from its definition in Equation \ref{eqn: renyi}). Line (3) is again from the conditional independence between the $Z_i$ for each $i \in \Is$ when conditioned on $\Xs$. Line (4) uses the same property of R\'enyi divergence used in Line (2): the terms in the product are conditionally independent allowing for the separation into the sum of multiple divergences. 
+
+%We now rewrite the conditional distribution of the second term as the marginal distribution of the sum of two independent random variables: $P_{\calA, \calP}(\Zu | \Xs = x_s) = P_{\calA, \calP}(\Xu_{|x_s} + \Gu)$ where \\$\Xu_{|x_s} \sim P_\calP(\Xu | \Xs = x_s)$. Effectively this says that the distribution of the conditional random variable $\Zu | \{\Xs = x_s\}$ is identical to the distribution of independently drawing $\Xu_{|x_s} \sim P_\calP(\Xu | \Xs = x_s)$ and $\Gu \sim \calN(\mathbf{0}, \Sigma_{uu})$ and adding them together. 
+%\begin{align}
+%	P_{\calA, \calP}(\Zu = z_u | \Xs = x_s) 
+%	&= \int_{\R^{|\Iu|}} P_{\calA, \calP}(\Zu = z_u, \Xu = x_u | \Xs = x_s) \ dx_u  \tag{5} \\
+%	&=  \int_{\R^{|\Iu|}} P_{\calP}(\Xu = x_u | \Xs = x_s) P_{\calA}(\Zu = z_u | \Xu = x_u) \ dx_u  \tag{6} \\
+%	&=  \int_{\R^{|\Iu|}} P_{\calP}(\Xu = x_u | \Xs = x_s) P_{\calA}(\Gu = z_u - x_u) \ dx_u \tag{7} \\
+%	&= \big( P_{\calP}(\Xu | \Xs = x_s) * P_{\calA}(\Gu) \big)(z_u) \tag{8} \\
+%	&= P_{\calA, \calP}(\Xu_{|x_s} + \Gu = z_u) \tag{9}
+%\end{align}
+%Where lines (5) and (6) are also due to the structure of conditional independence, and line (7) is simply rewriting $P_{\calA}(\Zu = z_u | \Xu = x_u)$ in terms of the density of $\Gu$. Line (8) is by definition of a convolution, and line (9) is due to the fact that the convolution of the densities of two independent random variables is the distribution of their sum. Thus, $P_{\calA, \calP}(\Zu | \Xs = x_s) = P_{\calA, \calP}(\Xu_{|x_s} + \Gu)$. Substituting this back into the second divergence in line (4), we get 
+%\begin{align*}
+%	D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = x_s)}{P_{\calA, \calP}(Z | \Xs = x_s')} &= 
+%	\sum_{i \in \Is} \bigg[ D_\lambda \binom{P_\calA(Z_i | X_i = x_i)}{P_\calA(Z_i | X_i = x_i')} \bigg]
+%	+ D_\lambda \binom{P_{\calA, \calP}(\Xu_{|x_s} + \Gu)}{P_{\calA, \calP}(\Xu_{|x_s'} + \Gu)}
+%\end{align*}
+
+\end{proof}
+
+\subsubsection{Proof of Theorem \ref{thm: prior misspecification}}
+\label{apx: prior misspecification proof}
+\textbf{Thoerem \ref{thm: prior misspecification}}
+Robustness to Prior Misspecification 
+\textit{
+	Mechanism $\calA$ satisfies $\varepsilon(\lambda)$-CIP for prior class $\Theta$. Suppose the finite mean true distribution $\calQ$ is not in $\Theta$. The CIP loss of $\calA$ against prior $\calQ$ is bounded by 
+	\begin{align*}
+		D_\lambda \binom{P_{\calA, \calQ}(Z | \Xs = s_i)}{P_{\calA, \calQ}(Z | \Xs = s_j)} \leq \varepsilon'(\lambda)
+	\end{align*}
+	where
+	\begin{align*}
+		\varepsilon'(\lambda) 
+		&= \frac{\lambda - \frac{1}{2}}{\lambda - 1} \ \Delta(2\lambda) + 
+		\Delta(4\lambda - 3) +
+		\frac{2\lambda - \frac{3}{2}}{2\lambda - 2} \ \varepsilon(4 \lambda -2)
+	\end{align*}
+	and where $\Delta(\lambda)$ is
+	\begin{align*}
+		\inf_{\calP \in \Theta} \sup_{s_i \in \calS} \max \bigg\{ 
+		D_\lambda \binom{P_{ \calP}(\Xu | \Xs = s_i)}{P_{ \calQ}(\Xu | \Xs = s_i)}, 
+		D_\lambda \binom{P_{ \calQ}(\Xu | \Xs = s_i)}{P_{ \calP}(\Xu | \Xs = s_i)}
+		\bigg\}
+	\end{align*}
+}
+\begin{proof}
+By `finite mean' distribution $\calQ$, we mean that all conditionals of $\calQ$ given some $\Xs$ have finite mean. Since a conditional prior class contains conditionals of one distribution with any offset (any mean value), this guarantees that $\Delta(\lambda)$ is achieved for some $\calP \in \Theta$. Intuitively, this prevents the pathological case of $\inf_{\calP \in \Theta}$ being a limit as the mean of $\calP \rightarrow \infty$, only asymptotically approaching $\Delta(\lambda)$. If the mean of $\calQ$ is finite, then the closest $\calP \in \Theta$ (in R\'enyi divergence) must also have finite mean, since any mean is attainable in a conditional prior class $\Theta$.
+
+With this in mind, we make use of the following triangle inequality provided in \cite{renyi}: 
+\begin{lemma}
+	For distributions $\calP$, $\calQ$, $\calR$ on $X$ with common support we have
+	\begin{align*}
+		D_\lambda \binom{P_\calP(X)}{P_\calQ(X)} \leq 
+		\frac{\lambda - \frac{1}{2}}{\lambda - 1} D_{2 \lambda} \binom{P_\calP(X)}{P_\calR(X)} 
+		+ D_{2\lambda - 1} \binom{P_\calR(X)}{P_\calQ(X)}
+	\end{align*}
+\end{lemma}
+In our case, we assume that the mechanism $\calA$ gives $Z|\Xs = x_s$ identical support for all $\Is, x_s$. Using this, we have 
+\begin{align*}
+	D_\lambda \binom{P_{\calA, \calQ}(\Zu | \Xs = x_s)}{P_{\calA, \calQ}(\Zu | \Xs = x_s')} 
+	\leq \frac{\lambda - \frac{1}{2}}{\lambda - 1} D_{2\lambda} \binom{P_{\calA, \calQ}(\Zu | \Xs = x_s)}{P_{\calA, \calP}(\Zu | \Xs = x_s)}
+	+  D_{2\lambda - 1} \binom{P_{\calA, \calP}(\Zu | \Xs = x_s)}{P_{\calA, \calQ}(\Zu | \Xs = x_s')} \ \ . \\
+\end{align*}
+By a data processing inequality, the divergence of the first term is bounded by $\Delta(2\lambda)$ and the blue term may be bounded by a second application of the triangle inequality: 
+\begin{align*}
+	D_{2\lambda - 1} \binom{P_{\calA, \calP}(\Zu | \Xs = x_s)}{P_{\calA, \calQ}(\Zu | \Xs = x_s')}
+	&\leq \frac{2\lambda - \frac{3}{2}}{2\lambda - 2} D_{4\lambda - 2} \binom{P_{\calA, \calP}(\Zu | \Xs = x_s)}{P_{\calA, \calP}(\Zu | \Xs = x_s')}
+	+ D_{4\lambda - 3} \binom{P_{\calA, \calP}(\Zu | \Xs = x_s')}{P_{\calA, \calQ}(\Zu | \Xs = x_s')}
+\end{align*}
+The first divergence is bounded by $\varepsilon(4\lambda - 2)$ and the second divergence is bounded by $\Delta(4\lambda - 3)$. Putting all this together we have the following upper bound 
+\begin{align*}
+	D_\lambda \binom{P_{\calA, \calQ}(\Zu | \Xs = x_s)}{P_{\calA, \calQ}(\Zu | \Xs = x_s')}
+	\leq 
+	\frac{\lambda - \frac{1}{2}}{\lambda - 1} \ \Delta(2\lambda) + 
+		\Delta(4\lambda - 3) +
+		\frac{2\lambda - \frac{3}{2}}{2\lambda - 2} \ \varepsilon(4 \lambda -2)
+\end{align*}
+\end{proof}
+
+\subsubsection{Proof of Theorem \ref{thm:GP bound}}
+\label{apx: GP bound proof}
+\textbf{Theorem \ref{thm:GP bound}}
+CIP loss bound for GP conditional priors:
+\emph{
+Let $\Theta$ be a GP conditional prior class. Let $\Sigma$ be the covariance matrix for $X$ produced by its kernel function. Let $\calS$ be the basic or compound secret associated with $\Is$, and $S$ be the number of unique times in $\Is$. The mechanism $\calA(X) = X + G = Z$, where $G \sim \calN(\mathbf{0}, \Sigmag)$, then satisfies $(\varepsilon, \lambda)$-Conditional Inferential Privacy $(\Spairs, r, \Theta)$, where 
+\begin{align*}
+	\varepsilon
+	&\leq \frac{\lambda}{2} S r^2 \Big(  \frac{1 }{\sigma_s^2} + \alpha^*  \Big) 
+\end{align*}
+where $\sigma_s^2$ is the variance of each $G_i \in \Gs$ (diagonal entries of $\Sigmag_{ss}$) and $\alpha^*$ is the maximum eigenvalue of $\Sigmaeff = \big(\Sigma_{us} \Sigma_{ss}^{-1}\big)^\intercal \big( \Sigma_{u | s} + \Sigma_{uu}^{(g)} \big)^{-1} \big(\Sigma_{us} \Sigma_{ss}^{-1}\big)$. 
+}
+
+\begin{proof}
+Again, the conditional prior class $\Theta$ is defined by a kernel function $i,j \rightarrow \text{Cov}(i,j)$, which -- given the indices of the trace $X$ -- induces a covariance matrix $\Sigma$ between all $X_i, X_j$. In practice, when the sampling rate of locations is non-uniform the kernel function may use the time-stamps of the points in the trace to assign high correlation to $X_i$ that are close in time and low correlation to $X_i$ that are far apart in time. Of course, correlation between $X_i$ that are different dimension (e.g. latitude and longitude) must be designed for the given application and may be completely independent. The kernel function can encode this as well. 
+
+Recall from Equation \ref{eqn: renyi} that the R\'enyi divergence between two mean-shifted multivariate normal distributions, $\calP_1 = \calN(\mu_1, \Sigma)$ and $\calP_2 = \calN(\mu_2, \Sigma)$ is 
+\begin{align*}
+	D_\lambda \binom{\calP_1}{\calP_2} = \frac{\lambda}{2} (\mu_1 - \mu_2)^\intercal \Sigma^{-1} (\mu_1 - \mu_2)
+\end{align*}
+Now, for any prior $\calP \in \Theta$, we have that $X \sim \calN(\mu, \Sigma)$ for some $\mu$ and for $\Sigma$ defined by the kernel function. Again, $G \sim \calN(\mathbf{0}, \Sigmag)$. $\Is$ encodes the indices of a single location basic secret or a multi-location compound secret. Then, the divergence to bound for $(\varepsilon, \lambda)$-CIP$(\Spairs, r, \Theta)$ is 
+\begin{align*}
+	D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = s_i)}{P_{\calA, \calP}(Z | \Xs = s_j)}
+\end{align*}
+for any 
+\begin{align*} 
+	(s_i, s_j) \in \Spairs = \{(x_s, x_s'):\|x_s - x_s'\|_2 \leq 2r\}
+\end{align*}
+if $\Is$ encodes a basic secret, or for any
+\begin{align*}
+	(s_i, s_j) \in \Spairs = \Big\{\big( \{x_{s1}, x_{s2}, \dots\}, \{x_{s1}', x_{s2}', \dots\}\big): \| x_{sk} - x_{sk}' \|_2 \leq 2r, \forall \ k\Big\} 
+\end{align*} 
+if $\Is$ encodes a compound secret. A discriminative pair $(s_i,s_j)$ is two real valued vectors $\in \R^{|\Is|}$, representing two hypotheses about the true values of $\Xs$. We denote the $m^\text{th}$ element as ${s_i}_m, {s_j}_m$. Let $f:\Is \rightarrow [|\Is|]$ be a mapping from each index $w \in \Is$ to its corresponding position in the vector $s_i$ or $s_j$ (where the value of $X_w$ is hypothesized). By Lemma \ref{lem: renyi additive loss}, the divergence can be written as  
+\begin{align*}
+	D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = s_i)}{P_{\calA, \calP}(Z | \Xs = s_j)}
+	&= \sum_{w \in \Is} \bigg[ D_\lambda \binom{P_\calA(Z_w | X_w = {s_i}_{f(w)})}{P_\calA(Z_w | X_w = {s_j}_{f(w)})} \bigg]
+	+ D_\lambda \binom{P_{\calA, \calP}(\Zu | \Xs = x_s)}{P_{\calA, \calP}(\Zu | \Xs = x_s')} 
+\end{align*}
+where $P_\calA(Z_w | X_w = x) = \calN(x, \sigma_s^2)$ for all $w \in \Is$. Recall from the statement of the Theorem that we assume the diagonal entries of $\Sigma_{ss}$ all equal some value $\sigma_s^2$: we add the same noise variance to each point in the secret set, which is optimal under MSE constraints. Additionally, note that for the hypothesis $\Xs = x_s$, we know the distribution of $\Xu | \Xs = x_s \sim \calN(\mu_{u|s}, \Sigma_{u|s})$, where $\mu_{u|s} = \mu_u + \Sigma_{us} \Sigma_{ss}^{-1} (x_s - \mu_s)$ and $\Sigma_{u|s} = \Sigma_{uu} - \Sigma_{us}\Sigma_{ss}^{-1} \Sigma_{su}$. Notice that only $\mu_{u|s}$ depends on the actual value of $x_s$, and $\Sigma_{u|s}$ depends only on the indices of $\Is$. Being the sum of two normally distributed variables, we have that $(\Zu | \Xs = x_s) \overset{d}{=} (\Xu|\Xs = x_s) + \Gu = \calN(\mu_{u|s}, \Sigma_{u|s} + \Sigmag_{uu})$. Substituting this into the divergences above sum of divergences: 
+\begin{align}
+	&D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = s_i)}{P_{\calA, \calP}(Z | \Xs = s_j)}
+	= \sum_{m =1}^{|\Is|} \bigg[ D_\lambda \binom{\calN({s_i}_m, \sigma_s^2)}{\calN({s_j}_m, \sigma_s^2)} \bigg]
+	+ D_\lambda \binom{\calN(\mu_{u|s_i}, \Sigma_{u|s} + \Sigmag_{uu})}{\calN(\mu_{u|s_j}, \Sigma_{u|s} + \Sigmag_{uu})} \tag{1} \\
+	&=  \frac{\lambda}{2} \sum_{m = 1}^{|\Is|}  \frac{1}{\sigma_s^2} ({s_i}_m - {s_j}_m)^2 
+	+  \frac{\lambda}{2} (\mu_{u|s_i} - \mu_{u|s_j})^\intercal (\Sigma_{u|s} + \Sigmag_{uu})^{-1} (\mu_{u|s_i} - \mu_{u|s_j})  \tag{2} \\
+	&=  \frac{\lambda}{2 \sigma_s^2}   ({s_i} - {s_j})^\intercal({s_i} - {s_j}) 
+	+  \frac{\lambda}{2} \big( \Sigma_{us} \Sigma_{ss}^{-1}(s_i - s_j) \big)^\intercal (\Sigma_{u|s} + \Sigmag_{uu})^{-1} \big( \Sigma_{us} \Sigma_{ss}^{-1}(s_i - s_j) \big)  \tag{3}  \\
+	&= \frac{\lambda}{2 \sigma_s^2}   ({s_i} - {s_j})^\intercal({s_i} - {s_j}) 
+	+  \frac{\lambda}{2} (s_i - s_j)^\intercal \Sigma_{ss}^{-1} \Sigma_{su}  (\Sigma_{u|s} + \Sigmag_{uu})^{-1} \Sigma_{us} \Sigma_{ss}^{-1} (s_i - s_j) \tag{4} 
+\end{align}
+Line (1) substitutes in the normal distributions given by our mechanism and conditional prior class. Line (2) substitutes in the closed-form expression for R\'enyi divergence between two mean-shifted normal distributions given in Equation \ref{eqn: renyi}. Line (3) substitutes in the expression for $\mu_{u|s}$ given above, and simplifies. To expand out this simplification in explicit steps: 
+\begin{align*}
+	(\mu_{u|s_i} - \mu_{u|s_j})
+	&= \big(  \mu_u + \Sigma_{us} \Sigma_{ss}^{-1} (s_i - \mu_s) -  [\mu_u + \Sigma_{us} \Sigma_{ss}^{-1} (s_j - \mu_s)] \big) \\
+	&= \big(  \Sigma_{us} \Sigma_{ss}^{-1} s_i -  \Sigma_{us} \Sigma_{ss}^{-1} s_j \big) \\
+	&= \Sigma_{us} \Sigma_{ss}^{-1} (s_i - s_j)
+\end{align*}
+Line (4) distributes the transpose in the right term of line (3): 
+\begin{align*}
+	\big( \Sigma_{us} \Sigma_{ss}^{-1}(s_i - s_j) \big)^\intercal
+	&= (s_i - s_j)^\intercal \big(  \Sigma_{us} \Sigma_{ss}^{-1} \big)^\intercal \\
+	&=  (s_i - s_j)^\intercal  \big( \Sigma_{ss}^{-1} \big)^\intercal \Sigma_{us}^\intercal   \\
+	&= (s_i - s_j)^\intercal \Sigma_{ss}^{-1}  \Sigma_{su}
+\end{align*}
+where that final step is a consequence of $\Sigma$ being symmetric. $\Sigma_{ss}$ is also a symmetric matrix (so its inverse is symmetric) and $\Sigma_{us}^\intercal = \Sigma_{su}$. 
+
+Returning to line (4) above, simplify this expression by substituting $\Delta = s_i - s_j$: 
+\begin{align}
+	D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = s_i)}{P_{\calA, \calP}(Z | \Xs = s_j)}
+	&= \frac{\lambda}{2 \sigma_s^2}   \Delta^\intercal \Delta 
+	+  \frac{\lambda}{2} \Delta^\intercal \Sigma_{ss}^{-1} \Sigma_{su}  (\Sigma_{u|s} + \Sigmag_{uu})^{-1} \Sigma_{us} \Sigma_{ss}^{-1} \Delta \tag{5} \\
+	&= \frac{\lambda}{2 \sigma_s^2}  \| \Delta \|_2^2 
+	+  \frac{\lambda}{2} \Delta^\intercal \Sigmaeff \Delta \tag{6} 
+\end{align}
+Where $\Sigmaeff = \Sigma_{ss}^{-1} \Sigma_{su}  (\Sigma_{u|s} + \Sigmag_{uu})^{-1} \Sigma_{us} \Sigma_{ss}^{-1}$. The left term of line (6) attributes the direct loss of $\Zs$ on $\Xs$ and the right term attributes the indirect loss of $\Zu$ on $\Xs$. 
+
+We are interested in bounding the expression of line (6) for all $(s_i, s_j) \in \Spairs$. We do this by bounding it for all vectors $\Delta \in \calD$ 
+\begin{align*}
+	\calD = \{ s_i - s_j : \| s_i - s_j \|_2 \leq  \sqrt{S}\  r \}
+\end{align*}  
+, where $S$ is the number of basic secrets (locations) contained in $\Is$ which may be a basic or compound secret set. For a basic secret ($S = 1$), this bound is tight, since $\calD = \{s_i - s_j: (s_i, s_j) \in \Spairs\}$. The set of $\Delta \in \calD$ is exactly any two hypothesis $(s_i, s_j)$ that are within any circle of radius $r$. For a compound secret, this bound is not guaranteed to be tight. Recall once again that the set of $\Spairs$ for a compound secret is given by the set of $(s_i, s_j)$ in 
+\begin{align*}
+	\Spairs = \Big\{\big( \{x_{s1}, x_{s2}, \dots\}, \{x_{s1}', x_{s2}', \dots\}\big): \| x_{sk} - x_{sk}' \|_2 \leq r, \forall \ k\Big\} 
+\end{align*} 
+For concreteness, consider the 2d location trace example in \textbf{Figure \ref{fig:nyc_example}}, where we have a compound secret of $S = 3$ locations. Here, $s_i, s_j \in \R^{6}$, where 6 comes from the fact that we have three 2d locations. So, $(s_i, s_j)$ represents a pair of hypotheses on all three locations. $s_i$'s hypothesis of the first secret location --- written as ${x_s}_1 \in \R^2$ above --- is within $r$ of the $s_j$'s hypothesis of the first secret location --- written as ${x_s}_1' \in \R^2$ above. The same goes for the second and third locations. So, the $L_2$ norm of $\Delta = s_i - s_j$ is no greater than
+\begin{align*}
+	\sup_{(s_i, s_j) \in \Spairs} \|s_i - s_j\|_2 
+	&=  \sup_{(s_i, s_j) \in \Spairs} \sqrt{\sum_{m=1}^6 ({s_i}_m - {s_j}_m)^2} \\
+	&=  \sup_{(s_i, s_j) \in \Spairs} \sqrt{\sum_{k=1}^3 \|{x_s}_k - {x_s}_k'\|_2^2} \\
+	&= \sqrt{\sum_{k=1}^3 r^2} \\
+	&= \sqrt{3} \ r
+\end{align*}
+For compound secrets, $\calD$ represents the $L_2$ ball enclosing all $\Delta \in \{s_i - s_j : (s_i, s_j) \in \Spairs \}$. However, $\calD$ also includes some values of $\Delta = s_i - s_j$ not covered by $\Spairs$. Suppose an adversary considers the hypotheses 
+\begin{align*}
+s_i = \{x_{s1}, x_{s2}, x_{s3}\}, s_j = \{x_{s1}', x_{s2}', x_{s3}'\}
+\end{align*} 
+where ${x_s}_1 = 0, {x_s}_1' = \sqrt{3} \ r, {x_s}_2 = {x_s}_2', {x_s}_3 = {x_s}_3'$. Since ${x_s}_1, {x_s}_1'$ are not within $r$ of each other, this is not in $\Spairs$. However, it is covered by $\calD$, and thus is covered by our bound on CIP loss and our mechanisms. 
+
+With $\calD$ defined, we may return to bounding the expression in line (6): 
+\begin{align}
+	D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = s_i)}{P_{\calA, \calP}(Z | \Xs = s_j)}
+	&\leq \sup_{\Delta \in \calD} \bigg( \frac{\lambda}{2 \sigma_s^2}  \| \Delta \|_2^2 
+	+  \frac{\lambda}{2} \Delta^\intercal \Sigmaeff \Delta \bigg) \tag{7} \\
+	&\leq  \frac{\lambda}{2}\bigg( \frac{1}{\sigma_s^2} S r^2 + S r^2 \text{maxeig}(\Sigmaeff) \bigg) \tag{8} \\
+	&= \frac{\lambda}{2} S r^2 \big( \frac{1}{\sigma_s^2} + \alpha^* \big) \tag{9}
+\end{align}
+where line (8) distributes the supremum. For the right term, this is given by the maximum magnitude of all $\Delta \in \calD$ times the maximum eigenvalueof $\Sigmaeff$ which equals $S r^2 \text{maxeig}(\Sigmaeff)$. Line (9) simply substitutes $\alpha^* = \text{maxeig}(\Sigmaeff)$. 
+
+%(explain how you went from $\Sigma_{us}^\intercal$ to $\Sigma_{su}$. Also explain why $(\Sigma_{ss}^{-1})^\intercal = \Sigma_{ss}^{-1}$ (cuz inverse of symmetric matrix is symmetric). Then move to $\Delta s$ notation. Also explain that Lemma 3 isnt needed. Can show this operating on distributions of $Z|s$, $Z|s'$ alone. 
+\end{proof}
+
+\subsubsection{Proof of Corollary \ref{cor: composition}}
+\textbf{Corollary \ref{cor: composition}}
+Graceful Composition in Time
+\textit{
+	Suppose a user releases two traces $X$ and $\hat{X}$ with additive noise $G \sim \calN(\mathbf{0}, \Sigmag)$ and $\hat{G} \sim \calN(\mathbf{0}, \hat{\Sigma}^{(g)})$, respectively. Then basic or compound secret $\Xs$ of $X$ enjoys $(\bar{\varepsilon}, \lambda)$-CIP, where 
+	\begin{align*}
+		\bar{\varepsilon} \leq \frac{\lambda}{2} S r^2 \Big(  \frac{1 }{\sigma_s^2} + \bar{\alpha}^*  \Big) 
+	\end{align*}
+	and where $\bar{\alpha}$ is the maximum eigenvalue of $\bar{\Sigma}_{\text{eff}} = \big(\Sigma_{us} \Sigma_{ss}^{-1}\big)^\intercal \big( \Sigma_{u | s} + \bar{\Sigma}_{uu}^{(g)} \big)^{-1} \big(\Sigma_{us} \Sigma_{ss}^{-1}\big)$. $\Sigma$ is the covariance matrix of the joint distribution on $X, \hat{X}$ and 
+	\begin{align*}
+	\bar{\Sigma}^{(g)} =
+		\begin{bmatrix}
+			 \Sigmag & 0 \\
+			 0 &  \hat{\Sigma}^{(g)} \ .
+		\end{bmatrix}
+	\end{align*}
+}
+
+\begin{proof}
+Here, we record two traces (presumably) far apart in time 
+\begin{align*}
+	(X_1, \dots, X_n) \text{ and } (\hat{X}_1, \dots, \hat{X}_m)
+\end{align*}
+And release
+\begin{align*}
+	(Z_1, \dots, Z_n) = (X_1, + G_1, \dots, X_n + G_n) \text{ and } (\hat{Z}_1, \dots, \hat{Z}_m) = (\hat{X}_1, + \hat{G}_1, \dots, \hat{X}_m, + \hat{G}_m)
+\end{align*}
+the first trace protects secret locations $\Xs$ and the second protects $\widehat{\Xs}$, so we have that 
+\begin{align*}
+	D_\lambda \binom{P_{\calA, \calP}(Z | \Xs = s_i)}{P_{\calA, \calP}(Z | \Xs = s_j)} &\leq \varepsilon \\
+	D_\lambda \binom{P_{\calA, \calP}(\hat{Z} | \widehat{\Xs} = \hat{s}_i)}{P_{\calA, \calP}(\hat{Z} | \widehat{\Xs} = \hat{s}_j)} &\leq \hat{\varepsilon}
+\end{align*}
+We aim to update the losses: 
+\begin{align*}
+	D_\lambda \binom{P_{\calA, \calP}(Z, \hat{Z} | \Xs = s_i)}{P_{\calA, \calP}(Z, \hat{Z} | \Xs = s_j)} &\leq \varepsilon' \\
+	D_\lambda \binom{P_{\calA, \calP}(\hat{Z}, Z | \widehat{\Xs} = \hat{s}_i)}{P_{\calA, \calP}(\hat{Z}, Z | \widehat{\Xs} = \hat{s}_j)} &\leq \hat{\varepsilon}'
+\end{align*}
+Fortunately, our framework is pretty friendly to figuring this out, and can be done simply by updating the `inferential loss term' $\alpha^*$ and $\hat{\alpha}^*$ of each, the max eigenvalues used to compute each of $\varepsilon$ and $\hat{\varepsilon}$, respectively. Let's focus on $\varepsilon'$, since the same analysis follows for $\hat{\varepsilon}'$.  
+
+Recall that $\alpha^*$ is given by the max eigenvalue of $\Sigmaeff$ which is 
+\begin{align*}
+	\Sigmaeff 
+	&= \big(\Sigma_{us} \Sigma_{ss}^{-1}\big)^\intercal \big( \Sigma_{u | s} + \Sigma_{uu}^{(g)} \big)^{-1} \big(\Sigma_{us} \Sigma_{ss}^{-1}\big)
+\end{align*}
+Where $\Sigma$ is the covariance matrix of $X_1, \dots, X_n$ and $\Sigmag$ is the noise covariance matrix added. Simply augment $\Sigma$ to become the joint covariance matrix $\Sigma_J$ of $X, \hat{X}$, and augment $\Sigmag$ to become 
+\begin{align*}
+	\Sigmag_J
+	&= 
+	\begin{bmatrix}
+		\Sigmag & 0 \\
+		0 & \hat{\Sigma}^{(g)}
+	\end{bmatrix}
+\end{align*}
+then update $\Sigmaeff$ to $\Sigma_{\text{eff}, J}$ which uses both $\Sigma_J$ and $\Sigmag_J$. Using the corresponding max eigenvalue $\alpha^*_J$ in the loss expression of Theorem 3.2 gives us $\varepsilon'$. 
+
+Note that for kernels like RBF, $\varepsilon' \rightarrow \varepsilon$ as the traces $X$ and $\hat{X}$ move apart further and further in time. This is not the case for traces using a purely periodic kernel with not time decay, and we should expect much worse composition. 
+\end{proof}
+
+
+\subsubsection{Traces with Independent Dimensions}
+In many cases, the different dimensions of the trace may be probabilistically independent, and it may be more convenient to make separate privacy mechanisms for each. For a 2d trace $X$, suppose $\Ix$ and $\Iy$ store the indices of the latitude points $\Xx$ and longitude points $\Xy$, such that $X = \Xx \cup \Xy$. If latitude and longitude are independent, it may be more convenient to characterize the conditional priors of $\Xx$ abd $\Xy$ separately. The question is whether privacy guarantees remain for the full trace $X$. To answer this, we provide the following corollary: 
+
+\begin{corollary}\emph{CIP loss of independent dimensions} 
+\label{cor: independence}
+	Let $\Theta$ be a GP conditional prior class on a 2d trace $X$ such that the dimensions are independent. Let $\Is$ be some secret set of time indices corresponding to some basic or compound secret. For the trace $X = \Xx \cup \Xy$, the Gaussian mechanism $\calA(X) = \Zx \cup \Zy$ where $\Zx = \calA_x(\Xx) = \Xx + \Gx$ and $\Zy = \calA_y(\Xy) = \Xy + \Gy$ satisfies $(\varepsilon, \lambda)$-CIP where
+	\begin{align*}
+		\varepsilon \leq \frac{\lambda}{2} S r^2 \big( \frac{1}{\sigma_s^2} + \alpha^*_x + \alpha^*_y \big) 
+	\end{align*} 
+	when $\calA_x$ and $\calA_y$ provide $\frac{\lambda}{2} S r^2 \big( \frac{1}{\sigma_s^2} + \alpha^*_x)$ and $\frac{\lambda}{2} S r^2 \big( \frac{1}{\sigma_s^2} + \alpha^*_y)$ to $\Is \cap \Ix$ and $\Is \cap \Iy$, respectively. 
+\end{corollary}
+The gist of this corollary is that a mechanism can be designed to achieve the bound of Theorem \ref{thm:GP bound} to each dimension independently and released with still-meaningful privacy guarantees. The reason is that this still includes all secret pairs $\Spairs$ 
+\begin{proof}
+	By independence, $\Xx$ and $\Xy$ can be treated as two unconnected traces of the type seen in \textbf{Figure \ref{fig:graphical models}}. As such the privacy guarantee of Theorem \ref{thm:GP bound} can be upheld for each. The question is whether bounding CIP loss to the one-dimensional basic or compound secret associated with secret sets $\Is \cap \Ix$ and $\Is \cap \Iy$ still provides guarantees for the full secret set $\Is$. 
+	
+	Without loss of generality, we will demonstrate for a basic and a compound secret. Consider the basic secret set $\Is = \{X_{10}, X_{11}\}$, where $\Is \cap \Ix = \{X_{10}\}$ (latitude) and $\Is \cap \Iy = \{X_{11}\}$ (longitude). We again assume that independent gaussian noise of variance $\sigma_s^2$ is added to all $\Xs$, since this is optimal under utility constraints. We have now bounded the R\'enyi divergence when conditioning on pairs of hypotheses on latitude and longitude separately. 
+	\begin{align*} 
+	{\Spairs}_x = {\Spairs}_y = \{(x_s, x_s'):x_s \in \R,  \|x_s - x_s'\|_2 \leq r\}
+	\end{align*}
+	By independence, this also bounds the R\'enyi divergence conditioning on pairs of hypotheses on latitude and longitude jointly: 
+	\begin{align*} 
+	{\Spairs}_{xy} = \{(x_s, x_s'):x_s \in \R^2,  \|x_s - x_s'\|_2 \leq r\}
+	\end{align*}
+	In effect, we have guaranteed privacy for any pair of hypotheses $(s_i, s_j)$ in the square circumscribing the circle of radius $r$ that we with to provide. The analysis on the direct privacy loss is exactly the same as it was in the more general case. Since the R\'enyi divergences of $\Xu \cap \Xx$ and of $\Xu \cap \Xy$ add, the $\alpha^*$'s add. 
+	
+	The same goes for a compound secret. Consider three location compound secret pairs given by 
+	\begin{align*}
+		{\Spairs}_{xy} = \Big\{\big( \{x_{s1}, x_{s2}, \dots\}, \{x_{s1}', x_{s2}', \dots\}\big): x_{si} \in \R^2, \| x_{sk} - x_{sk}' \|_2 \leq r, \forall \ k\Big\} 
+	\end{align*} 
+	Instead, we bound privacy loss for 
+	\begin{align*}
+		{\Spairs}_x = {\Spairs}_y = \Big\{\big( \{x_{s1}, x_{s2}, \dots\}, \{x_{s1}', x_{s2}', \dots\} \big): x_{si} \in \R, \| x_{sk} - x_{sk}' \|_2 \leq r, \forall \ k \Big\}
+	\end{align*}
+	Separately, giving us $\alpha_x^*$ and $\alpha_y^*$. This again includes any two hypotheses on the three locations such that each pair of $x_{sk}, x_{sk}'$ is within a square circumscribing a circle of radius $r$. We achieve this by bounding privacy loss for all $\Delta_x$ in a 3d $L_2$ ball of radius $\sqrt{S}  \ r$, as with $\Delta_y$. 
+	
+	This corollary can be extended to all traces of all dimensions that are probabilistically independent. 
+\end{proof}
+
+We make use of the above proof in the Experiments section. 
+
+\subsection{Derivation of Algorithms}
+\label{apx: algorithmns}
+In this section, we derive the three SDP-based algorithms of Section \ref{sec: algorithms} and their properties. 
+
+\subsubsection{Derivation of $\text{SDP}_\text{A}$}
+
+$\text{SDP}_\text{A}$ minimizes the privacy loss bound of Theorem \ref{thm:GP bound} for any compound or basic secret encoded by secret set $\Is$. As is clarified in its proof (Appendix \ref{apx: GP bound proof}), the bound is tight when $\Is$ encodes a basic secret. If $\Is$ encodes a compound secret, the tightness depends on the conditional prior class $\Theta$. 
+
+Our variable for minimizing this bound is the noise covariance matrix $\Sigmag$. Due to the conditional independence exhibited by Lemma \ref{lem: renyi additive loss}, $\Gs$ and $\Gu$ may be independent. The additive noise $G_i \in \Gs$ are all independent Gaussian with variance $\sigma_s^2$. This is because --- conditioning on $\{\Xs = x_s\}$ --- $\Zs$ is independent of $\Xu$ and $\Zu$. So, $\Gs \sim \calN(\mathbf{0}, \sigma_s^2 I)$, and $\Sigmag_{ss} = \sigma_s^2 I$. The additive noise $G_i \in \Gu$ are all dependent as described by $\Sigmag_{uu}$, and $\Gu \sim \calN(\mathbf{0}, \Sigmag_{uu})$. Consequently, $\Sigmag$ is completely characterized by $\Sigmag_{uu}$ and $\sigma_s^2$. 
+
+To see how the bound of Theorem \ref{thm:GP bound} can be redrafted as an SDP, first notice that its two terms may be written as the maximum eigenvalue of a matrix product. Here, $\Sigmaeff = A^\intercal B A$, where $A = \Sigma_{us} \Sigma_{ss}^{-1}$ and $B = \big( \Sigma_{u | s} + \Sigmag_{uu} \big)^{-1}$
+\begin{align*}
+	\frac{1}{\sigma_s^2} + \alpha^*
+	= \text{maxeig} \big( 
+	\frac{1}{\sigma_s^2} I + A^\intercal B A \big)
+	= \text{maxeig} \bigg(  
+	\begin{bmatrix}
+		I \  A
+	\end{bmatrix} 
+	\begin{bmatrix}
+		\frac{1}{\sigma_s^2} I \ \ \  0 \\
+		\quad 0 \quad  B
+	\end{bmatrix}
+	\begin{bmatrix}
+		I \\ A
+	\end{bmatrix}
+	\bigg) 
+	= \text{maxeig} \big( \tilde{A}^\intercal \tilde{B} \tilde{A} \big) 
+\end{align*}
+This expression uses all parameters of $\Sigmag$: $\sigma_s^2$ parametrizes $\Sigmag_{ss}$ and $\Sigmag_{uu} = B^{-1} - \Sigma_{u|s}$, where $\Sigma_{u|s}$ is given by the kernel function of $\Theta$. 
+
+Before casting this as an SDP, we provide a formal definition from \cite{SDPs}: 
+
+\begin{definition}\emph{Semidefinite Program} 
+	\label{def: SDP}
+	The problem of minimizing a linear function of a variable $x \in \R^n$ subject to a matrix inequality: 
+	\begin{align*}
+		\min_{x \in \R^n} \ &c^\intercal x \\
+		&\text{s.t. } F_0 + \sum_{i=1}^n x_i F_i \succeq 0 \\
+		& \quad \ \  Ax = b
+	\end{align*}
+	where the $F_i \in \R^{n \times n}$ are all symmetric and $A \in \R^{p \times n}$ is a \emph{semidefinite program}, or SDP. 
+\end{definition}
+
+The task of minimizing $\text{maxeig} \big( \tilde{A}^\intercal \tilde{B} \tilde{A} \big)$ under MSE constraints can almost be formulated as an SDP: 
+\begin{align*}
+	\min_{B \succeq 0 , \nicefrac{1}{\sigma_s^2} \geq 0} \ &\beta^* \\
+	&\text{s.t. } \beta^* I  \succeq \tilde{A}^\intercal \tilde{B} \tilde{A} \\
+	& \quad \ \ B \preceq \Sigma_{u|s}^{-1} \\
+	&\quad \ \ \trace(\Sigmag_{uu}) + |\Is| \sigma_s^2 \leq n o_t 
+\end{align*}
+Here, the first constraint guarantees that the maximum eigenvalue of $\tilde{A}^\intercal \tilde{B} \tilde{A}$ is bounded by $\beta^*$, which the objective minimizes. At program completion, we set $\Sigmag_{uu} = B^{-1} - \Sigma_{u|s}$, and the second constraints ensures that this is still PSD. The final constraint bounds the MSE of the mechanism $\Sigmag$. Note that $\trace(\Sigmag_{uu}) + |\Is| \sigma_s^2 = \trace(\Sigmag)$. The trouble lies the last constraint. Our program variable is $B$, but the final linear constraint requires $\Sigmag$, which is expressed using the inverse of $B$. This is not immediately available in the SDP framework. 
+
+To make the final linear constraint available, we invert the above program using the observation that the maximum eigenvalue of $\tilde{A}^\intercal \tilde{B} \tilde{A}$ is the inverse of the minimum eigenvalue of $(\tilde{A}^\intercal \tilde{B} \tilde{A})^{-1}$. Instead of optimizing over $B$ and $\nicefrac{1}{\sigma_s^2}$, we optimize over $B^{-1}$ and $\sigma_s^2$. Since $B^{-1} = \Sigma_{u|s} + \Sigmag_{uu}$, we may now have a utility constraint directly on the trace of $\Sigmag$. To make $B^{-1}$ our program variable, we approximate $(\tilde{A}^\intercal \tilde{B} \tilde{A})^{-1}$ with $\tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal}$. First note that $\tilde{A} \in \R^{n \times |\Is|}$, and has full column rank for the covariances we work with. So, $\tilde{A}^{-1} = (\tilde{A}^\intercal \tilde{A})^{-1}\tilde{A}^\intercal \in \R^{(|\Is| \times n)}$ is the left inverse of $\tilde{A}$ and is the least squares solution to $\tilde{A}^{-1} \tilde{A} = \tilde{A}^\intercal \tilde{A}^{-\intercal}  = I$ (we denote its transpose as $\tilde{A}^{-\intercal}$). It is also the least squares solution to $\tilde{A} \tilde{A}^{-1} = \tilde{A}^{-\intercal} \tilde{A}^\intercal = I$. Thus, we have an approximation of the inverse $(\tilde{A}^\intercal \tilde{B} \tilde{A})^{-1}$: 
+\begin{align*}
+	(\tilde{A}^\intercal \tilde{B} \tilde{A}) \ (\tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal})
+	&\approx \tilde{A}^\intercal \tilde{B} \tilde{B}^{-1} \tilde{A}^{-\intercal} \\
+	&= \tilde{A}^\intercal \tilde{A}^{-\intercal} \\
+	&\approx I
+\end{align*}
+
+We now can optimize in terms of $B^{-1}$ with the augmented matrix $\tilde{B}^{-1}$: 
+\begin{align*}
+	\tilde{B}^{-1} = 
+	\begin{bmatrix}
+		\sigma_s^2 I \ \ \  0 \\
+		\quad 0 \quad  B^{-1}
+	\end{bmatrix}
+\end{align*}
+
+We then optimize the following SDP: 
+
+\begin{align*}
+	\max_{B^{-1} \succeq 0 , \sigma_s^2 \geq 0} \ &\beta^* \\
+	&\text{s.t. } \beta^* I  \preceq \tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal} \\
+	& \quad \ \ B^{-1} \succeq \Sigma_{u|s} \\
+	&\quad \ \ \trace(\tilde{B}) -  \trace{(\Sigma_{u|s})} \leq n o_t 
+\end{align*}
+Upon program completion we recover $\sigma_s^2$ and $\Sigmag_{uu} = B^{-1} - \Sigma_{u|s}$ which we know is PSD due to the second constraint. The first constraint guarantees that the minimum eigenvalue of the approximated inverse is $\geq \beta^*$, which the objective maximizes. If the minimum eigenvalue of the approximate inverse is close to that of the true inverse, then we successfully minimize the maximum eigenvalue of $\tilde{A}^\intercal \tilde{B} \tilde{A}$, and thus minimize the direct and indirect privacy loss. The third constraint limits the MSE of $\Sigmag$ since $\trace(\tilde{B}) - \trace(\Sigma_{u|s}) = (\trace(\Sigmag_{uu}) + |\Is| \sigma_s^2 + \trace(\Sigma_{u|s})) - \trace(\Sigma_{u|s}) = \trace(\Sigmag)$. By inverting $\tilde{A}^\intercal \tilde{B} \tilde{A}$, this constraint is available in the SDP framework. 
+
+By expressing the above program in terms of the variable $\Sigmag$ instead of indirectly via $B^{-1}$ and $\sigma_s^2$, we get $\text{SDP}_\text{A}$: 
+
+\begin{align*}
+	\textbf{SDP}_\textbf{A}: \quad 
+	\argmax_{\Sigmag \succeq 0}& \ \beta^* \\
+	\text{s.t. }& \tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal} \succeq \beta^* \mathbf{I} \\
+	&\trace(\Sigmag) \leq n o_t
+\end{align*}
+It is straightforward to write this SDP in the form seem in Definition \ref{def: SDP}. The program variables $x$ would be the diagonal and upper or lower triangular part of $\Sigmag$ along with $\beta^*$. With some linear algebra, the first constraint can be written in the form of $F_0 + \sum_{i=1}^n x_i F_i \succeq 0$, and the second constraint can be written as $Ax = b$. With the use of contemporary convex programming tools like CVXOPT \citep{cvxopt} rewriting into this form is unnecessary. 
+
+%With the derivation of the above program, the proof of Theorem \ref{thm: SDP optimal} is clear. 
+%
+%\textbf{Theorem \ref{thm: SDP optimal}} SIG OPT versus isotropic:
+%\emph{
+%For a basic or compound secret denoted by indices $\Is$, the CIP loss bound of Equation \ref{eqn: priv bound} provided by a Gaussian noise mechanism with covariance \\$\Sigmag =$ SIG OPT$(\Is, \Sigma, o_t)$ is less than or equal to that of an isotropic mechanism of equal MSE $\Sigmag = o_t I$ if the minimum eigenvalue of $\tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal}$ equals that of $ (\tilde{A}^\intercal \tilde{B} \tilde{A})^{-1}$ for all $\tilde{B}$.
+%}
+%\begin{proof}
+%	The proof is nearly by construction. If the minimum eigenvalue of $\tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal}$ equals that of $ (\tilde{A}^\intercal \tilde{B} \tilde{A})^{-1}$ for all $\tilde{B}$ then so do the maximum eigenvalues of their inverses. So, the $\tilde{B}$ that maximizes the minimum eigenvalue of our approximation $\tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal}$ also minimizes the maximum eigenvalue of $\tilde{A}^\intercal \tilde{B} \tilde{A}$ which equals the the privacy loss bound $\frac{1}{\sigma_s^2} + \alpha^*$ (constants $2 \lambda S r^2$ aside).
+%	
+%	Since the isotropic mechanism $\Sigmag = o_t I$ is in the feasible set of solutions, we are guaranteed that the covariance chosen by SIG OPT produces a smaller lower bound on CIP loss. 
+%\end{proof}
+%
+%The intuition of the theorem is that if $\tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal}$ is a good approximation of $(\tilde{A}^\intercal \tilde{B} \tilde{A})^{-1}$, then the SDP is optimal. To show how `good' the approximation must be, consider the following. Let $f(\Sigmag) = \text{mineig}\big((\tilde{A}^\intercal \tilde{B} \tilde{A})^{-1}\big)$. Let our approximation to $f$ be $\hat{f}(\Sigmag) = \text{mineig} \big( \tilde{A}^{-1} \tilde{B}^{-1} \tilde{A}^{-\intercal} \big)$. Let the true optimal noise covariance be $\Sigmag_{\text{opt}} = \argmax_{\Sigmag \in \mathcal{T}} f(\Sigmag)$, where $\mathcal{T}$ is the set of all covariance matrices with MSE bounded by $n o_t$. Then, if for all $\Sigmag \in \mathcal{T}$ 
+%\begin{align*}
+%	|f(\Sigmag) - \hat{f}(\Sigmag)| \leq \delta 
+%	\quad \quad \text{where} \quad \quad 
+%	\delta = |f(\Sigmag_{\text{opt}}) - f(o_t I)|
+%\end{align*}
+%SIG OPT will return a covariance matrix that reduces the bound of Equation \ref{eqn: priv bound} better than an isotropic mechanism.
+
+\subsubsection{Derivation of $\text{SDP}_\text{B}$ }
+\label{apx: SDP B}
+$\text{SDP}_\text{B}$ takes a set of covariance matrices $\calF = \{\Sigma_1, \dots, \Sigma_k\}$, each of which is designed to protect some secret set ${\Is}_i$, and returns a covariance matrix $\Sigmag$ that preserves the privacy loss bound of each $\Sigma_i$ to each ${\Is}_i$. It does so while minimizing the utility loss of $\Sigmag$. This algorithm is also expressed as an SDP. It is based on the following corollary, which we have omitted from the main text: 
+\begin{corollary}\emph{More PSD, More Private: }
+\label{cor: more_psd}
+	For a basic or compound secret denoted by indices $\Is$, the CIP loss bound of Equation \ref{eqn: priv bound} provided by a Gaussian noise mechanism with covariance $\Sigmag$ is lower than it would be for any ${\Sigmag}' \prec \Sigmag$. 
+\end{corollary}
+\begin{proof}
+	First note that if $\Sigmag \succ {\Sigmag}' $, then the same is true for its sub-matrices: 
+	\begin{align*}
+		\Sigmag_{ss} \succ {\Sigmag_{ss}}'
+		\quad \quad
+		\Sigmag_{uu} \succ {\Sigmag_{uu}}'
+	\end{align*}
+	Recall the privacy loss bound of Equation \ref{eqn: priv bound}: 
+	\begin{align*}
+		\varepsilon \leq \frac{\lambda}{2} S r^2 \Big(  \frac{1 }{\sigma_s^2} + \alpha^*  \Big)
+	\end{align*}
+	Also recall that $\Sigmag_{ss} = \sigma_s^2 I$ and ${\Sigmag_{ss}}' = {\sigma_s^2}' I$. Since $\Sigmag_{ss} \succ {\Sigmag_{ss}}'$, we already know that $\sigma_s^2 > {\sigma_s^2}'$, and thus the first term of Equation \ref{eqn: priv bound} is lower for $\Sigmag$.
+	
+	It remains to show that the second term is also lower, $\alpha^* < {\alpha^*}'$. Starting with what we're given, 
+	\begin{align*}
+		\Sigmag_{uu} &\succ {\Sigmag_{uu}}' \\
+		\Sigmag_{uu} + \Sigma_{u|s} &\succ {\Sigmag_{uu}}' + \Sigma_{u|s} \\
+		(\Sigmag_{uu} + \Sigma_{u|s})^{-1} &\prec ({\Sigmag_{uu}}' + \Sigma_{u|s})^{-1} \\
+		B &\prec B' \\
+		A^\intercal B A &\prec A^\intercal B' A \\
+		\maxeig(A^\intercal B A) &< \maxeig(A^\intercal B' A) \\
+		\alpha^* &< {\alpha^*}'
+	\end{align*}
+	Therefore $\frac{1}{\sigma_s^2} + \alpha^* < \frac{1}{{\sigma_s^2}'} + {\alpha^*}'$, and the CIP bound of Equation \ref{eqn: priv bound} is lower for $\Sigmag$ than it is for ${\Sigmag}'$. 
+\end{proof}
+With Corollary \ref{cor: more_psd} in mind, $\text{SDP}_\text{B}$ is natural: 
+
+\begin{align*}
+	\textbf{SDP}_\textbf{B}: \quad 
+	\argmin_{\Sigmag } \  &\trace(\Sigmag) \\
+	\text{s.t. }& \Sigmag \succeq \Sigmag_i , \ \forall \Sigmag_i \in \calF
+\end{align*}
+
+$\text{SDP}_\text{B}$ attempts to minimize, but does not constrain, the utility loss of the chosen $\Sigmag$. To provide an upper bound on the resulting utility loss, we provided the following claim in the main text: 
+
+\textbf{Claim} Utility loss of $\text{SDP}_\text{B}$: 
+\emph{
+	The utility loss of $\Sigmag = \text{SDP}_\text{B}(\calF)$ is no greater than $\sum_{\Sigma_i \in \calF} \trace(\Sigma_i)$. 
+}
+\begin{proof}
+	The covariance ${\Sigmag}' = \sum_{\Sigmag_i \in \calF} \Sigmag_i$ with MSE $\sum_{\Sigmag_i \in \calF} \trace(\Sigmag_i)$ is in the feasible set of $\text{SDP}_\text{B}$ problem since ${\Sigmag}' \succeq \Sigmag_i, \ \forall \Sigmag_i \in \calF$. Unless ${\Sigmag}'$ has the lowest MSE of all $\Sigmag$ in the feasible set, a covariance matrix with better utility will be chosen. 
+\end{proof}
+
+\subsubsection{Derivation of Algorithm \ref{alg: Multiple Secrets}, Multiple Secrets}
+
+Multiple Secrets combines $\text{SDP}_\text{A}$ and $\text{SDP}_\text{B}$ to minimize the privacy loss to each basic secret within a trace. The basic mechanism is useful in cases when inferences at each time within the trace --- each basic secret --- is sensitive. 
+
+Let ${\Is}_i$ be the secret set representing basic secret $i$, of which there are $N$ (e.g. if location is sampled at $N$ times). Then $\mathbb{I}_{\calS_b} = \{{\Is}_1, \dots, {\Is}_N\}$ contains the indices corresponding to each. Multiple Secrets works by first producing $N$ covariance matrices, $\Sigmag_i$ = $\text{SDP}_\text{A}$$({\Is}_i, \Sigma, o_t)$ on each basic secret. It then uses $\text{SDP}_\text{B}$($\calF = \{\Sigmag_1, \dots, \Sigmag_N\}$) to produce a single covariance matrix $\Sigmag$ that preserves the privacy loss to each basic secret (note that, being basic secrets, the privacy loss bound that SIG OPT optimizes is tight). 
+
+By virtue of using $\text{SDP}_\text{B}$, the MSE of the resultant $\Sigmag$ is minimized but not constrained. To bound the MSE of the Basic Mechanism by $O$, we may simply bound the MSE of each $\Sigmag_i$ by $o_t = \nicefrac{O}{N}$. Then, by the above Claim, the MSE of the solution cannot be greater than $O$. In practice, this bound may be too loose. We hope to tighten it in future work. 
+
+\subsection{Experimental details}
+\label{apx: experiments}
+
+We use a 2d location trace and a 1d home temperature dataset. For the location data, having observed that the correlation between latitude and longitude is low ($ \approx 0.06$) we treat each dimension as independent. By way of Corollary \ref{cor: independence}, this allows us to bound privacy loss and design mechanisms for each dimension separately. Furthermore, having observed that each dimension fits the nearly the same conditional prior, we treat our dataset of 10k 2-dimensional traces as a dataset of 20k 1-dimensional traces, where each trace represents one dimension of a 2d location trajectory. 
+
+The one-dimensional traces of temperature and location are indexed by timestamps, for which we would use the following kernel functions: 
+
+\begin{align}
+	k_{\text{RBF}}(t_i, t_j) 
+	=  \sigma_x^2 \exp \Big( -\frac{(t_i - t_j)^2}{2 l^2} \Big) 
+	\quad \quad 
+	k_{\text{PER}}(t_i, t_j) 
+	=  \sigma_x^2 \exp \Big(  \frac{-2 \sin^2(\pi |t_i - t_j| / p)}{l^2} \Big)
+\end{align}
+
+to determine the covariance between two points sampled at times $t_i$ and $t_j$. The parameters including variance $\sigma_x^2$ and length scale $l$. The lengthscale determines the window of time in which two sampled points are highly correlated. 
+
+\paragraph{Preprocessing of location data} We first limit the dataset to traces of under 50 locations that are between 4.5 and 5.5 minutes in duration. Caring only about the conditional dependence between locations, we then de-mean each trace and normalize its variance to one. Normalizing the variance of traces implicitly sets $\sigma_x^2 = 1$ in the above RBF kernel, in essence assuming that the adversary has a decent prior for the user's average speed in a given trace, and could do the same operation. 
+
+\paragraph{Fitting of location data} We then find the maximum likelihood RBF kernel for each distinct trace. Having fixed the variance $\sigma_x^2$, this amounts to fitting only the length scale for each dimension, $l_x$ and $l_y$, individually. The length scale represents the average window of time during which neighboring locations are highly correlated (i.e. correlation $ > 0.8$). Relatively smooth traces will have large length scales and chaotic traces will have low length scales. However, the fact that sampling rates vary significantly between traces means that traces with equal length scales can have very different degrees of correlation. To encapsulate both of these effects, we study the empirical distribution of \emph{effective} length scale of each trace
+\begin{align*}
+	l_{\text{eff},x} = \frac{l_x}{P}
+	\quad
+	l_{\text{eff},y} = \frac{l_y}{P}
+\end{align*}
+where $P$ is the trace's sampling period and $l_x,l_y$ are the its optimal length scales. $l_{\text{eff},x},l_{\text{eff},y}$ tell us the average number of neighboring locations that are highly correlated, instead of time period. For instance, a given trace with an optimal $l_{\text{eff},x} = 8$ tells us that every eight neighboring location samples in the $x$ dimension have correlation $> 0.8$. The empirical distribution of effective length scales across all traces describes -- over a range of logging devices (sampling rates), users, and movement patterns -- how many neighboring points are highly correlated in location trace data. After this preprocessing, we are able to use the kernels that take indices (not time) as arguments. 
+
+\begin{align*}
+	\label{eqn: kernels}
+	k_{\text{RBF}}(i, j) 
+	=  \exp \Big( -\frac{(i - j)^2}{2\leff^2} \Big) 
+	\quad \quad 
+	k_{\text{PER}}(i, j) 
+	=  \exp \Big(  \frac{-2 \sin^2(\pi |i - j| / p)}{\leff^2} \Big)
+\end{align*}
+
+In each plot we then observed a spectrum of conditional priors by sweeping the effective length scale and plotting posterior uncertainty for various noise mechanisms of equal utility loss. This ranges from a prior assuming nearly independent location samples (chaotic trace) on the left up to highly dependent location samples (traveling in a straight line or standing still) on the right. To understand how realistic these conditional prior parameters are, we displayed the middle 50\% of the empirical distribution of $l_{\text{eff}}$ ($x$ and $y$ together) from the GeoLife dataset. Note that the distribution of ${\leff}_x$ and ${\leff}_y$ are nearly identical. 
+
+To compute posterior uncertainty, we consider a 50-point one-dimensional location trace. The basic secret is a single index in the middle of the trace, and the compound secret consists of two neighboring indices also in the middle of trace. For each value of $l_{\text{eff}}$, we compute the $\R^{50 \times 50}$ conditional prior covariance matrix $\Sigma$ using the RBF kernel above. We then compare the posterior uncertainty when $\Sigmag$ is an Approach C baseline, or an optimized covariance matrix using one of the three algorithms. We re-optimize $\Sigmag$ for each $\leff$, since each $\leff$ represents a different conditional prior class. The MSE is fixed in all figures except the two exhibiting ``All Basic Secrets'', where $\text{SDP}_\text{B}$ is used. Recall that this algorithm minimizes utility loss while maintaining a series of privacy guarantees. Here, the MSE is identical across mechanisms for each $\leff$, but changes from one $\leff$ to another. 
+
+For the temperature data, our preprocessing steps were nearly identical, except we use the periodic kernel instead of the RBF kernel, and we did not need to remove any traces from the dataset, as the data was much cleaner. 
+
+\paragraph{Computation of Posterior Uncertainty Interval}
+Each of the plots in \textbf{Figure \ref{fig: experiments}} shows the $2\sigma$ uncertainty interval on $\Xs$ of a Gaussian process Bayesian adversary with prior covariance $\Sigma$ and any mean function
+
+The posterior covariance is computed using standard formulas for linear Gaussian systems. Knowing that $Z = X + G$, we may write the joint precision matrix $\Lambda$ (inverse of covariance matrix) of $(X,Z)$ as 
+\begin{align*}
+	\Lambda^{(X,Z)}
+	&= 
+	\begin{bmatrix}
+		\Sigma^{-1} + {\Sigmag}^{-1} & -{\Sigmag}^{-1} \\
+		-{\Sigmag}^{-1} & {\Sigmag}^{-1} 
+	\end{bmatrix}
+\end{align*}
+
+It is then a well known result that the conditional covariance matrix is given by 
+\begin{align*}
+	\Sigma_{x|z} &= \Lambda_{xx}^{-1}  \\
+	&= \big(\Sigma^{-1} + {\Sigmag}^{-1}\big)^{-1}
+\end{align*}
+This provides the posterior covariance of all locations $X$ given any released trace $Z$ that uses a Gaussian mechanism with covariance $\Sigmag$. Note that the CIP guarantee naturally keeps posterior uncertainty large since the posterior density at any two $x_s$ close together must be similar. For these Gaussian posteriors, $2 \sigma$ tells us the adversary's 68\% confidence interval on $\Xs$ after obvserving $Z$. 
+
+For basic secrets (one location), we simply report twice the posterior standard deviation at the sensitive index $i$, given by 
+\begin{align*}
+2 \sqrt{ \Sigma_{{x|z, ii}} } \ .
+\end{align*}  
+For compound secrets involving multiple locations the posterior distribution is a length $|\Is|$ multivariate normal with covariance $\Sigma_{x|z, ss}$. Intuitively, we wish to find the direction of the vector $\Xs$ in which the posterior interval is the \emph{shortest}. This is the worst case posterior interval on the compound secret. We do this by reporting 
+\begin{align*}
+	2 \sqrt{\text{mineig}\  \Sigma_{{x|z, ss}}} \ .
+\end{align*}
+
+\subsection{Discussion of GP Conditional Prior Class}
+\label{apx: GP prior class}
+
+Recall that a conditional prior class requires for any $P_{\calP_i}, P_{\calP_j} \in \Theta$ that 
+\begin{align*}
+	P_{\calP_i}(\Xu | \Xs = x_s)
+	&= P_{\calP_j}(\Xu + c_{ij\Is}^u | \Xs = x_s + c_{ij\Is}^s)
+\end{align*}
+for all $x_s$. Notice that the mapping $(x_s, x_s') + c_{ij\Is}^s$ is a bijection from $\Spairs$ onto itself. As such, each pair of conditional distributions, 
+\begin{align*}
+	\Big(P_{\calP_j}(\Xu | \Xs = x_s), P_{\calP_j}(\Xu | \Xs = x_s')\Big)
+\end{align*}
+induced by $(x_s, x_s') \in \Spairs$ is a mean-shifted version of the pair of distributions 
+\begin{align*}
+	\Big(P_{\calP_i}(\Xu | \Xs = x_s - c_{ij\Is}^s), P_{\calP_i}(\Xu | \Xs = x_s' - c_{ij\Is}^s)\Big)
+\end{align*}
+induced by $(x_s , x_s' ) - c_{ij\Is}^s \in \Spairs$. Since the R\'enyi divergence between two distributions and two mean-shifted versions thereof is unchanged, we may use one additive noise mechanism for all priors in class $\Theta$.  
+
+To see how this applies to the GP prior class, recall the formula for a conditional multivariate Gaussian distribution: 
+\begin{align*}
+	P(\Xu | \Xs = x_s)
+	&= \calN(\mu_{u|s} , \Sigma_{u|s})
+\end{align*}
+where, 
+\begin{align*}
+		\mu_{u|s} &= \mu_u + \Sigma_{us} \Sigma_{ss}^{-1} (x_s - \mu_s) \\
+		\Sigma_{u|s} &= \Sigma_{uu} - \Sigma_{us}\Sigma_{ss}^{-1} \Sigma_{su}
+\end{align*}
+A GP prior class includes all GP distributions with a fixed kernel $k(t_i, t_j)$ and any mean function $\mu(t)$. For a fixed set of time points, this corresponds to a fixed covariance matrix $\Sigma$ and any mean parameters $\bmu$: 
+\begin{align*}
+	X \sim \calN(\bmu, \Sigma)
+\end{align*}
+
+Let $P_{\calP_i} = \calN(\bar{\bmu}, \Sigma)$ and $P_{\calP_j} = \calN(\hat{\bmu}, \Sigma)$, then conditioned on some sensitive points $\Xs$ the distribution on $\Xu$ has the same covariance $\Sigma_{u|s}$ and conditional means 
+\begin{align*}
+	\bar{\mu}_{u|s}
+	&= \bar{\mu}_u + \Sigma_{us} \Sigma_{ss}^{-1} (x_s - \bar{\mu}_s) \\
+	&= (\bar{\mu}_u - \Sigma_{us} \Sigma_{ss}^{-1}\bar{\mu}_s) + \Sigma_{us} \Sigma_{ss}^{-1} x_s \\
+	\hat{\mu}_{u|s}
+	&= \hat{\mu}_u + \Sigma_{us} \Sigma_{ss}^{-1} (x_s - \hat{\mu}_s) \\
+	&= (\hat{\mu}_u - \Sigma_{us} \Sigma_{ss}^{-1}\hat{\mu}_s) + \Sigma_{us} \Sigma_{ss}^{-1} x_s 
+\end{align*}
+which implies that the conditional distributions are identical up to a mean shift for the \emph{same} $x_s$ value. 
+\begin{align*}
+	P_{\calP_i}(\Xu | \Xs = x_s)
+	&= P_{\calP_j}(\Xu + c_{ij\Is}^u | \Xs = x_s)
+\end{align*}
+for all $x_s$. Here, $c_{ij\Is}^u = (\bar{\mu}_u - \Sigma_{us} \Sigma_{ss}^{-1}\bar{\mu}_s) - (\hat{\mu}_u - \Sigma_{us} \Sigma_{ss}^{-1}\hat{\mu}_s)$, and $c_{ij\Is}^s = 0$. 
+
+To see how this allows a single additive mechanism to work for all mean functions, notice that we also have 
+\begin{align*}
+	P_{\calP_i}(\Xu | \Xs = x_s')
+	&= P_{\calP_j}(\Xu + c_{ij\Is}^u | \Xs = x_s')
+\end{align*}
+for $x_s'$, so the divergences 
+\begin{align*}
+	D_\lambda \binom{P_{\calP_i}(\Xu | \Xs = x_s)}{P_{\calP_i}(\Xu | \Xs = x_s')}
+	&= D_\lambda \binom{P_{\calP_j}(\Xu + c_{ij\Is}^u | \Xs = x_s)}{P_{\calP_j}(\Xu + c_{ij\Is}^u | \Xs = x_s')} \\
+	&= D_\lambda \binom{P_{\calP_j}(\Xu  | \Xs = x_s)}{P_{\calP_j}(\Xu  | \Xs = x_s')}
+\end{align*}
+are equal. The same goes for the noisy trace $\Xu + \Zu | \Xs = x_s$, when $Z$ is drawn independently of $X$, allowing us to bound privacy loss for all $P \in \Theta$. 
+
+
+
+
+
+
+
