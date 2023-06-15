@@ -217,7 +217,7 @@ Our experiments that examined whether several baseline tests could detect data-c
         \includegraphics[width = 1\linewidth]{images/VAE_rep.jpg}
         \caption{}\label{fig:vae rep}
     \end{subfigure}
-    \caption{Number of statistically different bins, both those over and under the significance level of 0.05. The black dotted line indicates the total number of cells or `bins'. \textbf{(a,b)} KDEs tend to start misrepresenting with $\sigma \gg \sigma_{\text{MLE}}$, which makes sense as they become less and less dependent on training set. \textbf{(c)} it makes sense that the VAE over- and under-represents across all latent dimensions due to its reverse KL loss. There is slightly worse over- and under-representation for simple models with low latent dimension. }
+    \caption[Number of statistically different bins, both those over and under the significance level of 0.05.]{Number of statistically different bins, both those over and under the significance level of 0.05. The black dotted line indicates the total number of cells or `bins'. \textbf{(a,b)} KDEs tend to start misrepresenting with $\sigma \gg \sigma_{\text{MLE}}$, which makes sense as they become less and less dependent on training set. \textbf{(c)} it makes sense that the VAE over- and under-represents across all latent dimensions due to its reverse KL loss. There is slightly worse over- and under-representation for simple models with low latent dimension. }
     \label{fig:rep tests 1}
 \end{figure*} 
 
@@ -240,7 +240,7 @@ Our experiments that examined whether several baseline tests could detect data-c
         \includegraphics[width = 1\linewidth]{images/biggan_schooner_rep.png}
         \caption{}\label{fig:vae rep}
     \end{subfigure}
-    \caption{This GAN model produces relatively equal representation according to our clustering for all three classes. It makes sense that a low truncation level tends to over-represent for one class, as a lower truncation threshold causes less variance. Even though it places samples into all cells, some cells are data-copying much more aggressively than others.}
+    \caption[This GAN model produces relatively equal representation according to our clustering for all three classes.]{This GAN model produces relatively equal representation according to our clustering for all three classes. It makes sense that a low truncation level tends to over-represent for one class, as a lower truncation threshold causes less variance. Even though it places samples into all cells, some cells are data-copying much more aggressively than others.}
     \label{fig:biggan rep tests }
 \end{figure*} 
 The experiments of Sections \ref{sec:MNIST KDE} and \ref{sec:neural model tests} use the MNIST digit dataset \citep{lecun}. We use a training sample, $T$, of size $|T| = 50,000$, a test sample $P_n$ of size $n = 10,000$, a validation sample $V_l$ of $l = 10,000$, and create generated samples of size $m = 10,000$. 
@@ -266,7 +266,7 @@ where $\gamma(\bullet, \bullet)$ is the VGG perceptual loss, and $ \lambda  \max
         \label{fig:biggan schooner underfit}
         \caption{$Z_U = +1.32$}
     \end{subfigure}
-    \caption{Example of data-copied and underfit cell of ImageNet `schooner' instance space, from `BigGan' with trunc. threshold = 2. We note here, that --- limited to only 50 training samples --- the insufficient $k = 3$ clustering is perhaps not fine grain enough for this class. Notice that the generated samples falling into the underfit cell (mostly training images of either masts or fronts of boats) are hardly any different from those of the over-fit cell.  They are likely on the boundary of the two cells. With that said, the samples of the data-copied cell \textbf{(a)} are certainly close to the training samples in this region.}
+    \caption[Example of data-copied and underfit cell of ImageNet `schooner' instance space, from `BigGan' with trunc.]{Example of data-copied and underfit cell of ImageNet `schooner' instance space, from `BigGan' with trunc. threshold = 2. We note here, that --- limited to only 50 training samples --- the insufficient $k = 3$ clustering is perhaps not fine grain enough for this class. Notice that the generated samples falling into the underfit cell (mostly training images of either masts or fronts of boats) are hardly any different from those of the over-fit cell.  They are likely on the boundary of the two cells. With that said, the samples of the data-copied cell \textbf{(a)} are certainly close to the training samples in this region.}
     \label{fig:biggan schooner examples}
 \end{figure*}
 

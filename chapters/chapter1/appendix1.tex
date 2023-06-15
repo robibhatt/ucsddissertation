@@ -69,7 +69,7 @@ In this section, we describe the impact of $K$ on the KNN label inference accura
          \label{fig:vicreg lp v. epoch}
      \end{subfigure}
      \hfill
-\caption{
+\caption[Impact of $K$ on label inference accuracy for target and reference models.]{
 Impact of $K$ on label inference accuracy for target and reference models. \textbf{Left:} the population-level label inference accuracy experiment of Section \ref{sec:label inference accuracy} on VICReg vs. $K$. \textbf{Right:} the individualized memorization test of Section \ref{sec:dissection} on VICReg vs. $K$. In both cases, we see that our tests are relatively robust to choice of $K$ beyond $K=50$.  
 }
 \label{fig:attack v K}
@@ -88,7 +88,7 @@ We repeat the quantitative memorization tests of Section \ref{sec:quant} on diff
 \captionsetup[subfigure]{font=scriptsize,labelfont=scriptsize}
      \centering
      \includegraphics[width=\textwidth]{figures/dejavu_ssl_criterions.pdf}
-\caption{
+\caption[Comparison of \dejavu memorization for VICReg, Barlow Twins, Dino, Byol, SimCLR, and a supervised model.]{
 Comparison of \dejavu memorization for VICReg, Barlow Twins, Dino, Byol, SimCLR, and a supervised model. All tests are described in Section \ref{sec:quant}. We are showing \dejavu vs. number of training epochs. We see that SimCLR (center row) shows less \dejavu than VICReg, yet marginally more than the supervised model. Even with this reduced degree of memorization, we are able to produce detailed reconstructions of training set images, as shown in Figures \ref{fig:mem v corr dam} and \ref{fig:mem v corr spider}. 
 }
 \label{fig:all_models_quantitative}
@@ -104,7 +104,7 @@ Results shown in the main paper use Resnet101 for the model backbone. To underst
 \captionsetup[subfigure]{font=scriptsize,labelfont=scriptsize}
      \centering
      \includegraphics[width=\textwidth]{figures/plot_arch_comp.pdf}
-     \caption{Comparison of VICReg \dejavu memorization for different architectures and model sizes. On the left, we present deja vu memorization using VIT architectures (from vit-tiny in the first row to vit-base in the last row). On the right, we use Resnet based architectures (from resnet18 in the first row to resnet101 in the last row). All tests are described in Section \ref{sec:quant}, with the plots showing \dejavu vs. number of training epochs. Reducing model complexity from Resnet101 to Resnet18 or from Vit-Large to Vit-tiny has a significant impact on the degree of memorization.}
+     \caption[Comparison of VICReg \dejavu memorization for different architectures and model sizes.]{Comparison of VICReg \dejavu memorization for different architectures and model sizes. On the left, we present deja vu memorization using VIT architectures (from vit-tiny in the first row to vit-base in the last row). On the right, we use Resnet based architectures (from resnet18 in the first row to resnet101 in the last row). All tests are described in Section \ref{sec:quant}, with the plots showing \dejavu vs. number of training epochs. Reducing model complexity from Resnet101 to Resnet18 or from Vit-Large to Vit-tiny has a significant impact on the degree of memorization.}
 \label{fig:rn101 v. rn50}
 \end{figure}
 
@@ -130,7 +130,7 @@ To show how guillotine regularization impacts \dejavu, we repeat the tests of Se
          \caption{share of memorized examples}
      \end{subfigure}
      \hfill
-\caption{
+\caption[\dejavu memorization versus layer from backbone (0) to projector output (3).]{
 \dejavu memorization versus layer from backbone (0) to projector output (3). The memorization tests of Section \ref{sec:quant} are evaluated at each level of the VICReg projector. We see that \dejavu is significantly stronger closer to the projector output and nearly zero near the backbone. Interestingly, most memorization appears to occur in the final two layers of VICReg.
 }
 \label{fig:guillotine}
@@ -158,7 +158,7 @@ Since the backbone is mostly used at inference time, we now evaluate how much \d
          \label{fig:vicreg lp v. epoch}
      \end{subfigure}
      \hfill
-\caption{
+\caption[Accuracy of label inference on VICReg and SimCLR using projector and backbone representations.]{
 Accuracy of label inference on VICReg and SimCLR using projector and backbone representations. \textbf{First two columns:} Effect of training epochs on memorization for each representation. \textbf{Last two columns:} Effect of training set size on memorization for each representation. In contrast with VICReg, the \dejavu memorization detected in SimCLR's projector and backbone representations is quite similar. While SimCLR's projector memorization appears weaker than that of VICReg, its backbone memorization is markedly stronger. This kind be easily explained as a byproduct of Guillotine Regularization~\citep{Guillotine}, i.e. removing layers close to the objective reduce the bias of the network with respect to the training task. Since SimCLR's projector has fewer layers than VICReg's, the impact of Guillotine Regularization is less salient.
 }
 \label{fig:proj v backbone}
@@ -206,7 +206,7 @@ The label inference results in Appendix \ref{sec:guillotine} show that the SimCL
          \caption{Second {\color{part_orange}memorized} dam example}
      \end{subfigure}
      \hfill
-     \caption{Instances of \dejavu memorization by the SimCLR backbone representation. Here, the backbone embedding of the crop is used instead of the projector embedding on the same training images used in Figure \ref{fig:mem v corr dam}. Interestingly, we see that \dejavu memorization is still present in the SimCLR backbone representation. Here, the nearest neighbor set recovers dam given an uninformative crop of still or running water. Even without projector access, we are able to reconstruct images in set $\calA$ using $\SSL_A$, and are unable using $\SSL_B$. }
+     \caption[Instances of \dejavu memorization by the SimCLR backbone representation.]{Instances of \dejavu memorization by the SimCLR backbone representation. Here, the backbone embedding of the crop is used instead of the projector embedding on the same training images used in Figure \ref{fig:mem v corr dam}. Interestingly, we see that \dejavu memorization is still present in the SimCLR backbone representation. Here, the nearest neighbor set recovers dam given an uninformative crop of still or running water. Even without projector access, we are able to reconstruct images in set $\calA$ using $\SSL_A$, and are unable using $\SSL_B$. }
      \label{fig:simclr backbone dejavu}
 \end{figure}
 
@@ -225,7 +225,7 @@ The memorization tests presented critically depend on bounding box annotations i
 \captionsetup[subfigure]{font=scriptsize,labelfont=scriptsize}
      \centering
      \includegraphics[width=\textwidth]{figures/plot_models_corner_crop.pdf}
-\caption{
+\caption[Deja Vu Memorization using a simple corner crop instead of the periphery crop extracted using bounding box annotations.]{
 Deja Vu Memorization using a simple corner crop instead of the periphery crop extracted using bounding box annotations. While the heuristic overall underestimates the degree of \dejavu, it roughly follows the same trends versus dataset size and training epochs. This is crucial, since it allows us to estimate \dejavu without access to bounding box annotations. 
 }
 \label{corner crop}

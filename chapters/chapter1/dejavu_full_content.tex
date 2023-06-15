@@ -17,7 +17,7 @@
          \label{fig:dejavu v. n}
      \end{subfigure}~
      \vspace{-0.5em}
-    \caption{
+    \caption[ Effect of training epochs and train set size with VICReg on \dejavu score (red) in comparison with linear probe accuracy train-test gap (dark blue).]{
     Effect of training epochs and train set size with VICReg on \dejavu score (red) in comparison with linear probe accuracy train-test gap (dark blue). 
     \textbf{Left:} \dejavu score increases with training epochs, indicating growing memorization while the linear probe baseline decreases significantly.  
     \textbf{Right:} \dejavu score stays roughly constant with training set size suggesting that memorization may be problematic even for large datasets. %By comparison, the baseline \emph{declines} by half, spuriously suggesting less memorization. 
@@ -43,11 +43,11 @@
          \label{fig:per sample v. n}
      \end{subfigure}~
      \vspace{-0.5em}
-    \caption{
+    \caption[Partition of samples $A_i \in \calA$ into the four categories]{
     \definecolor{part_blue}{rgb}{0.2824, 0.4706, .8157}
 	\definecolor{part_red}{rgb}{0.8392, 0.3725, 0.3725}
 	\definecolor{part_orange}{rgb}{0.9333, 0.5216, 0.2902}
-    Partition of samples $A_i \in \calA$ into the four categories: {\color{gray}unassociated} (not shown), {\color{part_orange}memorized}, {\color{part_red}misrepresented} and {\color{part_blue}correlated} for VICReg. The {\color{part_orange}memorized} samples---those whose labels are predicted by $\KNN_A$ but not by $\KNN_B$---occupy a significantly larger share of the training set than the {\color{part_red}misrepresented} samples---those predicted by $\KNN_B$ but not $\KNN_A$ by chance. %At 1000 epochs, $\approx 15\%$ of the training set is {\color{part_orange}memorized}. The trends across training epochs and training set sizes are consistent with those observed in Figure \ref{fig:dejavu epochs train set size}
+    Partition of samples $A_i \in \calA$ into the four categories: unassociated (not shown), memorized, misrepresented and correlated for VICReg. The memorized samples---those whose labels are predicted by $\KNN_A$ but not by $\KNN_B$---occupy a significantly larger share of the training set than the misrepresented samples---those predicted by $\KNN_B$ but not $\KNN_A$ by chance. %At 1000 epochs, $\approx 15\%$ of the training set is {\color{part_orange}memorized}. The trends across training epochs and training set sizes are consistent with those observed in Figure \ref{fig:dejavu epochs train set size}
     }
     \label{fig:partition attack main}
     \end{minipage}

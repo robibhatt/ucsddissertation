@@ -30,7 +30,7 @@ The following sections will include proofs of results, derivations of algorithms
 		\caption{}
 		\label{fig:nyc_trace_opt}
 	\end{subfigure}
-	\caption{Example of sensitive location trace of NYC mayoral staff member exposed by \citep{nyt}. (b) and (c) depict the posterior uncertainty (green) $P_{\calA,\calP}(X_i | Z)$ for each 2d location. (a) depicts three sensitive times (red with blue outline): Gracie Mansion (Mayor's home), an event on Staten Island that the mayor attended, and finally the staff member's home on long island. (b) provides an example of Approach C: adding independent Gaussian noise to each location (red dotted line). A GP posterior still maintains high confidence within a small radius along the trace, including at the sensitive times. (c) provides an example of the optimized noise of Multiple Secrets of identical aggregate MSE as (b). By focusing \textit{correlated} noise around the three sensitive times, there is high uncertainty at sensitive times and high confidence elsewhere.}
+	\caption[Example of sensitive location trace of NYC mayoral staff member exposed by \citep{nyt}.]{Example of sensitive location trace of NYC mayoral staff member exposed by \citep{nyt}. (b) and (c) depict the posterior uncertainty (green) $P_{\calA,\calP}(X_i | Z)$ for each 2d location. (a) depicts three sensitive times (red with blue outline): Gracie Mansion (Mayor's home), an event on Staten Island that the mayor attended, and finally the staff member's home on long island. (b) provides an example of Approach C: adding independent Gaussian noise to each location (red dotted line). A GP posterior still maintains high confidence within a small radius along the trace, including at the sensitive times. (c) provides an example of the optimized noise of Multiple Secrets of identical aggregate MSE as (b). By focusing \textit{correlated} noise around the three sensitive times, there is high uncertainty at sensitive times and high confidence elsewhere.}
 	\label{fig:nyc_example}
 \end{figure*}
 
@@ -51,7 +51,7 @@ In each figure the covariance matrix is depicted as a heat map with warmer color
 	\begin{subfigure}[b]{1\textwidth}
 		\centering
 		\includegraphics[width = \linewidth]{./images/cov_table_baselines.png}
-		\caption{Covariance matrices and mechanism samples for the baselines used in experiments. 
+		\caption[Covariance matrices and mechanism samples for the baselines used in experiments.]{Covariance matrices and mechanism samples for the baselines used in experiments. 
 		\vspace{2mm}\\
 		The first figure demonstrates the uniform approach that distributes the independent Gaussian noise budget along the entire trace, regardless of $\Is$. 
 		\vspace{2mm}\\
@@ -72,7 +72,7 @@ In each figure the covariance matrix is depicted as a heat map with warmer color
 	\begin{subfigure}[b]{1\textwidth}
 		\centering
 		\includegraphics[width = \linewidth]{./images/cov_table_RBF_2.png}
-		\caption{
+		\caption[Covariance matrices and mechanism samples for the median RBF prior ($\leff \approx 6$).]{
 			Covariance matrices and mechanism samples for the median RBF prior ($\leff \approx 6$). 
 			\vspace{2mm} \\
 			The first noise mechanism (Mech. basic) demonstrates the covariance matrix chosen by $\text{SDP}_\text{A}$ for a basic secret of a single location $X_i$ in the middle of the trace. The uncorrelated dot in the middle of the covariance matrix, $\Sigmag_{ii}$, represents the independent noise $G_i$ added at the sensitive location to mitigate \emph{direct} loss. To mitigate \emph{inferential} loss, the SDP optimizes the remainder of the matrix to be positively correlated with maximum variance allocated to locations near $X_i$ in time. This thwarts GP inference of the true location at time $t_i$. 
@@ -97,7 +97,7 @@ In each figure the covariance matrix is depicted as a heat map with warmer color
 	\begin{subfigure}[b]{1\textwidth}
 		\centering
 		\includegraphics[width = \linewidth]{./images/cov_table_PER_2.png}
-		\caption{
+		\caption[Covariance matrices and mechanism samples for the median periodic prior ($\leff \approx 1.1$), and a period of half the trace length.]{
 			Covariance matrices and mechanism samples for the median periodic prior ($\leff \approx 1.1$), and a period of half the trace length. 
 			\vspace{2mm} \\
 			The first noise mechanism (Mech. Basic) shows the covariance chosen by $\text{SDP}_\text{A}$ to protect a single location (temperature) in the middle of the trace. As in the RBF case, significant noise power is allocated to the sensitive location itself, $X_i$, to limit \emph{direct} privacy loss. However, the noise added to the remainder of the trace is significantly different. It is tailored to thwart inference by a periodic prior, wherein the location one period away has correlation 1. 

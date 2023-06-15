@@ -32,7 +32,7 @@ At test time, following the pipeline in Figure \ref{fig:split_and_pipeline_carto
          \caption{A {\color{part_orange}memorized} dam example}
          \label{fig:dam memorized}
      \end{subfigure}
-\caption{
+\caption[Correlated and Memorized examples from the \emph{dam} class.]{
 Correlated and Memorized examples from the \emph{dam} class. Both $\SSL_A$ and $\SSL_B$ are SimCLR models.
 \textbf{Left:} The periphery crop (pink square) contains a concrete structure that is often present in images of dams. Consequently, the trained RCDM can reconstruct the foreground object using representations from both $\SSL_A$ and $\SSL_B$ through this correlation.
 \textbf{Right:} The periphery crop only contains a patch of water. The embedding produced by $\SSL_B$ only contains enough information to infer that the foreground object is related to water, as reflected by its KNN set and RCDM reconstruction. In contrast, the embedding produced by $\SSL_A$ memorizes the association of this patch of water with dam and the RCDM can visualize the embedding to produce images of dams.
@@ -59,7 +59,7 @@ Correlated and Memorized examples from the \emph{dam} class. Both $\SSL_A$ and $
          \caption{{\color{part_orange}Memorized} American badgers}
          \label{fig:amer badgers}
      \end{subfigure}
-\caption{
+\caption[Visualization of \dejavu memorization beyond class label.]{
 Visualization of \dejavu memorization beyond class label. Both $\SSL_A$ and $\SSL_B$ are VICReg models. 
 The four images shown belong to the memorized set of $\SSL_A$ from the \emph{badger} class. RCDM reconstruction using embeddings from $\SSL_A$ can reveal not only the correct class label, but also the specific badger species: \emph{European} (left) and \emph{American} (right). Such information does not appear to be memorized by the reference model $\SSL_B$.
 } 

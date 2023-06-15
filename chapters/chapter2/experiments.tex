@@ -27,7 +27,7 @@
         % \end{overpic}
         \caption{}\label{fig:moons PR}
     \end{subfigure}
-    \caption{Response of four baseline test methods to data-copying of a Gaussian KDE on `moons' dataset. Only the two-sample NN test \textbf{(c)} is able to detect data-copying KDE models as $\sigma$ moves below $\sigma_{\text{MLE}}$ (depicted as a red dot). The gray trace is proportional to the KDE's log-likelihood measured on a held-out validation set.}
+    \caption[Response of four baseline test methods to data-copying of a Gaussian KDE on `moons' dataset.]{Response of four baseline test methods to data-copying of a Gaussian KDE on `moons' dataset. Only the two-sample NN test \textbf{(c)} is able to detect data-copying KDE models as $\sigma$ moves below $\sigma_{\text{MLE}}$ (depicted as a red dot). The gray trace is proportional to the KDE's log-likelihood measured on a held-out validation set.}
     \label{fig:compare methods}
 \end{figure*} 
 
@@ -101,7 +101,7 @@ Next, we will demonstrate our method on a variety of datasets, models, and embed
         \includegraphics[width = 1\linewidth]{images/mnist_kde_NN.png}
         \caption{}\label{fig:mnist kde NN}
     \end{subfigure}
-    \caption{$C_T(P_n, Q_m)$ vs. NN baseline and generalization gap on moons and MNIST digits datasets. \textbf{(a,b,c)} compare the three methods on the moons dataset. \textbf{(d,e,f)} compare the three methods on MNIST. In both data settings, the $C_T$ statistic is far more sensitive to the data-copying regime $\sigma \ll \sigma_{\text{MLE}}$ than the NN baseline. It is more sensitive to underfitting $\sigma \gg \sigma_{\text{MLE}}$ than the generalization gap test. The red dot denotes $\sigma_{\text{MLE}}$, and the gray trace is proportional to the KDE's log-likelihood measured on a held-out validation set.}
+    \caption[$C_T(P_n, Q_m)$ vs. NN baseline and generalization gap on moons and MNIST digits datasets.]{$C_T(P_n, Q_m)$ vs. NN baseline and generalization gap on moons and MNIST digits datasets. \textbf{(a,b,c)} compare the three methods on the moons dataset. \textbf{(d,e,f)} compare the three methods on MNIST. In both data settings, the $C_T$ statistic is far more sensitive to the data-copying regime $\sigma \ll \sigma_{\text{MLE}}$ than the NN baseline. It is more sensitive to underfitting $\sigma \gg \sigma_{\text{MLE}}$ than the generalization gap test. The red dot denotes $\sigma_{\text{MLE}}$, and the gray trace is proportional to the KDE's log-likelihood measured on a held-out validation set.}
     \label{fig:KDE results}
 \end{figure*} 
 
@@ -173,7 +173,7 @@ Gaussian KDE's may have nice theoretical properties, but are relatively ineffect
         \includegraphics[width = 1\linewidth]{images/biggan_NN_all.png}
         \caption{}\label{fig:biggan NN}
     \end{subfigure}
-    \caption{Neural model data-copying: figures \textbf{(b)} and \textbf{(d)} demonstrate the $C_T$ statistic identifying data-copying in an MNIST VAE and ImageNet GAN as they range from heavily over-fit to underfit. \textbf{(c)} and \textbf{(e)} demonstrate the relative insensitivity of the NN baseline to this overfitting, as does figure \textbf{(a)} of the generalization (ELBO) gap method for VAEs. (Note, the markers for \textbf{(d)} apply to the traces of \textbf{(e)})}
+    \caption[Neural model data-copying: figures \textbf{(b)} and \textbf{(d)} demonstrate the $C_T$ statistic identifying data-copying in an MNIST VAE and ImageNet GAN as they range from heavily over-fit to underfit.]{Neural model data-copying: figures \textbf{(b)} and \textbf{(d)} demonstrate the $C_T$ statistic identifying data-copying in an MNIST VAE and ImageNet GAN as they range from heavily over-fit to underfit. \textbf{(c)} and \textbf{(e)} demonstrate the relative insensitivity of the NN baseline to this overfitting, as does figure \textbf{(a)} of the generalization (ELBO) gap method for VAEs. (Note, the markers for \textbf{(d)} apply to the traces of \textbf{(e)})}
     \label{fig:neural experiments}
 \end{figure*}
 
@@ -204,7 +204,7 @@ Gaussian KDE's may have nice theoretical properties, but are relatively ineffect
         \label{fig:biggan bubble underfit}
         \caption{Underfit cells; top: $Z_U = +1.40$, bottom: $Z_U = +0.71$} 
     \end{subfigure}
-    \caption{Data-copied and underfit cells of ImageNet12 `coffee' and `soap bubble' instance spaces (trunc. threshold = 2). In each 14-figure strip, the top row provides a random series of training samples from the cell, and the bottom row provides a random series of generated samples from the cell. \textbf{(a)} Data-copied cells. \textbf{(a), top}: Random training and generated samples from a $Z_U = -1.46$ cell of the coffee instance space. \textbf{(a), bottom}: Random training and generated samples from a $Z_U = -1.00$ cell of the bubble instance space. \textbf{(b)} Underfit cells. \textbf{(b), top}: Random training and generated samples from a $Z_U = +1.40$ cell of the coffee instance space. \textbf{(b), bottom}: Random training and generated samples from a $Z_U = +0.71$ cell of the bubble instance space.  }
+    \caption[Data-copied and underfit cells of ImageNet12 `coffee' and `soap bubble' instance spaces (trunc. threshold = 2).]{Data-copied and underfit cells of ImageNet12 `coffee' and `soap bubble' instance spaces (trunc. threshold = 2). In each 14-figure strip, the top row provides a random series of training samples from the cell, and the bottom row provides a random series of generated samples from the cell. \textbf{(a)} Data-copied cells. \textbf{(a), top}: Random training and generated samples from a $Z_U = -1.46$ cell of the coffee instance space. \textbf{(a), bottom}: Random training and generated samples from a $Z_U = -1.00$ cell of the bubble instance space. \textbf{(b)} Underfit cells. \textbf{(b), top}: Random training and generated samples from a $Z_U = +1.40$ cell of the coffee instance space. \textbf{(b), bottom}: Random training and generated samples from a $Z_U = +0.71$ cell of the bubble instance space.  }
     \label{fig:biggan overfit underfit}
 \end{figure*}
 

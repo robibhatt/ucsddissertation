@@ -895,17 +895,17 @@ Thus, the total probability of failure is given by
 \subsubsection{Evaluation of $(\eta,\delta)$-preservation}\label{app:numerical}
 
 \begin{figure*}[ht]
-    \begin{subfigure}[b]{0.33\linewidth}\centering
+    \begin{subfigure}[b]{0.32\linewidth}\centering
     \includegraphics[width=\linewidth]{./figures/eta_alpha.png}
         \caption{Variation with $\alpha$}
         \label{fig:eta:alpha}
     \end{subfigure}
-    \begin{subfigure}[b]{0.33\linewidth}\centering
+    \begin{subfigure}[b]{0.32\linewidth}\centering
     \includegraphics[width=\linewidth]{./figures/eta_width.png}
         \caption{Variation with $\omega$; $\alpha = 3$}
         \label{fig:eta:width}
     \end{subfigure}
-    \begin{subfigure}[b]{0.33\linewidth}\centering
+    \begin{subfigure}[b]{0.32\linewidth}\centering
     \includegraphics[width=\linewidth]{./figures/eta_subset.png}
         \caption{Variation with $l_S$; $\alpha = 3$}
         \label{fig:eta:subset}
@@ -956,19 +956,19 @@ Finally, Fig. \ref{fig:eta:subset} demonstrates how preservation grows rapidly w
 \subsubsection{Adult Dataset}
 \label{app:adult experiments}
 \begin{figure*}[ht]
-    \begin{subfigure}[b]{0.33\linewidth}\centering
+    \begin{subfigure}[b]{0.32\linewidth}\centering
         \includegraphics[width=\linewidth]{./figures/Adult_attack_new.png}
         %\vspace{-0.15cm}
         \caption{\textit{Adult}: Attack }%($r$)}
         \label{fig:Adult:attack}
     \end{subfigure}
-    \begin{subfigure}[b]{0.33\linewidth}\centering
+    \begin{subfigure}[b]{0.32\linewidth}\centering
     \includegraphics[width=\linewidth]{./figures/Adult_alpha.png}
         %   \vspace{-0.15cm} 
         \caption{\textit{Adult}: Attack ($\alpha$)}
         \label{fig:Adult:alpha}
     \end{subfigure}
-    \begin{subfigure}[b]{0.33\linewidth}\centering
+    \begin{subfigure}[b]{0.32\linewidth}\centering
    \includegraphics[width=\linewidth]{./figures/Adult_utility_1.png}
         %\vspace{-0.15cm}
         \caption{\textit{Adult}: Learnability}
@@ -1009,7 +1009,7 @@ Finally, older works such as $k$-anonymity \cite{kanon},  $l$-diversity \cite{ld
 \begin{figure}[h]
     \centering
     \includegraphics[width = \linewidth]{./figures/heuristic_optimal.png}
-    \caption{Comparison of our heuristic's performance with that of an optimal reference permutation $\sigma^*_0$. An optimal $\sigma^*_0$ is generated with every group having size $w$. A graph is generated from this optimal $\sigma^*_0$ from which our heuristic (blue) attempts to reconstruct the optimal permutation. For baselining, the performance of a random $\sigma_0$ selection is plotted (orange). We observe that at worst, our heuristic picks a reference permutation with width $2.5\times$ that of the optimal reference permutation (green). See Section \ref{sec:mechanism} for definition of terms.}
+    \caption[Comparison of our heuristic's performance with that of an optimal reference permutation $\sigma^*_0$.]{Comparison of our heuristic's performance with that of an optimal reference permutation $\sigma^*_0$. An optimal $\sigma^*_0$ is generated with every group having size $w$. A graph is generated from this optimal $\sigma^*_0$ from which our heuristic (blue) attempts to reconstruct the optimal permutation. For baselining, the performance of a random $\sigma_0$ selection is plotted (orange). We observe that at worst, our heuristic picks a reference permutation with width $2.5\times$ that of the optimal reference permutation (green). See Section \ref{sec:mechanism} for definition of terms.}
     \label{fig:heuristic optimal}
 \end{figure}
 
@@ -1029,7 +1029,7 @@ Figure \ref{fig:heuristic optimal} depicts our findings. Each plot has a differe
 \begin{figure}[h]
     \centering
     \includegraphics[width = \linewidth]{./figures/heuristic_random.png}
-    \caption{example of our heuristic's performance on randomly generated graphs. As $r$ increases, so does the connectivity of the random graphs and the average group size (green). As shown by Theorem \ref{thm:NP}, computing the optimal $\omega_\calG^\sigma$ is NP-hard. The average group size (green) in $\calG$ is a loose lower bound on the optimal $\omega_\calG^\sigma$. The performance of a random $\sigma_0$ assignment (orange) is also plotted for reference. Our heuristic BFS algorithm (blue) consistently outperforms the random baseline.}
+    \caption[example of our heuristic's performance on randomly generated graphs.]{example of our heuristic's performance on randomly generated graphs. As $r$ increases, so does the connectivity of the random graphs and the average group size (green). As shown by Theorem \ref{thm:NP}, computing the optimal $\omega_\calG^\sigma$ is NP-hard. The average group size (green) in $\calG$ is a loose lower bound on the optimal $\omega_\calG^\sigma$. The performance of a random $\sigma_0$ assignment (orange) is also plotted for reference. Our heuristic BFS algorithm (blue) consistently outperforms the random baseline.}
     \label{fig:heuristic random}
 \end{figure}
 

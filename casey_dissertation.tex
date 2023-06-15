@@ -3,7 +3,7 @@
 % It isn't clear if Times is required. The OGS manual lists several
 % "standard fonts" but never says they need to be used.
 \usepackage{mathptmx}
-\usepackage{natbib}
+\usepackage[numbers]{natbib}
 \usepackage[NoDate]{currvita}
 \usepackage{array}
 \usepackage{tabularx}
@@ -64,6 +64,7 @@
 \committee{Professor Sanjoy Dasgupta}
 \committee{Professor Alon Orlitsky}
 \degreeyear{2023}
+
 
 % Start the document
 \begin{document}
@@ -237,7 +238,7 @@ As data collection for machine learning (ML) tasks has become more pervasive, it
 \include{conclusion}
 
 
-\appendix
+\appendix            
 %\Blinddocument
 \include{chapters/chapter1/appendix1}
 \include{chapters/chapter2/appendix2}
@@ -247,7 +248,7 @@ As data collection for machine learning (ML) tasks has become more pervasive, it
 
 % Stuff at the end of the dissertation goes in the back matter
 \backmatter
-\bibliographystyle{plain} % Or whatever style you want like plainnat
+\bibliographystyle{unsrtnat} % Or whatever style you want like plainnat
 \bibliography{references}
 
 \end{document}

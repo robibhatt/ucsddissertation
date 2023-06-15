@@ -57,7 +57,7 @@
     %     \label{fig:Syn:utility}
     % \end{subfigure}
     \vspace{-0.2cm}
-   \caption{
+   \caption[Our scheme interpolates between standard LDP (orange line) and uniform shuffling (blue line) in both privacy and data learnability.]{
    Our scheme interpolates between standard LDP (orange line) and uniform shuffling (blue line) in both privacy and data learnability. All plots increase group size along x-axis (except (d)). 
    (a) $\rightarrow$ (b): The fraction of participants vulnerable to an inferential attack.  
    %(d): Attack success with varying $\alpha$ for a fixed $r$. 
@@ -118,17 +118,22 @@ We additionally perform the above experiments on the following three datasets
 %\vspace{-0.3cm}
 \textbf{Experimental Results.}
 %The plots of Figure \ref{fig:results} indicate that our scheme successfully interpolates between standard \ldp and uniform shuffling. We return to our two primary questions: 
-\\\textbf{Q1.} Our formal guarantee on the inferential privacy loss (Thm. \ref{thm: semantic guarantee}) is described w.r.t to a `strong' adversary (with access to  \scalebox{1}{$\{y_{G_i}\},\by_{\overline{G}_i}$}). Here, we test how well does our proposed scheme (Alg. 1) protect against inference attacks on real-world datasets without any such assumptions. Additionally, to make our attack more realistic, the adversary has access to extra privileged auxiliary information $\calT_P$ which is \textit{not used} by Alg. \ref{algo:main}.  Fig. \ref{fig:Texas:attack}$\rightarrow$ \ref{fig:Twitch:attack} show  that our scheme significantly reduces the attack efficacy. For instance, $\rho$ is reduced by \scalebox{1}{$2.7X$} at the attack distance threshold $r^*$ for \textit{PUDF}.  \begin{wrapfigure}{r}{0.3\linewidth}
-     \vspace{-0.4cm}
-    \hspace{-0.8cm}
+\\\textbf{Q1.} Our formal guarantee on the inferential privacy loss (Thm. \ref{thm: semantic guarantee}) is described w.r.t to a `strong' adversary (with access to  \scalebox{1}{$\{y_{G_i}\},\by_{\overline{G}_i}$}). Here, we test how well does our proposed scheme (Alg. 1) protect against inference attacks on real-world datasets without any such assumptions. Additionally, to make our attack more realistic, the adversary has access to extra privileged auxiliary information $\calT_P$ which is \textit{not used} by Alg. \ref{algo:main}.  Fig. \ref{fig:Texas:attack}$\rightarrow$ \ref{fig:Twitch:attack} show  that our scheme significantly reduces the attack efficacy. For instance, $\rho$ is reduced by \scalebox{1}{$2.7X$} at the attack distance threshold $r^*$ for \textit{PUDF}.
+
+Additionally, $\rho$ for our scheme varies from that of \textsf{LDP}\footnote{Our scheme gives lower $\rho$ than \ldp at \scalebox{1}{$r=0$} because the resulting groups are non-singletons. For instance, for PUDF, $G_i$ includes all individuals with the same zipcode as $\DO_i$.} (minimum privacy)   to uniform shuffle (maximum privacy) with increasing $r$ (equivalently group size as in Fig. \ref{fig:Twitch:attack}) thereby spanning the entire privacy spectrum. As expected, $\rho$ decreases with decreasing privacy parameter $\alpha$ (Fig. \ref{fig:Adult:alpha}).
+
+\begin{wrapfigure}{r}{0.3\linewidth}
+%     \vspace{-2cm}
+%    \hspace{-0.8cm}
     \centering
     \includegraphics[height=3cm]{./figures/Syn_utility.png} 
-    \vspace{-0.3cm}
+%    \vspace{-0.3cm}
     \caption{\textit{Syn}: Learnability}% that acts as the public auxiliary information.}
     \label{fig:Syn:utility}
-    \vspace{-1.5em}
-\end{wrapfigure} Additionally, $\rho$ for our scheme varies from that of \textsf{LDP}\footnote{Our scheme gives lower $\rho$ than \ldp at \scalebox{1}{$r=0$} because the resulting groups are non-singletons. For instance, for PUDF, $G_i$ includes all individuals with the same zipcode as $\DO_i$.} (minimum privacy)   to uniform shuffle (maximum privacy) with increasing $r$ (equivalently group size as in Fig. \ref{fig:Twitch:attack}) thereby spanning the entire privacy spectrum. As expected, $\rho$ decreases with decreasing privacy parameter $\alpha$ (Fig. \ref{fig:Adult:alpha}).
-\\\textbf{Q2.} Fig.\ref{fig:Texas:utility} \scalebox{1}{$\rightarrow$} \ref{fig:Twitch:utility} show that $\lambda$ varies from that of \ldp (maximum learnability) to that of uniform shuffle (minimum learnability) with increasing $r$ (equivalently, group size), thereby providing tunability.  Interestingly, for \textit{Adult} our scheme reduces $\rho$ by \scalebox{1}{$1.7X$} at the same $\lambda$ as that of \ldp for \scalebox{1}{$r=1$} (Fig. \ref{fig:Adult:utility}). Fig. \ref{fig:Syn:utility} shows that the distance threshold $r$ defines the granularity at which the data can be classified. \ldp allows 8-way classification while uniform shuffling allows none. The granularity of classification can be tuned by our scheme -- $r_8$, $r_4$ and $r_2$ mark the thresholds for $8$-way, $4$-way and $2$-way classifications, respectively. %Experiments on evaluation of \scalebox{1}{$(\eta,\delta)$}-preservation are in  App. \ref{app:extraresults}.
+%    \vspace{-1.5em}
+\end{wrapfigure} 
+
+\textbf{Q2.} Fig.\ref{fig:Texas:utility} \scalebox{1}{$\rightarrow$} \ref{fig:Twitch:utility} show that $\lambda$ varies from that of \ldp (maximum learnability) to that of uniform shuffle (minimum learnability) with increasing $r$ (equivalently, group size), thereby providing tunability.  Interestingly, for \textit{Adult} our scheme reduces $\rho$ by \scalebox{1}{$1.7X$} at the same $\lambda$ as that of \ldp for \scalebox{1}{$r=1$} (Fig. \ref{fig:Adult:utility}). Fig. \ref{fig:Syn:utility} shows that the distance threshold $r$ defines the granularity at which the data can be classified. \ldp allows 8-way classification while uniform shuffling allows none. The granularity of classification can be tuned by our scheme -- $r_8$, $r_4$ and $r_2$ mark the thresholds for $8$-way, $4$-way and $2$-way classifications, respectively. %Experiments on evaluation of \scalebox{1}{$(\eta,\delta)$}-preservation are in  App. \ref{app:extraresults}.
 
 \section{Conclusion}
 We have proposed a new privacy definition, \name-privacy that casts new light on the inferential privacy benefits of shuffling and a novel shuffling mechanism to achieve the same. %Additionally, we propose a generalized shuffle framework that interpolates between \ldp and uniform shuffling in terms of the protection afforeded against inference attacks and data learnability.

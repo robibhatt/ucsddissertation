@@ -232,7 +232,7 @@ The adversary's ability to re-identify the $\{z_I\}$ values comes partially from
 \squishendfour \vspace{-0.2cm}
 \textbf{Discussion.} In spirit, \DP does not guarantee protection against recovering $\DO_i$'s private $x_i$ value. It guarantees that -- had a user not participated (or equivalently submitted a false value $x_i'$) -- the adversary would have about the same ability to learn their true value, potentially from the responses of other data owners. In other words, the choice to participate is unlikely to be responsible for the disclosure of $x_i$. Similarly, \name-privacy does not prevent disclosure of $x_i$. By requiring indistinguishability of neighboring permutations, it guarantees that -- had the data owners of any group $G_i$ completely swapped identities -- the adversary would have about the same ability to learn $x_i$. So most likely, Alice's household is not uniquely responsible for a disclosure of her $x_i$: had her household swapped identities with any of her neighbors, the adversary would probably draw the same conclusion on $x_i$. 
 Or, as detailed in Thm.\ref{thm: decision theoretic}, an adversary cannot reliably resolve which $\{z\}$ values originated from Alice's household, so they cannot draw conclusions based on her household's responses. 
-In a nutshell,    \vspace{-0.4cm}\squishlistfour   \vspace{-0.3cm}
+In a nutshell,    \squishlistfour   
     \item Inference attacks can recover a data owner $\DO_i$'s private data $x_i$ from the responses of other data owners. The order of the data acts as the proxy for the data owner's identity which can aid an adversary in corralling the subset of other data owners who correlate with $\DO_i$ (required to make a reliable inference of $x_i$). 
     \item  \DP alleviates concerns that \underline{$\DO_i$'s choice to share data} ($y_i$) will result in disclosure of $x_i$, and \name-privacy alleviates concerns that $\DO_i$'s \underline{group's ($G_i$) choice to share their identity} will result in disclosure of $x_i$.
     \vspace{-0.2cm}
@@ -299,14 +299,18 @@ In a nutshell,    \vspace{-0.4cm}\squishlistfour   \vspace{-0.3cm}
 %\vspace{2cm}
 
 We now describe our novel shuffling mechanism that can achieve \name-privacy. In a nutshell, our mechanism samples a permutation from a suitable Mallows model and shuffles the data sequence accordingly. We can characterize the \name-privacy guarantee of our mechanism in the same way as that of the \DP guarantee of classic mechanisms \citep{Dwork} -- with variance and sensitivity. Intuitively, a larger dispersion parameter $\theta \in \R$ (Def. \ref{def: mallows}) reduces randomness over permutations, increasing utility and increasing (worsening) the privacy parameter $\alpha$. The maximum value of $\theta$ for a given $\alpha$ guarantee depends on the sensitivity of the rank distance measure $\textswab{d}(\cdot)$ over all neighboring permutations $N_\calG$. Formally, we define the sensitivity as 
-\resizebox{0.95\linewidth}{!}{
-\begin{minipage}{\linewidth}
+%\resizebox{0.95\linewidth}{!}{
+%\begin{minipage}{\linewidth}
+%\begin{align*}
+%    \Delta(\sigma_0 : \textswab{d}, \calG) =
+%    \max_{(\sigma, \sigma') \in N_\calG} |\textswab{d}(\sigma_0 \sigma, \sigma_0) - \textswab{d}(\sigma_0 \sigma', \sigma_0)|~, 
+%\end{align*}
+%\end{minipage}
+%}
 \begin{align*}
     \Delta(\sigma_0 : \textswab{d}, \calG) =
     \max_{(\sigma, \sigma') \in N_\calG} |\textswab{d}(\sigma_0 \sigma, \sigma_0) - \textswab{d}(\sigma_0 \sigma', \sigma_0)|~, 
 \end{align*}
-\end{minipage}
-}
 %\vspace{-0.2cm}
 % \begin{prope}
 % For group assignment $\calG$, a  mechanism $\calA(\cdot)$ that shuffles according to a permutation sampled from the Mallows model $\mathbb{P}_{\theta,\textswab{d}}(\cdot)$, satisfies $(\alpha, \calG)$-\name privacy where

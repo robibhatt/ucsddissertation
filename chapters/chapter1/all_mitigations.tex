@@ -17,7 +17,7 @@
          \label{fig:dejavu v. guillotine}
      \end{subfigure}~
      \vspace{-0.5em}
-    \caption{
+    \caption[Effect of two kinds of hyper-parameters on VICReg memorization. ]{
     Effect of two kinds of hyper-parameters on VICReg memorization. \textbf{Left:} \dejavu score (red) versus the \emph{invariance} loss parameter, $\lambda$, used in the VICReg criterion (100k dataset). Larger $\lambda$ significantly reduces \dejavu, with minimal effect on linear probe validation performance (green). $\lambda = 25$ (near maximum \dejavu) is recommended in the original paper \textbf{Right:} \dejavu score versus projector layer---guillotine regularization \cite{Guillotine}---from projector to backbone. Removing the projector can significantly reduce \dejavu. Appendix \ref{sec:guillotine} shows that the backbone still can memorize, however; we demonstrate reconstructions using the SimCLR backbone.
     }
 \end{minipage}
@@ -59,7 +59,7 @@
           \label{tab:dejavu vs. criterion}
     \end{subfigure}
     \vspace{-1.4em}
-    \caption{
+    \caption[Effect of model architecture and criterion on \dejavu memorization.]{
     %Comparison of \dejavu score for different architectures and training criteria. 
     Effect of model architecture and criterion on \dejavu memorization. 
     \textbf{Left:} \dejavu score with VICReg for resnet (purple) and vision transformer (green) architectures versus number of model parameters. As expected, memorization grows with larger model capacity. This trend is more pronounced for convolutional (resnet) than transformer (ViT) architectures. \textbf{Right:} Comparison of \dejavu score 20\% conf. and ImageNet linear probe validation accuracy (P: using projector embeddings, B: using backbone embeddings) for various SSL criteria. %\textbf{Nearly all SSL models have more memorization than the supervised baseline.} 
