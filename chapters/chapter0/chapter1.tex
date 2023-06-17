@@ -1,0 +1,85 @@
+\graphicspath{{./chapters/chapter1}}
+\chapter{When are Non-Parametric Methods Robust?} 
+
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}[thm]{Corollary}
+
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{ex}{Example}
+
+\def\D{{\mathcal D}}
+\def\X{\mathcal X}
+\def\R{\mathbb R}
+\def\Y{\{\pm 1\}}
+\def\w{\hat{w}}
+\def\P{\mathbb{P}}
+\def\I{\hat{I}}
+\def\b{g^*}
+\def\r{\rho}
+\def\rcons{r-consistent}
+\def\rconsy{r-consistency}
+\def\ap{AdvPrun}
+\def\ga{RobustNonPar}
+
+\section{Introduction}
+
+Recent work has shown that many classifiers tend to be highly non-robust and that small strategic modifications to regular test inputs can cause them to misclassify~\cite{Szegedy14, Goodfellow14, MeekLowd05}. Motivated by the use of machine learning in safety-critical applications, this phenomenon has recently received considerable interest; however, what exactly causes this phenomenon -- known in the literature as {\em{adversarial examples}} -- still remains a mystery.
+
+Prior work has looked at three plausible reasons why adversarial examples might exist. The first, of course, is the possibility that in real data distributions, different classes are very close together in space -- which does not seem plausible in practice. Another possibility is that classification algorithms may require more data to be robust than to be merely accurate; some prior work~\cite{Madry18, WJC18, Srebro19} suggests that this might be true for certain classifiers or algorithms. Finally, others~\cite{Bubeck19, Vinod19, WJC18} have suggested that better training algorithms may give rise to more robust classifiers -- and that in some cases, finding robust classifiers may even be computationally challenging.
+
+In this work, we consider this problem in the context of general non-parametric classifiers. Contrary to parametrics, non-parametric methods are a form of local classifiers, and include a large number of pattern recognition methods such as nearest neighbors, decision trees, random forests and kernel classifiers. There is a richly developed statistical theory of non-parametric methods~\cite{devroye96}, which focuses on accuracy, and provides very general conditions under which these methods converge to the Bayes optimal with growing number of samples. We, in contrast, analyze robustness properties of these methods, and ask instead when they converge to the classifier with the highest astuteness at a desired radius $r$. Recall that the astuteness of a classifier at radius $r$ is the fraction of points from the distribution on which it is accurate and has the same prediction up to a distance $r$~\cite{WJC18, Madry18}.
+
+ We begin by looking at the very simple case when data from different classes is well-separated -- by at least a distance $2r$. Although achieving astuteness in this case may appear trivial, we show that even in this highly favorable case, not all non-parametric methods provide robust classifiers -- and this even holds for methods that converge to the Bayes optimal in the large sample limit.  
+
+This raises the natural question -- when do non-parametric methods produce astute classifiers? We next provide conditions under which a non-parametric method converges to the most astute classifier in the large sample limit under well-separated data. Our conditions are analogous to the classical conditions for convergence to the Bayes optimal~\cite{devroye96, Stone77}, but a little stronger. We show that nearest neighbors and kernel classifiers whose kernel functions decay fast enough, satisfy these conditions, and hence converge to astute classifiers in the large sample limit. In constrast, histogram classifiers, which do converge to the Bayes optimal in the large sample limit, may not converge to the most astute classifier. This indicates that there may be some non-parametric methods, such as nearest neighbors and kernel classifiers, that are more naturally robust when trained on well-separated data, and some that are not.
+
+What happens when different classes in the data are not as well-separated? For this case, \cite{YRWC19} proposes a method called Adversarial Pruning that preprocesses the training data by retaining the maximal set of points such that different classes are distance $\geq 2r$ apart, and then trains a non-parametric method on the pruned data. We next prove that if a non-parametric method has certain properties, then the classifier produced by Adversarial Pruning followed by the method does converges to the most astute classifier in the large sample limit. We show that again nearest neighbors and kernel classifiers whose kernel functions decay faster than inverse polynomials satisfy these properties. Our results thus complement and build upon the empirical results of~\cite{YRWC19} by providing a performance guarantee. 
+
+What can we conclude about the cause for adversarial examples? Our results seem to indicate that at least for non-parametrics, it is mostly the training algorithms that are responsible. With a few exceptions, decades of prior work in machine learning and pattern recognition has largely focussed on designing training methods that provide increasingly accurate classifiers -- perhaps to the detriment of other aspects such as robustness. In this context, our results serve to (a) provide a set of guidelines that can be used for designing non-parametric methods that are robust and accurate on well-separated data and (b) demonstrate that when data is not well-separated, preprocessing through adversarial pruning~\cite{YRWC19} may be used to ensure convergence to optimally astute solutions in the large sample limit. 
+
+\subsection{Related Work}
+
+There is a large body of work on adversarial attacks~\cite{Carlini17, Liu17, Papernot17, Papernot16,Szegedy14} and defenses~\cite{Hein17,Katz17,Schmidt18,Wu16,Steinhardt18, Sinha18} in the parametric setting, specifically focusing on neural networks. On the other hand, adversarial examples for nonparametric classifiers have mostly been studied in a much more ad-hoc manner, and to our knowledge, there has been no theoretical investigation into general properties of algorithms that promote robustness in non-parametric classifiers.
+
+For nearest neighbors, there has been some prior work on adversarial attacks~\cite{Amsaleg17, Sitawarin19, WJC18, YRWC19} as well as defenses. Wang et. al. \cite{WJC18} proposes a defense for 1-NN by pruning the input sample. However, their defense learns a classifier whose robustness regions converge towards those of the Bayes optimal classifier, which itself may potentially have poor robustness properties. Yang et. al. \cite{YRWC19} accounts for this problem by proposing the notion of the $r$-optimal classifier, and propose an algorithm called Adversarial Pruning which can be interpreted as a finite sample approximation to the $r$-optimal. However, they do not provide formal performance guarantees for Adversarial Pruning, which we do. 
+
+For Kernel methods, Hein and Andriushchenko \cite{Hein17} study lower bounds on the norm of the adversarial manipulation that is required for changing a classifiers output. They specifically study bounds for Kernel Classifiers, and propose an empirically based regularization idea that improves robustness. In this work, we improve the robustness properties of kernel classification through adversarial pruning, and show formal guarantees regarding convergence towards the $r$-optimal classifier. 
+
+For decision trees and random forests, attacks and defenses have been provided by \cite{Hein19, Kantchelian15, Hsiehicml19}. Again, most of the work here is empirical in nature, and convergence guarantees are not provided. 
+
+Pruning has a long history of being applied for improving nearest neighbors \cite{Gates72, Gottlieb14, Hart68, KontorovichSW17, KontorovichW15, Hanneke19}, but this has been entirely done in the context of generalization, without accounting for robustness. In their work, Yang et. al. empirically show that adversarial pruning can improve robustness for nearest neighbor classifiers. However, they do not provide any formal guarantees for their algorithms. In this work, we prove formal guarantees for \textit{adversarial pruning} in the large sample limit, both for nearest neighbors as well as for more general \textit{weight functions.} 
+
+There is a long history of literature for understanding the consistency of Kernel classifiers \cite{Steinwart05, Stone77}, but this has only been done for accuracy and generalization. In this work, we find different conditions are needed to ensure that a Kernel classifier converges in robustness in addition to accuracy.
+
+\section{Preliminaries}
+
+\subsection{Setting}
+We consider binary classification where instances are drawn from a totally bounded metric space $\X$ that is equipped with distance metric denoted by $d$, and the label space is $\Y = \{ -1, +1 \}$. The classical goal of classification is to build a highly \textit{accurate} classifier, which we define as follows.
+
+\begin{defn}
+(Accuracy) Let $\D$ be a distribution over $\X \times \Y$, and let $f \in \Y^\X$ be a classifier. Then the \textbf{accuracy} of $f$ over $\D$, denoted $A(f, \D)$, is the fraction of examples $(x,y) \sim \D$ for which $f(x) = y$. Thus $$A(f, \D) = P_{(x,y) \sim \D}[f(x) = y].$$
+\end{defn}
+
+In this work, we consider \textit{robustness} in addition to accuracy. Let $B(x,r)$ denoted the closed ball of radius $r$ centered at $x$. 
+
+\begin{defn}
+(Robustness) A classifier $f \in \Y^\X$ is said to be \textbf{robust} at $x$ with radius $r$ if $f(x) = f(x')$ for all $x' \in B(x,r)$.
+\end{defn}
+
+Our goal is to find non-parametric algorithms that output classifiers that are robust, in addition to being accurate. To account for both criteria, we combine them into a notion of \textit{astuteness}~\cite{WJC18, Madry18}. 
+
+\begin{defn}
+(Astuteness) A classifier $f \in \Y^\X$ is said to be \textbf{astute} at $(x,y)$ with radius $r$ if $f$ is robust at $x$ with radius $r$ and $f(x) = y$. The \textbf{astuteness} of $f$ over $\D$, denoted $A_r(f, \D)$, is the fraction of examples $(x,y) \sim \D$ for which $f$ is astute at $(x,y)$ with radius $r$. Thus $$A_r(f, \D) = P_{(x, y) \sim \D}[f(x') = y, \forall x' \in B(x,r)].$$
+\end{defn}
+
+It is worth noting that $A_0(f, \D) = A(f, \D)$, since astuteness with radius $0$ is simply the accuracy. For this reason, we will use $A_0(f, \D)$ to denote accuracy from this point forwards.
+
+
+%\input{chapters/chapter1/macros}
+%\input{chapters/chapter1/introduction}
+%\input{chapters/chapter1/related}
+%\input{chapters/chapter1/definition}
+%\input{chapters/chapter1/quantifying}
+%\input{chapters/chapter1/visualizing}
+%\input{chapters/chapter1/mitigation}
