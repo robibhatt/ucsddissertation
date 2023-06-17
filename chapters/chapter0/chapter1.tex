@@ -75,6 +75,313 @@ Our goal is to find non-parametric algorithms that output classifiers that are r
 
 It is worth noting that $A_0(f, \D) = A(f, \D)$, since astuteness with radius $0$ is simply the accuracy. For this reason, we will use $A_0(f, \D)$ to denote accuracy from this point forwards.
 
+\subsection{Notions of Consistency}
+
+Traditionally, a classification algorithm is said to be consistent if as the sample size grows to infinity, the accuracy of the classifier it learns converges towards the best possible accuracy on the underlying data distribution. We next introduce and formalize an alternative form of consistency, called $r$-consistency, that applies to robust classifiers.
+
+We begin with a formal definition of the Bayes Optimal Classifier -- the most accurate classifier on a distribution -- and consistency. 
+
+\begin{defn}
+(Bayes Optimal Classifier) The \textbf{Bayes Optimal Classifier} on a distribution $\D$, denoted by $\b$, is defined as follows. Let $\eta(x) = p_\D(+1|x)$. Then
+ \[ \b(x) = \begin{cases} 
+      +1 & \eta(x) \geq 0.5 \\
+      -1 & \eta(x) < 0.5 \\
+   \end{cases}
+\]
+It can be shown that $\b$ achieves the highest accuracy over $\D$ over all classifiers.
+\end{defn}
+
+\begin{defn}
+(Consistency) Let $M$ be a classification algorithm  over $\X \times \Y$. $M$ is said to be \textbf{consistent} if for any $\D$ over $\X \times \Y$, and any $\epsilon, \delta$ over $(0,1)$, there exists $N$ such that for $n \geq N$, with probability $1-\delta$ over $S \sim \D^n$, we have: $$A(M(S), \D) \geq A(\b, \D) - \epsilon,$$ where $\b$ is the Bayes optimal classifier for $\D$. 
+\end{defn}
+
+How can we incorporate robustness in addition to accuracy in this notion? A plausible way, as used in~\cite{WJC18}, is that the classifier should converge towards being astute where the Bayes Optimal classifier is astute. However, the Bayes Optimal classifier is not necessarily the most astute classifier and may even have poor astuteness. To see this, consider the following example. 
+
+\paragraph{Example 1}
+Consider $\D$ over $\X = [0,1]$ such that $\D_\X$ is the uniform distribution and $$p(y=1|x) = \frac{1}{2} + \sin \frac{4 \pi x}{r}.$$ For any point $x$, there exists $x_1, x_2 \in ([x-r, x+r] \cap [0,1])$ such that $p(y=1|x_1) > \frac{1}{2}$ and $p(y=1|x_2) < \frac{1}{2}$. $A_r(\b, r) = 0$. However, the classifier that always predicts $f(x) = +1$ does better. It is robust everywhere, and since $P_{(x,y) \sim \D}[y = +1] = \frac{1}{2}$, it follows that $A_r(f, \D) = \frac{1}{2}$. \\ \\
+
+This motivates the notion of the $r$-optimal classifier, introduced by~\cite{YRWC19}, which is the classifier with maximum astuteness. 
+
+\begin{defn}
+($r$-optimal classifier) The \textbf{$r$-optimal classifier} of a distribution $G$ denoted by $\b_r$ is the classifier with maximum astuteness. Thus $$\b_r = \argmax_{f \in \Y^\X} A_r(f, \D).$$ We let $A_r^*(\D)$ denote $A_r(\b_r, \D)$. 
+\end{defn}
+
+Observe that $\b_r$ is not necessarily unique. To account for this, we use $A_r^*(\D)$ in our definition for \rconsy. 
+
+\begin{defn} \label{defn_archons}
+(\rcons) Let $M$ be a classification algorithm over $\X \times \Y$. $M$ is said to be \textbf{\rcons} if for any $\D$,  any $\epsilon, \delta \in (0,1)$, and $0 < \gamma < r$, there exists $N$ such that for $n \geq N$, with probability $1-\delta$ over $S \sim \D^n$, $$A_{r-\gamma}(M(S), \D) \geq A_r^*(\D) - \epsilon.$$ if the above conditions hold for a specific distribution $\D$, we say that $M$ is \rcons\emph{ }with respect to $\D$. 
+\end{defn}
+
+Observe that in addition to the usual $\epsilon$ and $\delta$, there is an extra parameter $\gamma$ which measures the gap in the robustness radius. We may need this parameter as when classes are exactly $2r$ apart, we may not be able to find the exact robust boundary with only finite samples. 
+
+Our analysis will be centered around understanding what kinds of algorithms $M$ provide highly astute classifiers for a given radius $r$. We begin by first considering the special case of \textit{$r$-separated} distributions. 
+
+\begin{defn}
+($r$-separated distributions) A distribution $\D$ is said to be \textbf{$r$-separated} if there exist subsets $T^+, T^- \subset \X$ such that 
+\begin{enumerate}
+	\item $\P_{(x,y) \sim \D}[x \in T^y] = 1$. 
+	\item $\forall x_1 \in T^+, \forall x_2 \in T^-$, $d(x_1, x_2) > 2r$.
+\end{enumerate}
+\end{defn}
+
+Observe that if $\D$ is $r$-separated, $A_r(\b_r, \D) = 1$.
+
+\subsection{Non-parametric Classifiers}\label{classifiers}
+
+Many non-parametric algorithms classify points by averaging labels over a local neighborhood from their training data. A very general form of this idea is encapsulated in \textit{weight functions} -- which is the general form we will use.
+
+\begin{defn} \label{def:weight}
+\cite{devroye96} A \textbf{weight function} $W$ is a non-parametric classifier with the following properties.
+\begin{enumerate}
+	\item Given input $S = \{(x_1, y_1), (x_2, y_2,), \dots, (x_n, y_n)\} \sim \D^n$, $W$ constructs functions $w_1^S, \dots, w_n^S: \X \to [0, 1]$ such that for all $x \in \X$, $\sum_1^n w_i^S(x) = 1$. The functions $w_i^S$ are allowed to depend on $x_1, x_2, \dots x_n$ but must be independent of $y_1, y_2, \dots, y_n$. 
+	\item $W$ has output $W_S$ defined as \[ W_S(x) = \begin{cases} 
+      +1 & \sum_1^n w_i^S(x)y_i > 0 \\
+      -1 & \sum_1^n w_i^S(x)y_i \leq 0 \\
+   \end{cases}
+\]
+As a result, $w_i^S(x)$ can be thought of as the weight that $(x_i, y_i)$ has in classifying $x$.
+\end{enumerate}
+\end{defn}
+
+Weight functions encompass a fairly extensive set of common non-parametric classifiers, which is the motivation for considering them. We now define several common non-parametric algorithms that can be construed as weight functions. 
+
+\begin{defn}
+A \textbf{histogram classifier}, $H$, is a non-parametric classification algorithm over $\R^d \times \Y$ that works as follows. For a distribution $\D$ over $\R \times \Y$, $H$ takes $S = \{(x_i, y_i): 1 \leq i \leq n\} \sim \D^n$ as input. Let $k_i$ be a sequence with $\lim_{i \to \infty} k_i = \infty$ and $\lim_{i \to \infty} \frac{k_i}{i} = 0$. $H$ constructs a set of hypercubes $C = \{c_1, c_2, \dots, c_m\}$ as follows:
+\begin{enumerate}
+	\item Initially $C = \{c\}$, where $S \subset c$.
+	\item For $c \in C$, if $c$ contains more than $k_n$ points of $S$, then partition $c$ into $2^d$ equally sized hypercubes, and insert them into $C$.
+	\item Repeat step $2$ until all cubes in $C$ have at most $k_n$ points. 
+\end{enumerate}
+For $x \in \R$ let $c(x)$ denote the unique cell in $C$ containing $x$. If $c(x)$ doesn't exist, then $H_S(x) = -1$ by default. Otherwise, \[ H_S(x) = \begin{cases} 
+      +1 & \sum_{x_i \in c(x)} y_i > 0 \\
+      -1 & \sum_{x_i \in c(x)}y_i \leq 0 \\
+   \end{cases}.
+\]
+\end{defn}
+
+Histogram classifiers are weight functions in which all $x_i$ contained within the same cell as $x$ are given the same weight $w_i^S(x)$ in predicting $x$, while all other $x_i$ are given weight $0$. 
+
+\begin{defn}
+A \textbf{kernel classifier} is a weight function $W$ over $\X \times \Y$ constructed from function $K: \R^+ \cup \{0\} \to \R^+$ and some sequence $\{h_n\} \subset \R^+$ in the following manner. Given $S = \{(x_i, y_i)\} \sim \D^n$, we have $$w_i^S(x) = \frac{K(\frac{d(x, x_i)}{h_n})}{\sum_{j = 1}^n K(\frac{d(x, x_j)}{h_n})}.$$ Then, as above, $W$ has output \[ W_S(x) = \begin{cases} 
+      +1 & \sum_1^n w_i^S(x)y_i > 0 \\
+      -1 & \sum_1^n w_i^S(x)y_i \leq 0 \\
+   \end{cases}
+\]
+\end{defn}
+
+Finally, we note that $k_n$-nearest neighbors is also a weight function; $w_i^S(x) = \frac{1}{k_n}$ if $x_i$ is one of the $k_n$ closest neighbors of $x$ and $0$ otherwise.
+
+\section{Warm Up: $r$-separated distributions}
+
+We begin by considering the case when the data distribution is $r$-separated; the more general case is considered in Section~\ref{sec:general}. While classifying $r$-separated distributions robustly may appear almost trivial, learning an arbitrary classifier does not necessarily produce an astute result. To see this, consider the following example of a histogram classifier -- which is known to be consistent. 
+
+
+We let $H$ denote the histogram classifier over $\R$.
+
+\paragraph{Example 2}
+Consider the data distribution $\D = \D^+ \cup \D^-$ where $D^+$ is the uniform distribution over $[0, \frac{1}{4})$ and $D^-$ is the uniform distribution over $(\frac{1}{2}, 1]$, $p(+1|x) = 1$ for $x \in \D^+$, and $p(-1|x) = 1$ for $x \in \D^-$. 
+
+We make the following observations (refer to Figure \ref{fig:histogram}).
+\begin{enumerate}
+	\item $\D$ is $0.1$-separated, since the supports of $\D^+$ and $\D^-$ have distance $0.25 > 0.2$. 
+	\item If $n$ is sufficiently large, $H$ will construct the cell $[0.25, 0.5)$, which will not be split because it will never contain any points. 
+	\item $H_S(x) = -1$ for $x \in [0.25, 0.5)$.
+	\item $H_S$ is not astute at $(x,1)$ for $x \in (0.15, 0.25)$. Thus $A_{0.1}(H_S, \D) = 0.8$.
+\end{enumerate}
+
+\begin{figure}
+\centering
+\definecolor{dtsfsf}{rgb}{0.8274509803921568,0.1843137254901961,0.1843137254901961}
+\definecolor{sexdts}{rgb}{0.1803921568627451,0.49019607843137253,0.19607843137254902}
+\begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=1cm,y=1cm]
+\clip(-4.68,0) rectangle (2.46,3);
+\draw [line width=2pt] (-3.8971542001619626,1.7601524817792173)-- (-3.90319974718047,1.0800284421971598);
+\draw [line width=2pt] (-2.7721542001619626,1.7501524817792171)-- (-2.7781997471804694,1.0700284421971598);
+\draw [line width=2pt] (-1.6471542001619623,1.7401524817792173)-- (-1.6531997471804694,1.0600284421971597);
+\draw [line width=2pt] (0.6028457998380374,1.720152481779217)-- (0.5968002528195302,1.0400284421971597);
+\draw [line width=2pt] (-2.775,1.43)-- (-1.65,1.42);
+\draw [line width=2pt,color=sexdts] (-1.65,1.42)-- (0.6,1.4);
+\draw [line width=2pt,color=sexdts] (-3.9,1.44)-- (-3.2002330680045032,1.4337798494933733);
+\draw [line width=2pt,color=dtsfsf] (-3.2002330680045032,1.4337798494933733)-- (-2.775,1.43);
+\draw (-3.54,2.48) node[anchor=north west] {$\mathcal{D}^+$};
+\draw (-0.76,2.46) node[anchor=north west] {$\mathcal{D}^-$};
+\draw (-4,1.1) node[anchor=north west] {0};
+\draw (-3.14,1.08) node[anchor=north west] {0.25};
+\draw (-1.86,1.1) node[anchor=north west] {0.5};
+\draw (0.5,1.08) node[anchor=north west] {1};
+\end{tikzpicture}
+\caption{$H_S$ is astute in the green region, but not robust in the red region.} \label{fig:histogram}
+\end{figure}
+
+Example 2 shows that histogram classifiers do not always learn astute classifiers even when run on $r$-separated distributions. This motivates the question: which non-parametric classifiers do?
+
+We answer this question in the following theorem, which gives sufficient conditions for a weight function (definition \ref{def:weight}) to be $r$-consistent over an $r$-separated distribution.
+
+\begin{thm}\label{thm_stone_cons}
+Let $\D$ be a distribution over $\X \times \Y$, and let $W$ be a weight function. Let $X$ be a random variable with distribution $\D_\X$, and $S = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\} \sim \D^n$. Suppose that for any $0 < a < b,$ $$\lim_{n \to \infty} \mathbb{E}_{X, S} \big [ \sup_{x' \in B(X, a)} \sum_1^n w_i^S(x')I_{||x_i - x'|| > b} \big] = 0.$$  Then if $\D$ is $r$-separated, $W$ is \rcons\emph{ } with respect to $\D$.  
+\end{thm}
+
+First, we compare Theorem \ref{thm_stone_cons} to Stone's theorem \cite{Stone77}, which gives sufficient conditions for a weight function to be consistent (i.e. converge in accuracy towards the Bayes optimal). For convenience, we include a statement of Stone's theorem. 
+\begin{thm}\label{thm_stone}
+\cite{Stone77} Let $W$ be weight function over $\X \times \Y$. Suppose the following conditions hold for any distribution $\D$ over $\X \times \Y$.  Let $X$ be a random variable with distribution $\D_\X$, and $S = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\} \sim \D^n$. All expectations are taken over $X$ and $S$. 
+\begin{enumerate}
+	\item There is a constant $c$ such that, for every nonnegative measurable function $f$ satisfying $\mathbb{E} [f(X)] < \infty$, $$\mathbb{E} [\sum_1^n w_i^S(X)f(x_i)] \leq c \mathbb{E} [f(x)].$$
+	\item For all $a > 0$, $$\lim_{n \to \infty} \mathbb{E}[\sum_1^n w_i^S(x)I_{||x_i - X|| > a}] = 0,$$ where $I_{||x_i - X|| > a}$ is an indicator variable. 
+	\item $$\lim_{n \to \infty} \mathbb{E}[\max_{1 \leq i \leq n} w_i^S(X)] = 0.$$
+\end{enumerate}
+Then $W$ is consistent. 
+\end{thm}
+There are two main differences between Theorem \ref{thm_stone_cons} and Stone's theorem.
+ \begin{enumerate}
+ 	\item Conditions 1. and 3. of Stone's theorem are no longer necessary. This is because $r$-separated distributions are well-separated and thus have simpler conditions for consistency. In fact, a slight modification of the arguments of~\cite{Stone77} shows that for $r$-separated distributions, condition 2. alone is sufficient for consistency.
+ 	\item Condition 2. is strengthened. Instead of requiring the weight of $x_i$'s outside of a given radius to go to $0$ for $X \sim \D$, we require the same to \textit{uniformly} hold over a ball centered at $X$. 
+\end{enumerate}  
+ 
+
+
+Theorem \ref{thm_stone_cons} provides a general condition that allows us to verify the $r$-consistency of non-parametric methods. We now show below that two common non-parametric algorithms -- $k_n$-nearest neighbors and kernel classifiers with rapidly decaying kernel functions -- satisfy the conditions of Theorem~\ref{thm_stone_cons}.
+ 
+\begin{cor}\label{nn_sep_thm}
+Let $\D$ be any $r$-separated distribution. Let $k_n$ be any sequence such that $\lim_{n \to \infty} \frac{k_n}{n} = 0$, and let $M$ be the $k_n$-nearest neighbors classifier on a sample $S \sim \D^n$. Then $M$ is \rcons\emph{ }with respect to $\D$. 
+\end{cor}
+
+\paragraph{\textbf{Remarks:}}
+\begin{enumerate}
+	\item Because the data distribution is $r$-separated, $k_n = 1$ will be $r$-consistent. Also observe that for $r$-separated distributions, $k_n = 1$ will converge towards the Bayes Optimal classifier.
+	\item In general, $M$ converges towards the Bayes Optimal classifier provided that $k_n \to \infty$ in addition to $k_n /n \to 0$. This condition is not necessary for \rconsy -- because the distribution is $r$-separated. 
+\end{enumerate}
+
+
+
+We next show that kernel classifiers are also $r$-consistent on $r$-separated data distributions, provided the kernel function decreases rapidly enough. 
+
+\begin{cor}\label{thm_kernel}
+Let $W$ be a kernel classifier over $\X \times \Y$ constructed from $K$ and $h_n$. Suppose the following properties hold for $K$ and $h_n$.
+\begin{enumerate}
+	\item For any $c > 1$, $\lim_{x \to \infty} \frac{K(cx)}{K(x)} = 0.$
+	\item $\lim_{n \to \infty} h_n = 0.$
+\end{enumerate}
+If $\D$ is an $r$-separated distribution over $\X \times \Y$, then $W$ is \rcons\emph{ }with respect to $\D$. 
+\end{cor}
+
+Observe that Condition 1. is satisfied for any $K(x)$ that decreases more rapidly than an inverse polynomial -- and is hence satisfied by most popular kernels like the Gaussian kernel. Is the condition on $K$ in Corollary~\ref{thm_kernel} necessary? The following example illustrates that a kernel classifier with any arbitrary $K$ is not necessarily $r$-consistent. This indicates that some sort of condition needs to be imposed on $K$ to ensure $r$-consistency; finding a tight necessary condition however is left for future work. 
+
+ \paragraph{Example 3} Let $\X = [-1, 1]$ and let $\D$ be a distribution with $p_\D(-1, -1) = 0.1$ and $p_\D(1, 1) = 0.9$. Clearly, $\D$ is $0.3$-separated. Let $K(x) = e^{-\min(|x|, 0.2)^2}$. Let $h_n$ be any sequence with $\lim_{n \to \infty} h_n = 0$ and $\lim_{n \to \infty} nh_n = \infty$. Let $W$ be the weight classifier with input $S = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\}$ such that $$w_i^S(x) = \frac{K(\frac{|x- x_i|}{h_n})}{\sum_{j=1}^n K(\frac{|x-x_j|}{h_n})}.$$ $W$ can be shown to satisfy all the conditions of Theorem \ref{thm_stone} (the proof is analogous to the case for a Gaussian Classifier), and is therefore consistent. However, $W$ does not learn a robust classifier on $\D$ for $r = 0.3$. 
+
+Consider $x = -0.7$. For any $\{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\} \sim \D^n$, all $x_i$ will either be $-1$ or $1$. Therefore, since $K(|x - (-1)|) = K(|x - 1|)$, it follows that $w_i^S(x) = \frac{1}{n}$ for all $1 \leq i \leq n$. Since $x_i = 1$ with probability $0.9$, it follows that with high probability $x$ will be classified as $1$ which means that $f$, the output of $W$, is not robust at $x = -1$. Thus $f$ has astuteness at most $0.9$ which means that $W$ is \textit{not} \rcons\ for $r=0.3$. 
+
+\section{General Distributions}\label{sec:general}
+
+
+We next consider more general data distributions, where data from different classes may be close together in space, and may even overlap. Observe that unlike the $r$-separated case, here there may be no classifier with astuteness one. Thus, a natural question is: what does the optimally astute classifier look like, and how can we build non-parametric classifiers to this limit?
+
+\subsection{The $r$-Optimal Classifier and Adversarial Pruning}
+
+\cite{YRWC19} propose a large-sample limit -- called the $r$-optimal -- and show that it is analogous to the Bayes Optimal classifier for robustness. More specifically, given a data distribution $D$, to find the $r$-optimal classifier, we solve the following optimization problem.  
+
+\begin{equation}\label{optim_prob}
+\begin{split}
+\max_{S_{+1}, S_{-1}} &\int_{x \in S_{+1}} p(y=+1|x)d\mu_{\D}(x) + \\
+&\int_{x \in S_{-1}} p(y=-1|x)d\mu_{\D}(x) \\
+&\text{ subject to } d(S_{+1}, S_{-1}) > 2r 
+\end{split}
+\end{equation}
+
+Then, the $r$-optimal classifier is defined as follows. 
+
+\begin{defn}
+\cite{YRWC19} Fix $r, \D$. Let $S_{+1}^*$ and $S_{-1}^*$ be any optimizers of (\ref{optim_prob}). Then the $r$-optimal classifier, $\b_r$ is any classifier such that $\b_r(x) = j$ whenever $d(S_j^*, x) \leq r$. 
+\end{defn}
+
+\cite{YRWC19} show that the $r$-optimal classifier achieves the optimal astuteness -- out of all classifiers on the data distribution $\D$; hence, it is a robustness analogue to the Bayes Optimal Classifier. Therefore, for general distributions, the goal in robust classification is to find non-parametric algorithms that output classifiers that converge towards $\b_r$. 
+
+To find robust classifiers, \cite{YRWC19} propose Adversarial Pruning -- a defense method that preprocesses the training data by making it better separated. More specifically, Adversarial Pruning takes as input a training dataset $S$ and a radius $r$, and finds the largest subset of the training set where differently labeled points are at least distance $2r$ apart. 
+
+
+\begin{defn}
+A set $S_r \subset \X \times \Y$ is said to be \textbf{$r$-separated} if for all $(x_1, y_1), (x_2, y_2) \in S_r$, if $y_1 \neq y_2$, then $d(x_1, x_2) > 2r$. To \textbf{adversarially prune} a set $S$ is to return its largest $r$-separated subset. We let $\ap(S, r)$ denote the result of adversarially pruning $S$.  
+\end{defn}
+
+Once an $r$-separated subset $S_r$ of the training set is found, a standard non-parametric method is trained on $S_r$.  While~\cite{YRWC19} show good empirical performance of such algorithms, no formal guarantees are provided. We next formally characterize when adversarial pruning followed by a non-parametric method results in a classifier that is provably $r$-consistent.
+
+Specifically, we consider analyzing the general algorithm provided in Algorithm \ref{alg:gen}.
+
+%\begin{algorithm}[tb]
+%   \caption{\ga}
+%   \label{alg:gen}
+%\begin{algorithmic}
+%   \STATE {\bfseries Input:} $S \sim \D^n$, weight function $W$, 
+%   robustness radius $r$
+%   \STATE $S_r \leftarrow \ap(S, r)$
+%   \STATE{\bfseries Output:} $W_{S_r}$
+%\end{algorithmic}
+%\end{algorithm}
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    {\bfseries Input:} $S \sim \D^n$, weight function $W$, robustness radius $r$\;
+    
+    $S_r \leftarrow \ap(S, r)$\;
+    
+    {\bfseries Output:} $W_{S_r}$\;
+    
+
+\caption{\ga}\label{alg:gen}
+\end{algorithm}
+
+\subsection{Convergence Guarantees}
+
+We begin with some notation. For any weight function $W$ and radius $r > 0$, we let $\ga(W,r)$ represent the weight function that outputs weights for $S \sim \D^n$ according to $\ga(S, W, r)$. In particular, this can be used to convert any weight function algorithm into a new weight function which takes robustness into account. A natural question is, for which weight functions $W$ is $\ga(W,r)$ \rcons? Our next theorem provides sufficient conditions for this.
+
+\begin{thm}\label{thm_weight_general}
+Let $W$ be a weight function over $\X \times \Y$, and let $\D$ be a distribution over $\X \times \Y$. Fix $r >0$. Let $S_r = \ap(S, r)$.  For convenience, relabel $x_i, y_i$ so that $S_r = \{(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m)\}$. Suppose that for any $0 < a < b,$ 
+\begin{equation*}\label{condition}
+\lim_{n \to \infty} \mathbb{E}_{S \sim \D^n}\big [ \frac{1}{m} \sum_{i = 1}^m \sup_{x \in B(x_i, a)} \sum_{j = 1}^m w_j^{S_r}(x)I_{||x_j - x|| > b} \big] = 0. 
+\end{equation*}
+Then $\ga(W,r)$ is \rcons\emph{ }with respect to $\D$. 
+\end{thm}
+
+\paragraph{\textbf{Remark}:}
+There are two important differences between the conditions in Theorem \ref{thm_weight_general} and Theorem~\ref{thm_stone_cons}.
+\begin{enumerate}
+	\item We replace $S$ with $S_r$.
+	\item The expectation over $X \sim \D_\X$ is replaced with an average over $\{x_1, x_2, \dots, x_m\}$. The intuition here is that we are replacing $\D$ with a uniform distribution over $S_r$. While $\D$ may not be $r$-separated, the uniform distribution over $S_r$ is, and represents the region of points where our classifier is astute. 
+\end{enumerate}
+
+A natural question is what satisfies the conditions in Theorem~\ref{thm_weight_general}. We next show that $k_n$-nearest neighbors and kernel classifiers with rapidly decaying kernel functions continue to satisfy the conditions in Theorem \ref{thm_weight_general}; this means that these classifiers, when combined with Adversarial Pruning, will converge to $r$-optimal classifiers in the large sample limit.
+
+\begin{cor}\label{thm_NN_gen}
+Let $k_n$ be a sequence with $\lim_{n \to \infty} \frac{k_n}{n} = 0$, and let $M$ denote the $k_n$-nearest neighbor algorithm. Then for any $r > 0$, $\ga(M, r)$ is \rcons.
+\end{cor}
+\paragraph{\textbf{Remark}:} Corollary \ref{thm_NN_gen} gives a formal guarantee in the large sample limit for the modified nearest-neighbor algorithm proposed by \cite{YRWC19}.
+
+\begin{cor}\label{thm_kern_gen}
+Let $W$ be a kernel classifier over $\X \times \Y$ constructed from $K$ and $h_n$. Suppose the following properties hold for $K$ and $h_n$.
+\begin{enumerate}
+	\item For any $c > 1$, $\lim_{x \to \infty} \frac{K(cx)}{K(x)} = 0.$
+	\item $\lim_{n \to \infty} h_n = 0.$
+\end{enumerate}
+Then for any $r > 0$, $\ga(W, r)$ is \rcons.
+\end{cor}
+
+Observe again that Condition 1. is satisfied by any $K$ that decreases more rapidly than an inverse polynomial kernel; it is thus satisfied by most popular kernels, such as the Gaussian kernel. 
+
+\section{Validation}
+%\begin{figure}[ht]
+%\vskip 0.2in
+%\begin{center}
+%\subfloat[][Noiseless Histogram]{\includegraphics[width=.29\textwidth]{hist_noiseless_final}}\quad
+%   \subfloat[][Noisy Histogram]{\includegraphics[width=.29\textwidth]{hist_noisy_final}} \quad
+%   \subfloat[][Histogram trained on 500 samples]{\includegraphics[width=.29\textwidth]{visual500}}\\
+%   \subfloat[][Noiseless 1-NN]{\includegraphics[width=.29\textwidth]{nn_noiseless_final}} \quad
+%   \subfloat[][Noisy 1-NN]{\includegraphics[width=.29\textwidth]{nn_noisy_final}}\quad
+%   \subfloat[][Histogram trained on 3000 samples]{\includegraphics[width=.29\textwidth]{visual3000}}
+%\end{center}
+%\caption{Empirical accuracy/astuteness of different classifiers as a function of training sample size. Accuracy is shown in green, astuteness in purple. Left : Noiseless Setting. Right: Noisy Setting. Top Row: Histogram Classifier, Bottom Row: 1-Nearest Neighbor}
+%\label{fig:1}
+%\vskip -0.2in
+%\end{figure}
+
 
 %\input{chapters/chapter1/macros}
 %\input{chapters/chapter1/introduction}
