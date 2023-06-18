@@ -1,312 +1,582 @@
-\graphicspath{{./chapters/chapter0/}}
-\chapter{Appendix for Chapter 1}
-\section{Proofs for $r$-separated distributions}
+\graphicspath{{./chapters/chapter1/}}
+\chapter{Appendix for Chapter 2}
 
-For any distribution $\D$ over $\X \times Y$, it will be convenient to use the following notation: for any measurable $S \subset \X$, let $\P_\D[S] = \P_{(x,y) \sim \D}[x \in S]$. The following definition will be central to our proofs. 
+\section{Further Details of Definitions and Theorems}
 
-\begin{defn}
-Let $\D$ be a distribution over $\X \times Y$. An \textbf{$(\epsilon, \gamma, \alpha)$-decomposition} of $\D$ is a finite set of closed balls $B_1, B_2, \dots, B_s \subset \X$ each with radius $\gamma$ such that $$\P_\D[\cup_1^s B_i] > 1 - \epsilon,$$ and such that $\P_\D[B_i] \geq \alpha > 0$ for $1 \leq i \leq s$. 
+\subsection{Non-Parametric Classifiers}
+
+In this section, we precisely define weight functions, histogram classifiers and kernel classifiers.
+
+\begin{defn} \label{def:weight_chap_1} 
+\cite{devroye96} A \textbf{weight function} $W$ is a non-parametric classifier with the following properties.
+\begin{enumerate}
+	\item Given input $S = \{(x_1, y_1), (x_2, y_2,), \dots, (x_n, y_n)\} \sim \D^n$, $W$ constructs functions $w_1^S, w_2^S, \dots, w_n^S: \R^d \to [0, 1]$ such that for all $x \in \R^d$, $\sum_1^n w_i^S(x) = 1$. The functions $w_i^S$ are allowed to depend on $x_1, x_2, \dots x_n$ but must be independent of $y_1, y_2, \dots, y_n$. 
+	\item $W$ has output $W_S$ defined as \[ W_S(x) = \begin{cases} 
+      +1 & \sum_1^n w_i^S(x)y_i > 0 \\
+      -1 & \sum_1^n w_i^S(x)y_i \leq 0 \\
+   \end{cases}
+\]
+As a result, $w_i^S(x)$ can be thought of as the weight that $(x_i, y_i)$ has in classifying $x$.
+\end{enumerate}
 \end{defn}
 
+\begin{defn}
+A \textbf{histogram classifier}, $H$, is a non-parametric classification algorithm over $\R^d \times \Y$ that works as follows. For a distribution $\D$ over $\R \times \Y$, $H$ takes $S = \{(x_i, y_i): 1 \leq i \leq n\} \sim \D^n$ as input. Let $k_i$ be a sequence with $\lim_{i \to \infty} k_i = \infty$ and $\lim_{i \to \infty} \frac{k_i}{i} = 0$. $H$ constructs a set of hypercubes $C = \{c_1, c_2, \dots, c_m\}$ as follows:
+\begin{enumerate}
+	\item Initially $C = \{c\}$, where $S \subset c$.
+	\item For $c \in C$, if $c$ contains more than $k_n$ points of $S$, then partition $c$ into $2^d$ equally sized hypercubes, and insert them into $C$.
+	\item Repeat step $2$ until all cubes in $C$ have at most $k_n$ points. 
+\end{enumerate}
+For $x \in \R$ let $c(x)$ denote the unique cell in $C$ containing $x$. If $c(x)$ doesn't exist, then $H_S(x) = -1$ by default. Otherwise, \[ H_S(x) = \begin{cases} 
+      +1 & \sum_{x_i \in c(x)} y_i > 0 \\
+      -1 & \sum_{x_i \in c(x)}y_i \leq 0 \\
+   \end{cases}.
+\]
+\end{defn}
 
-\begin{lem}\label{lem_balls}
-Let $\X$ be a totally bounded metric space. For any distribution $\D$, and $\epsilon, \gamma > 0$, there exists $\alpha > 0$ such that $\D$ admits a $(\epsilon, \gamma, \alpha)$-decomposition. 
+\begin{defn}
+A \textbf{partitioning rule} is a weight function $W$ over $\X \times \Y$ constructed in the following manner. Given $S = \{(x_i, y_i)\} \sim \D^n$, as a function of $\{x_1, \dots, x_n\}$, we partition $\R^d$ into regions with $A(x)$ denoting the region containing $x$.  Then, for any $x \in \R^d$ we have $$w_i^S(x) = \begin{cases}1 & x_i \in A(x) \\ 0 & \text{ otherwise}\end{cases}.$$To achieve $\sum w_i^S(x) = 1$, we can simply normalize weights for any $x$ by $\sum_1^n w_i^S(X)$.
+\end{defn}
+
+\begin{defn}
+A \textbf{kernel classifier} is a weight function $W$ over $\R^d \times \Y$ constructed from function $K: \R^+ \cup \{0\} \to \R^+$ and some sequence $\{h_n\} \subset \R^+$ in the following manner. Given $S = \{(x_i, y_i)\} \sim \D^n$, we have $$w_i^S(x) = \frac{K(\frac{\d(x, x_i)}{h_n})}{\sum_{j = 1}^n K(\frac{\d(x, x_j)}{h_n})}.$$ Then, as above, $W$ has output \[ W_S(x) = \begin{cases} 
+      +1 & \sum_1^n w_i^S(x)y_i > 0 \\
+      -1 & \sum_1^n w_i^S(x)y_i \leq 0 \\
+   \end{cases}
+\]
+\end{defn}
+
+\subsection{Splitting Numbers}
+
+We refer to definitions \ref{defn:prob_radius} and \ref{defn:splitting_number}.
+
+
+
+The main idea behind splitting numbers is that they allow us to ensure uniform convergence properties over a weight function. To prove neighborhood consistency, it is necessary for a classifier to be correct at \textit{all} points in a given region. Consequently, techniques that consider a single point will be insufficient. The splitting number provides a mechanism for studying entire regions simultaneously. For clarity, we include a quick example in which we bound the splitting number for a given weight function.
+
+\paragraph{Example:} Let $W$ denote any kernel classifier corresponding such that $K: \R_{\geq 0} \to \R_{\geq 0}$ is a decreasing function. For any $S \sim \D^n$, observe that the condition $w_i^S(x) \geq \beta$ precisely corresponds to $\d(x, x_i) \leq \gamma$ for some value of $\gamma$. This is because $w_i^S(x) > w_j^S(x)$ if and only if $\d(x, x_i) < \d(x, x_j)$. Thus, the regions $W_{x, \alpha, \beta}$ correspond to $\{i: \d(x, x_i) \leq \gamma\}$, where $\gamma$ is a positive real number that depends on $x, \alpha, \beta$. These sets precisely correspond to subsets of $S$ that are contained within $B(x, \gamma)$. Since balls have VC dimension at most $d+2$, by  Sauer's lemma, the number of subsets of $S$ that can be obtained in this manner is $O(n^{d+2})$. Therefore, we have that $T(W,S) = O(n^{d+2})\text{ for all }S \sim \D^n.$
+
+\subsection{Stone's Theorem}
+
+\begin{thm}\label{thm_stone_chapter_1}
+\cite{Stone77} Let $W$ be weight function over $\R^d \times \Y$. Suppose the following conditions hold for any distribution $\D$ over $\R^d \times \Y$.  Let $X$ be a random variable with distribution $\D_{\R^d}$, and $S = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\} \sim \D^n$. All expectations are taken over $X$ and $S$. 
+
+1. There is a constant $c$ such that, for every nonnegative measurable function $f$ satisfying $\mathbb{E} [f(X)] < \infty$, and $\mathbb{E} [\sum_1^n w_i^S(X)f(x_i)] \leq c \mathbb{E} [f(x)].$
+
+2. $\forall a > 0$, $\lim_{n \to \infty} \mathbb{E}[\sum_1^n w_i^S(x)I_{||x_i - X|| > a||}] = 0.$ 
+
+3. $\lim_{n \to \infty} \mathbb{E}[\max_{1 \leq i \leq n} w_i^S(X)] = 0.$
+
+Then $W$ is consistent. 
+\end{thm}
+
+\section{Proofs}
+
+\paragraph{Notation:} \begin{itemize}
+	\item We let $\d$ denote our distance metric over $\R^d$. For sets $X_1, X_2 \subset \R^d$, we let $\d(X_1, X_2) = \inf_{x_1 \in X_1, x_2 \in X_2} \d(x_1, x_2)$. 
+	\item For any $x \in \R^d$, $B(x, a) = \{x: \d(x, x') \leq a\}$.
+	\item For any measure over $\R^d$, $\mu$, we let $supp(\mu) = \{x: \mu(B(x,a)) > 0\text{ for all }a > 0\}.$ 
+	\item Given some measure $\mu$ over $\R^d$ and some $x \in \R^d$, we let $r_p(x)$ denote the probability radius (Definition \ref{defn:prob_radius}) of $x$ with probability $p$. that is, $r_p(x) = \inf \{r: \mu(B(x,r)) \geq p\}.$
+	\item For weight function $W$ and training sample $S$, we let $W_S$ denote the weight function learned by $W$ from $S$.
+\end{itemize}
+
+\subsection{Proofs of Theorems \ref{thm:accuracy_margin} and \ref{thm:robust_margin}}
+
+\begin{proof}
+(Theorem \ref{thm:accuracy_margin}) Let $\D = (\mu, \eta)$ be a data distribution, and let $\mu^+, \mu^-$ be as described in Definition \ref{defn:includes_mu_plus_and_minus}. Observe that for any $x \in \mu^+$, the Bayes optimal classifier and the \natural\emph{ }Bayes optimal both have the same output, and furthermore the \natural\emph{ }Bayes gives this output (by definition) throughout the entirety of $V_x$, the \natural\emph{ }robustness region of $x$. It follows that the \natural\emph{ }Bayes optimal has optimal astuteness, as desired. 
+\end{proof}
+
+\begin{proof}
+(Theorem \ref{thm:robust_margin}) Let $\D = (\mu, \eta)$ be a data distribution, and assume towards a contradiction that there exists classifier $f$ which has maximal astuteness with respect towards some set of robustness regions $\U = \{U_x\}$ such that $V_x \subseteq U_x$ for all $x$. The key observation is that because $f$ has maximal astuteness, we must have $f(x) = g(x)$ for almost all points $x \sim \mu$ (where $g$ is the Bayes optimal classifier). Furthermore, for those values of $x$, we must have $g$ be robust at $x$ (meaning it uniformly outputs the same output through $U_x$).
+
+In order for $U_x$ to be strictly larger than $V_x$ for some $x$, it \textit{necessarily} must intersect with $U_{x'}$ for some $x'$ with $g(x') \neq g(x)$, and this is what causes the contradiction: $f$ cannot be astute at both $x$ and $x'$ if they are differently labeled and their robustness regions intersect. 
+\end{proof}
+
+\subsection{Proof of Theorem \ref{thm:lower_bound}}
+
+Let $\D = (\mu, \eta)$ be the distribution with $\mu$ being the uniform distribution over $[0, 1]$ and $\eta: [0, 1] \to [0, 1]$ be $\eta(x) = x$. For example, if $(x, y) \sim \D$, then $\Pr[y = 1| x = 0.3] = 0.3$. 
+
+We desire to show that $k_n$-nearest neighbors is not neighborhood consistent with respect to $\D$. We begin with the following key lemma.
+
+\begin{lem}\label{cl:delta}
+For any $n > 0$, let $f_n$ denote the $k_n$-nearest neighbor classifier learned from $S \sim \D^n$. There exists some constant $\Delta > 0$ such that for all sufficiently large $n$, with probability at least $\frac{1}{2}$ over $S \sim \D^n$, there exists $x \in [0,1]$ with $\frac{1}{2} - \Delta \leq x \leq \frac{1}{2} - \frac{3\Delta}{4}$ and $f_n(x) = +1$.
 \end{lem}
 
 \begin{proof}
-Fix any $x \in \X$ and $\epsilon, \gamma > 0$. Then the sequence of balls $\{S_i = B(x, i)\}$ has union equal to $\X$. Therefore, there exists $j$ such that $P_\D(S_j) > 1 - \epsilon$. Since $S_j$ is totally bounded and complete, it is compact. Let $B^o(x, a)$ denote the open ball centered at $x$ with radius $a$. Therefore, taking an open cover of $S_j$, $\{B^o(x, \gamma): x \in S_j\}$, we can take a finite subcover $\{B_1^o, B_2,^o, \dots, B_t^o\}$ that cover $S_j$. Discarding balls such that $\P_\D(B_i^o) = 0$ and taking the closure of each ball gives the desired result, with $\alpha = \min_{i}P_\D(B_i)$.  
-\end{proof}
+Let $C$ be a constant such that $k_n \leq C\log n$ for all $2 \leq n < \infty$. Set $\Delta$ as \begin{equation}\label{eqn:kl}\frac{1}{2}\log_2\frac{1}{1 - 2\Delta} + \frac{1}{2}\log_2\frac{1}{1 + 2\Delta} < \frac{1}{C}.\end{equation} Let $A \subset [0,1]$ denote the interval $[\frac{1}{2} - \Delta, \frac{1}{2} - \frac{3\Delta}{4}]$. For $S \sim \D^n$, with high probability, there exist at least $\frac{\Delta n}{8}$ instances $x_i$ that are in $A$. Let us relabel these $x_i$ as $x_1, x_2, \dots, x_m$ as $$\frac{1}{2} - \Delta \leq x_1 < x_2 < \dots < x_m \leq \frac{1}{2} - \frac{3\Delta}{4}.$$
 
-To prove Theorem \ref{thm_stone_cons}, we use the following lemma. 
+Next, suppose that for some $i$, at least half of $y_i, y_{i+1}, \dots, y_{i + k_n - 1}$ are $+1$. Then it follows that $f_n(x) = +1$ for $x = \frac{x_{i+k_n} + x_i}{2}$ because the $k_n$ nearest neighbors of $x$ are precisely $x_i, x_{i+1}, \dots x_{i + k_n - 1}$ (as a technical note we make $x$ just slightly smaller to break the tie between $x_i$ and $x_{i + k_n}$). To lower bound the probability that this occurs for some $i$, we partition $y_1, y_2, \dots y_m$ into at least $\frac{m}{2k_n}$ disjoint groups each containing $k_n$ consecutive values of $y_i$. We then bound the probability that each group will have at least $k_n/2$ $+1$s.
 
-\begin{lem}\label{lem_expectation}
-Let $\D$ be a distribution over $\X \times \Y$, and let $B_1, B_2, \dots, B_s$ be a $(\epsilon, \gamma, \alpha)$-decomposition of $\D$, and let $r > 3\gamma$. If $W$ is a weight function satisfying the conditions of Theorem \ref{thm_stone_cons}, then for any $\delta > 0$ there exists $N$ such that for $n \geq N$, with probability $1-\delta$ over $S \sim \D^n$, and $w_1, w_2, \dots, w_n$ learned by $W$ from $S$, $$\sup_{\{x: d(x, \cup_1^s B_i) \leq r - 3\gamma\}} \sum_1^n w_i(x)I_{d(x_i, x) > r} < \frac{1}{3}.$$
-\end{lem}
+Consider any group of $k_n$ $y_i$s. We have that $\Pr[y_i] = +1 = \eta(x_i) = x_i \geq \frac{1}{2} - \Delta$. Since the variables $y_i$ are independent (even conditioning on $x_i$), it follows that the probability that at least half of them are $+1$ is at least  $\Pr[\text{Bin}(k_n, \frac{1}{2} - \Delta) \geq \frac{k_n}{2}].$ For simplicity, assume that $k_n$ is even. Then using a standard lower bound for the tail of a binomial distribution (see, for example, Lemma 4.7.2 of \cite{Ash90}), we have that $$\Pr[\text{Bin}(k_n, \frac{1}{2} - \Delta) \geq \frac{k_n}{2}] \geq \frac{1}{\sqrt{2k_n}}\exp(-k_nD(\frac{1}{2}||(\frac{1}{2} - \Delta)),$$ where $D(\frac{1}{2}||(\frac{1}{2} - \Delta)) =  \frac{1}{2}\log_2\frac{1}{1 - 2\Delta} + \frac{1}{2}\log_2\frac{1}{1 + 2\Delta}$. 
 
-\begin{proof} 
-Fix $\delta > 0$, and let $Y$ be the indicator variable defined as $$Y = \begin{cases} 1 & \text{ if }\sup_{\{x: d(x, \cup_1^s B_i) \leq r - 3\gamma\}} \sum_1^n w_i(x)I_{d(x_i, x) > r} \geq \frac{1}{3} \\ 0 & \text{ if }\sup_{\{x: d(x, \cup_1^s B_i) \leq r - 3\gamma\}} \sum_1^n w_i(x)I_{d(x_i, x)> r} < \frac{1}{3} \end{cases}.$$ It suffices to show that there exists $N$ such that for all $n \geq N$, $E_{S \sim \D}[Y] \leq \delta$. 
-
-Fix $S \sim \D^n$ and suppose that $Y = 1$. Then there exists $x^*, B_i^*$ such that $d(x^*, B_i^*) \leq r - 3\gamma$ and such that $$\sum_1^n w_i(x^*)I_{d(x_i, x^*) > r} \geq \frac{1}{3}.$$ By definition, $B_i$ has radius $\gamma$, so by the triangle inequality, for any $x \in B_i^*$, $d(x, x^*) \leq 2\gamma + r - 3\gamma = r - \gamma$. This implies $x^* \in B(x, r-\gamma)$. Therefore, for any $x \in B_i^*$, $$\sup_{x' \in B(x, r-\gamma)} \sum_1^n w_i(x')I_{d(x', x_i) > r} \geq \sum_1^n w_i(x^*)I_{d(x^*, x_i) > r} \geq \frac{1}{3}.$$ By the definition of an $(\epsilon, \gamma, \alpha)$-decomposition, we have that $P_\D(B_i^*) \geq \alpha$. As a consequence, we have that $$\mathbb{E}_{X \sim \D_\X} \big [ \sup_{x' \in B(X, r-\gamma)} \sum_1^n w_i(x')I_{||x_i - x'|| > r} \big] \geq P_\D[B_i^*]\frac{1}{3} \geq \frac{\alpha}{3}.$$ Since the previous inequality is guaranteed to hold if $Y = 1$, taking the expectation over $S$ yields that $$\mathbb{E}_{S \sim \D^n} \mathbb{E}_{X \sim \D_\X} \big [ \sup_{x' \in B(X, r-\gamma)} \sum_1^n w_i(x')I_{||x_i - x'|| > r} \big] \geq \frac{\alpha E[Y]}{3}.$$ By the conditions of Theorem \ref{thm_stone_cons}, the left side of the equation must tend to $0$ as $n \to \infty$. This implies that the same must hold for the right side. Therefore, $E[Y]$ tends to $0$ as $n \to \infty$, and we can select $N$ such that $E[Y] < \delta$ for $n \geq n$, which completes the proof. 
-\end{proof}
-
-\begin{proof} (\textbf{Theorem \ref{thm_stone_cons}})
-Let $W$ be a weight function that satisfies the condition of Theorem \ref{thm_stone_cons}. Fix $\epsilon, \delta > 0$, and $\gamma < r/3$. Applying Lemma \ref{lem_balls}, let $B_1, B_2, \dots, B_s$ be an $(\epsilon, \gamma, \alpha)$-decomposition of $\D$. Let $T^+$ and $T^-$ be subsets of $\X$ corresponding to the definition of $r$-separation for $\D$.  
-
-For $S \sim \D^n$, let $A$ denote the event that $$\sup_{\{x: d(x, \cup_1^s B_i) \leq r - 3\gamma\}} \sum_1^n w_i(x)I_{d(x_i, x) > r} < \frac{1}{3}.$$
-Suppose $A$ holds. Pick a $B_i$. Since $T^+$ and $T^-$ have distance greater than $2r$, and $diam(B_i) \leq 2\gamma < r$, either $B_i \cap T^+ = \emptyset$ or $B_i \cap T^- = \emptyset$. Note that for $n$ sufficiently large, both cannot be empty since $P_\D(B_i) \geq \alpha > 0$ and each $x$ in the support of $\D$ is either in $T^+$ or $T^-$. 
-
-Without loss of generality, $B_i \cap T^- = \emptyset$. Then $B_i \cap T^+ \neq \emptyset$. $B_i$ has diameter $2\gamma$. Thus $d(B_i, T^-) > 2r - 2\gamma$. Let $x \in B(B_i, r-3\gamma)$. Then if $(x_j, -) \in S$, by the triangle inequality, $d(x, x_j) > 2r -2\gamma - (r - 3\gamma) = r+\gamma$. 
-
-Substituting this and using event $A$, we have that $$\sum_1^n w_i^S(x)I_{(x_i, -) \in S} \leq \sum_1^n w_i^S(x)I_{d(x_i, x) > r} < \frac{1}{3}.$$ It follows that $W_S(x) = +1$. An analogous argument holds for $B_i \cap T^+ = \emptyset$. This implies that $W_S$ is astute with radius $r-3\gamma$ over all $B_i$.
-
-$\cup B_i$ has measure at least $1-\epsilon$. By Lemma \ref{lem_expectation}, for any $\delta>0$ event $A$ holds with probability $1-\delta$ for $n$ sufficiently large. Therefore, for $n$ sufficiently large, we see that $A_{r-3\gamma}(W_S, \D) \geq 1-\epsilon$ with probabiltiy $1-\delta$. Because $\epsilon, \delta$ and $\gamma$ were arbitrary, it follows that $W$ is \rcons,\emph{ }as desired.
-
-\end{proof}
-
-\begin{proof} (\textbf{Corollary \ref{nn_sep_thm}})
-For any $S = \{(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)\} \subset \X \times \Y$, let $w_i^S(x)$ be $1$ if and only if $x_i$ is one of the $k_n$ nearest neighbors of $x$ in the set $S_\X = \{x_1, x_2, \dots x_n\}$. Let $\D$ be a distribution over $\X \times \Y$. By Theorem \ref{thm_stone_cons}, it suffices to show that for any $0 < a < b$, $$\lim_{n \to \infty} \mathbb{E}_{X \sim \D_\X}[\mathbb{E}_{S \sim \D^n} [\sup_{x' \in B(x,a)} \sum_1^n w_i^S(x')I_{d(x_i, x') > b}]] = 0.$$ Fix $0 < a < b$, and let $\epsilon > 0$. 
-
-Pick $\gamma > 0$ such that $a+ 2\gamma < b$. This is possible for any $a < b$. Let $B_1, B_2, \dots, B_s$ be an $(\epsilon, \gamma, \alpha)$-decomposition of $\D$. By applying a Chernoff bound followed by a union bound, for any $\delta > 0$ there exists $n$ such that with probability $1-\delta$ over $S \sim \D^n$, each $B_i$ satisfies $|B_i \cap S_\X| \geq \frac{n\alpha}{2}$. Furthermore, if $n$ is sufficiently large, then $\frac{n\alpha}{2} > k_n$ holds as well. 
-
-Consider any $x \in B_i$, and$x' \in B(x,a)$. $B_i$ has radius $\gamma$ and also satisfies $|B_i \cap S_\X| > k_n$. Therefore, there are at least $k_n$ points within distance $a+2\gamma$ of $x$. Because $a + 2\gamma < b$, it follows that none of the $k_n$ nearest neighbors of $x'$ can have distance more than $b$ from $x'$. In particular, $$\sum_1^n w_i^S(x')I_{d(x_i, x') > b} = 0.$$ Since $B_i$, $x$ and $x'$ were arbitrary, we have that for all $x \in \cup B_i$, $$\sup_{x' \in B(x,a)} \sum_1^n w_i^S(x')I_{d(x_i, x') > b} \leq  \begin{cases} 0 & |B_i \cap S_\X| \geq \frac{n\alpha}{2}, 1 \leq i \leq s \\ 1 & \text{otherwise} \end{cases}$$
-
-Since $X \in \cup_1^s B_i$ with probability at least $1-\epsilon$, and since $|B_i \cap S_\X| \geq \frac{n\alpha}{2}, 1 \leq i \leq s$ with probability at least $1-\delta$, it follows that $$\mathbb{E}_{X \sim \D}[\mathbb{E}_{S \sim \D^n} [\sup_{x' \in B(x,a)} \sum_1^n w_i^S(x')I_{d(x_i, x') > b}]] \leq (1- \delta - \epsilon)0 + \delta + \epsilon = \delta + \epsilon,$$ which can be made arbitrarily small as $\epsilon$ and $\delta$ were arbitrary. Therefore, the limit as $n$ approaches infinity is $0$, as desired.
-\end{proof}
-
-\begin{proof} (\textbf{Corollary \ref{thm_kernel}})
-Let $\D$ be a distribution over $\X \times \Y$. By Theorem \ref{thm_stone_cons}, it suffices to show that for any $0 < a < b$, $$\lim_{n \to \infty} \mathbb{E}_{X \sim \D}[\mathbb{E}_{S \sim \D^n} [\sup_{x' \in B(x,a)} \sum_1^n w_i^S(x')I_{d(x_i, x') > b}]] = 0.$$ Fix $0 < a < b$, and let $\epsilon > 0$. 
-
-Pick $\gamma > 0$ be such that $a+ 2\gamma < b$. Let $B_1, B_2, \dots, B_s$ be an $(\epsilon, \gamma, \alpha)$-decomposition of $\D$. By applying a Chernoff bound, for any $\delta > 0$ there exists $n$ such that with probability $1-\delta$ over $S \sim \D^n$, each $B_i$ satisfies $|B_i \cap S_\X| \geq \frac{n\alpha}{2}$.
-
-Next, consider any $x_i, x_j \in S_\X$, and let $x$ be a point such that $d(x_i, x) \leq a+2\gamma$ and $d(x_j, x) > b$. Then we have that 
+To simplify notation, let $D_\Delta = D(\frac{1}{2}||(\frac{1}{2} - \Delta))$. Then because we have $\frac{m}{2k_n}$ independent groups of $y_i$s, we have that
 \begin{equation*}
 \begin{split}
-\frac{w_j^S(x)}{w_i^S(x)} = \frac{K(\frac{d(x_j, x)}{h_n})}{K(\frac{d(x_i, x)}{h_n})}.
+\Pr_{S \sim \D^n}[\exists x \in [\frac{1}{2} - \Delta, \frac{1}{2} - \frac{3\Delta}{4}]\text{ s.t. }f_n(x) = +1] &\geq 1 - (1 - \frac{1}{\sqrt{2k_n}}\exp(-k_nD_\Delta))^{\frac{m}{2k_n}} \\
+&\geq 1 - \exp(-\frac{m}{2k_n\sqrt{2k_n}}e^{-k_nD_\Delta}) \\
+&\geq 1 - \exp(-\frac{n\Delta}{(16C\log n)^{3/2}}e^{-CD_\Delta\log n}),
 \end{split}
 \end{equation*}
-Because $b > a + 2\gamma$, $\frac{d(x_j, x)}{d(x_i, x)} > 1$. Therefore, since $\lim_{n \to \infty} h_n = 0$ and $\lim_{x \to \infty} \frac{K(cx)}{K(x)} = 0$ for $c > 1$, it follows that for any $\beta > 0$, there exists $N$ such that for $n \geq N$, $$\frac{w_j^S(x)}{w_i^S(x)} \leq \frac{\alpha\beta}{2}.$$ 
-
-Fix any such $\beta$, and consider any $x$ with $d(x, B_i) \leq a$. Then $d(x, x') \leq a+ 2\gamma < b$ for any $x' \in B_i$. Recall that $B_i$ contains at least $\frac{n\alpha}{2}$ points, and let $c = \min_{i, d(x_i, x) \leq a + 2\gamma} w_i(x)$. Then it follows that 
-\begin{equation*}
-\begin{split}
-\sum_1^n w_i^S(x)I_{d(x_i, x) > b} &\stackrel{(a)}{=} \frac{\sum_1^n w_i^S(x)I_{d(x_i, x) > b}}{\sum_1^n w_i^S(x)} \\
-&\stackrel{(b)}{\leq} \frac{\sum_1^n w_i^S(x)I_{d(x_i, x) > b}}{\sum_1^n w_i^S(x)I_{d(x_i, x) \leq a+2\gamma}} \\
-&\stackrel{(c)}{\leq} \frac{nc\frac{\alpha\beta}{2}}{\frac{n\alpha}{2}c} \\
-&= \beta
-\end{split}
-\end{equation*} $(a)$ holds because the weights always sum to $1$. $(b)$ holds because we are reducing the denominator. $(c)$ holds because there are at least $\frac{n\alpha}{2}$ points in $B_i$, with $c$ being the minimum weight (stated above). The numerator is a result of the inequality shown above in which $w_j^S(x)/w_i^S(x) \leq \alpha\beta/2$ if $d(x_j, x) > b$ and $d(x_i, x) \leq a+2\gamma$.
-
-Using this, we get the following bound: $$\sup_{x' \in B(X,a)} \sum_1^n w_i^S(x')I_{d(x_i, x') > b} \leq  \begin{cases} \beta & x \in \cup_1^s B_i, |B_i \cap S_\X| \geq \frac{n\alpha}{2}, 1 \leq i \leq s \\ 1 & \text{otherwise} \end{cases}$$ 
-
-Since $x \in \cup_1^s B_i$ with probability $1-\epsilon$, and since $|B_i \cap S_\X| \geq \frac{n\alpha}{2}, 1 \leq i \leq s$ with probability $1-\delta$, it follows that $$\mathbb{E}_{X \sim \D}[\mathbb{E}_{S \sim \D^n} [\sup_{x' \in B(x,a)} \sum_1^n w_i^S(x')I_{d(x_i, x') > b}]] \leq (1- \delta - \epsilon)\beta + \delta + \epsilon.$$ which can be made arbitrarily small as $\epsilon, \beta,$ and $\delta$ were arbitrary. Therefore, the limit as $n$ approaches infinity is $0$, as desired. 
+with the inequalities holding because $m \geq \frac{n\Delta}{8}$ and $k_n \leq C \log n$. By equation \ref{eqn:kl}, $CD_\Delta < 1$. Therefore, $\lim_{n \to \infty} \frac{n}{(2C \log n)^{3/2}}e^{-CD_\Delta\log n} = \infty$, which implies that for $n$ sufficiently large, $$\Pr_{S \sim \D^n}[\exists x \in [\frac{1}{2} - \Delta, \frac{1}{2} - \frac{3\Delta}{4}]\text{ s.t. }f_n(x) = +1] \geq \frac{1}{2},$$ as desired.
 \end{proof}
 
-\section{Proofs for general distributions}
+We now complete the proof of Theorem \ref{thm:lower_bound}.
 
-\begin{lem}\label{chernoff_max_lem}
-Let $B_1, \dots, B_s$ be a $(\epsilon, \alpha, \gamma)$ decomposition of $\D$ over $\X \times \Y$. Let $U \subseteq [s]$. Then if $n \geq O(\frac{s2^{2s}\log(1/\delta)}{\epsilon^2})$, then with probability at least $1-\delta$, for all $U$ we have: $$|\P_{(x,y) \sim \D}[x \in \cup_{i \in U} B_i, y = +] - \P_{(x,y) \sim \D_S}[x \in \cup_{i \in U} B_i, y = +]| \leq \epsilon,$$$$|\P_{(x,y) \sim \D}[x \in \cup_{i \in U} B_i, y = -] - \P_{(x,y) \sim \D_S}[x \in \cup_{i \in U} B_i, y = -]| \leq \epsilon.$$ 
-\end{lem}
 \begin{proof}
-For any given $U \subseteq [s]$, by a Chernoff bound we have that $$|\P_{(x,y) \sim \D}[x \in \cup_{i \in U} B_i, y = +] - \P_{(x,y) \sim \D_S}[x \in \cup_{i \in U} B_i, y = +]| > \epsilon$$ with probability at most $\frac{\delta}{2^{s+1}}$. Taking a union bound over all $U$, we see that with probability $1-\frac{\delta}{2}$, $$|\P_{(x,y) \sim \D}[x \in \cup_{i \in U} B_i, y = +] - \P_{(x,y) \sim \D_S}[x \in \cup_{i \in U} B_i, y = +]| \leq \epsilon$$ for all $U \subseteq [m]$. Applying the same to $y = -1$ and taking a union bound implies the result.
+(Theorem \ref{thm:lower_bound}) Let $\Delta$ be as described in Lemma \ref{cl:delta}, and let $\kappa = \frac{1}{2}$. For all $x < \frac{1}{2}$, we have that $[x, \frac{2x}{3} + \frac{1}{6}] \subseteq V_x^{\kappa}$. This is because we can easily verify that all points inside that interval are closer to $x$ than they are to $\frac{1}{2}$ (and consequently all points in $\mu^+ \cup \mu^{1/2}$) by factor of $2$. It follows that for all $x \in [\frac{1}{2} - \frac{7\Delta}{8}, \frac{1}{2} - \Delta]$, $$[\frac{1}{2} - \Delta, \frac{1}{2} - \frac{3\Delta}{4}] \subseteq V_x^{\kappa}.$$ However, applying Lemma \ref{cl:delta}, we know that with probability at least $\frac{1}{2}$, there exists some point $x' \in [\frac{1}{2} - \Delta, \frac{1}{2} - \frac{3\Delta}{4}]$ such that $f_n(x') = +1$. It follows that with probability at least $\frac{1}{2}$, $f_n$ lacks astuteness at \textit{all} $x \in [\frac{1}{2} - \frac{7\Delta}{8}, \frac{1}{2} - \Delta]$. Since this set of points has total probability mass $\Delta/8$, it follows that with probability at least $\frac{1}{2}$, there is a fixed gap between $A_{\V^\kappa}(f_n, \D)$ and $A(g, \D)$ (as they differ in a region of probability mass at least $\Delta/8$). This implies that $k_n$-nearest neighbors is not \ncons\emph{ }consistent. 
 \end{proof}
 
-\begin{lem}\label{gen_thm}
-Let $M$ be a classification algorithm over $\X \times \Y$, $r >0$ be a radius, and $\D$ be a distribution over $\X \times \Y$. Then for any $\epsilon, \delta$ over $(0,1)$, and for all $\gamma$ over $(0, r/2)$, there exists $N$ such that for $n \geq N$, with probability $1-\delta$ over $S \sim \D^n$, $$A_{r - \gamma}(M_S, \D) \geq A_r(M_S, \D_S) - \epsilon,$$ where $\D_S$ denotes the uniform distribution over $S$.  
-\end{lem}
+\subsection{Proof of Theorem \ref{thm:main}}
 
-\begin{proof} (\textbf{Lemma \ref{gen_thm}})
-Fix $\epsilon, \delta > 0$ and $\gamma < r/2$. Applying Lemma \ref{lem_balls}, let $B_1, \dots, B_s$ be a $(\epsilon, \alpha, \gamma)$ decomposition of $\D$. 
+Let $\D = (\mu, \eta)$ is a distribution over $\R^d \times \{\pm 1\}$. We will use the following notation: let $\D^+ = \{x: \eta(x) > \frac{1}{2}\}$, $\D^- = \{x: \eta(x) < \frac{1}{2}$ and $\D_{1/2} = \{x: \eta(x) = \frac{1}{2}\}$. In particular, we have that $\D^+ = \mu^+, \D^- = \mu^-$ and $\D_{1/2} = \mu^{1/2}$. This notation serve will be convenient throughout this section since it allows us to avoid overloading the symbol $\mu$. 
 
-Let $T$ be the subset of $S$ such that $M_S$ is astute at $T$ with radius $r$. Define: $$I_T^+ = \{i| (x_j, +) \in T, x_j \in B_i\}$$$$I_T^- = \{i| (x_j, -) \in T, x_j \in B_i\}.$$
+To show that an algorithm is \ncons\emph{ }consistent with respect to $\D$, we must show that for any $0 < \kappa < 1$, the astuteness with respect to $\V^\kappa$ converges towards the accuracy of the Bayes optimal. To this end, we fix any $0 < \kappa < 1$ and consider $\V^\kappa$. 
 
-Observe that $I_T^+ \cap I_T^- = \emptyset$. To see this, notice that $B_i$ has radius $\gamma < r/2$. This implies that any $(x_j, +), (x_k, -) \in B_i$ would force $M_S$ to not be astute at either of those points. Thus we an think of $I_T^+$ being the set of positively labeled balls, and $I_T^{-}$ being the set of negatively labeled balls.
+For our proofs, it will be useful to have the additional assumption that the robustness regions, $V_x^\kappa$ are \textit{closed}. To obtain this, we let $\U = \{U_x\}$ where $U_x = \overline{V_x^\kappa}$. Each $U_x$ is the closure of the corresponding $V_x^{\kappa}$, and in particular we have $V_x^{\kappa} \subset U_x$. Because of this, it will suffice for us to consider $A_\U$ as opposed to $A_{\V^\kappa}$ since $A_\U(f, \D) \leq A_{\V^\kappa}(f, \D)$ for all classifiers $f$.
 
-Let $B^+ = \cup_{i \in I_T^+} B_i$ and $B^- = \cup_{i \in I_T^-} B_i$. Our strategy will be to argue that $M_S$ must be robust with radius $r-2\gamma$ at $B^+ \cup B^-$, and then to observe that $\P_\D[(B^+, +)] + \P_\D[(B^-, -)]$ must be close to $A_r(M_S, \D_S)$. 
+We now begin by first proving several useful properties of $\U$ that we will use throughout this entire section. 
 
-Let $T_\X \subset \X$ denote the set of all $x_i$ such that $(x_i, y_i) \in T$. By the definitions of $\D_S$ and $T$, we have that 
-\begin{equation*}
-\begin{split}
-A_r(M_S, \D_S) &= \frac{|T|}{n} \\
-&= \frac{|T_\X \cap B^+|}{n} + \frac{|T_\X \cap B^-|}{n} + \frac{|T_\X \setminus (B^+ \cup B^-)|}{n}.
-\end{split}
-\end{equation*}
-
-If $x_i \in \cup_1^s B_j$ and $x_i \in T_\X$, then by definition, $x \in (B^+ \cup B^-)$. Therefore, $T_\X \setminus (B^+ \cup B^-)$ consists of $x_i \notin \cup_1^s B_j$. Using this, we see that 
-\begin{equation*}
-\begin{split}
-A_r(M_S, \D_S) &= \frac{|T_\X \cap B^+|}{n} + \frac{|T_\X \cap B^-|}{n} + \frac{|T_\X \setminus (B^+ \cup B^-)|}{n} \\
-&\leq \P_{(x,y) \sim \D_S}[x \in B^+, y=+]+\P_{(x,y) \sim \D_S}[x \in B^-, y=-] + \P_{(x,y) \sim \D_S}[x \notin \cup_1^s B_j].
-\end{split}
-\end{equation*}
-
-If $n$ is sufficiently large, then by Lemma \ref{chernoff_max_lem}, each term on the right is within $\epsilon$ of its corresponding probability over $\D$. Thus we see that with probability $1-\delta$, 
-\begin{equation}\label{astute_bound_eqn}
-A_r(M_S, \D_S) \leq \P_{(x,y) \sim \D}[x \in \cup_{i \in I_T^+}B_i, y=+]+\P_{(x,y) \sim \D}[x \in \cup_{i \in I_T^-}, y=-] + 4\epsilon.
-\end{equation} 
-
-Observe that if $M_S$ is robust with radius $r$ at $x_j \in B_i$, then it is robust with radius $r-2\gamma$ at all $x \in B_i$. Furthermore, for $x_j \in \cup_{i \in I_T^+}B_i$, $M_S$ is astute at $(x_j, +1)$ with radius $r$. Therefore $M_S(x) = +1$ for all $x \in \cup_{i \in I_T^+}B_i$. Consequently, 
-\begin{equation*}
-\begin{split}
-A_{r-2\gamma}(M_S, \D) &\geq \P_{(x,y) \sim \D}[x \in \cup_{i \in I_T^+}B_i, y=+]+\P_{(x,y) \sim \D}[x \in \cup_{i \in I_T^-}B_i, y=-] \\
-&\geq A_r(M_S, \D_S) - 4\epsilon \text{ }(\text{by equation }\ref{astute_bound_eqn}).
-\end{split}
-\end{equation*}
-Since this equation holds with probability $1 - \delta$, and since $\epsilon$ and $\gamma$ were arbitrary, the result follows. 
-\end{proof}
-
-\begin{proof}(\textbf{Theorem \ref{thm_weight_general}})
-For convenience, we let $W'$ represent the weight function described by $\ga(S,W, r)$. In particular, $W'_S$ and $W_{S_r}$ are the same classifier, where $S_r$ denotes the largest $r$-separated subset of $S$.
-
-Fix $\epsilon, \delta >0$, and let $0 < \gamma < r$. For convenience, let $$Z_ i = \sup_{x \in B(x_i, r-\gamma)} \sum_{j=1}^m w_j^{S_r}(x)I_{||x_j - x|| > r}.$$ Because $W$ fulfills the conditions of Theorem \ref{thm_weight_general}, there exists $N$ such that for $n > N$, with probability $1-\delta$ over $S \sim \D^n$, $ \frac{1}{m} \sum_{i = 1}^m Z_i < \epsilon.$ Therefore, there exist at most $3m\epsilon$ values of $i$ for which $Z_i > \frac{1}{3}$. 
-
-Since $S_r$ is $r$-separated, it follows that $$\sup_{x \in B(x_i, r-\gamma)} \sum_1^m w_j^{S_r}(x)I_{y_j \neq y_i} \leq Z_i.$$ Consequently, if $Z_i \leq \frac{1}{3}$, then $W_{S_r}(x) = y_i$ for all $x \in B(x_i, r-\gamma)$. Let $\D_S$ denote the uniform distribution over $S$. Then we have that $$A_{r-\gamma}(W'_S, \D_S) = A_{r-\gamma}(W_{S_r}, \D_S) \geq \frac{|S_r|}{n} - 3\epsilon.$$ 
-Observe that for $n$ sufficiently large, with probability $1-\delta$, $|A_r(\b_r, \D) - A_r(\b_r, \D_S)| \leq \epsilon$. The maximum possible astuteness over $\D_S$ is $\frac{|S_r|}{n}$ since no classifier can be astute at 2 oppositely labeled points with distance at most $2r$. Therefore, with probability $1-2\delta$, $$A_{r - \gamma}(W'_S, \D_S) \geq A_r(\b_r, \D) - 4\epsilon.$$ By Lemma \ref{gen_thm}, for $n$ sufficiently large, with probability $1-\delta$ $$A_{r-2\gamma}(W'_S, \D) \geq A_{r-\gamma}(W'_S, \D_S) - \epsilon.$$ Therefore, for $n$ sufficiently large, with probability $1-3\delta$ over $S \sim \D$, $$A_{r - 2\gamma}(W'_S, \D) \geq A_r(\b_r, \D) - 5\epsilon.$$ Since $\epsilon, \delta,$ and $\gamma$ were arbitrary, we are done. 
-\end{proof}
-
-The following two quick lemmas are used for the proofs of Corollaries \ref{thm_NN_gen} and \ref{thm_kern_gen}.
-
-\begin{lem}\label{lem_point_count}
-Let $B_1, B_2, \dots, B_s \subset \X$ denote $s$ balls. Let $T \subset \X$ satisfy $|T \cap \cup_1^s B_i| = m$. Let $$I_k \subseteq [s] = \{i: |B_i \cap T| \geq k\}.$$ Then $|\cup_{i \in I_k} B_i \cap T| \geq m - ks$. 
+\begin{lem}\label{lem:u_is_npr}
+The collection of sets $\U = \{U_x\}$ defined as $U_x = \overline{V_x^\kappa}$ satisfies the following properties. 
+\begin{enumerate}
+	\item $U_x$ is closed for all $x$. 
+	\item if $x \in \D^+$, for all $x' \in U_x$, $\d(x, x') < \d(\D^+ \cup \D_{1/2}, x')$.
+	\item if $x \in \D^-$, for all $x' \in U_x$, $\d(x, x') < \d(\D^- \cup \D_{1/2}, x')$. 
+	\item $U_x = \{x\}$ for all $x \in \D_{1/2}$. 
+	\item $U_x$ is bounded for all $x$.
+\end{enumerate}
+Here $\mu^+, \mu^-, \mu^{1/2}$ are as described in Definition \ref{defn:includes_mu_plus_and_minus}. 
 \end{lem}
 
 \begin{proof}
-For any $j \notin I_k$, $|B_j \cap T| < k$. Since there are at most $s$ such $j$, it follows that $|\cup_{i \notin I_k} B_i \cap T| < ks$. Taking the complement implies the result. 
+Property (1) is given the by definition, and properties (2), (3) follow from the fact that $\kappa$ is strictly less than $1$. In particular, the distance function $\rho$ is continuous and consequently all limit points of a set have distances that are limits of distances within the set. Property (4) is since $V_x^\kappa = \{x\}$ for all $x \in \D_{1/2}$. 
+
+Finally, property (5) follows from the fact that $\kappa < 1$. As $x$ gets arbitrarily far away from $x$ the ratio of its distance to $x$ with its distance to $\mu^-$ gets arbitrarily close to $1$, and consequently there is some maximum radius $R$ so that $V_x^\kappa \subset B(x, R)$. Since $B(x, R)$ is closed, it follows that $U_x \subset B(x, R)$ as well. 
 \end{proof}
 
-\begin{lem}\label{lem_half}
-Let $S$ be a finite subset of $\X \times \Y$. For any $r > 0$, let $S_r$ denote the largest $r$-separated subset of $S$. Then $|S_r| \geq \frac{|S|}{2}$. 
+Next, fix $W$ as a weight function and $t_n$ is a sequence of positive integers such that the conditions of Theorem \ref{thm:main} hold, that is: 
+\begin{enumerate}
+	\item $W$ is consistent (with resp. to accuracy) with resp. to $\D$.
+	\item For any $0 < p < 1$, $\lim_{n \to \infty} E_{S \sim \D^n} [\sup_{x \in \R^d} \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)}] = 0.$
+	\item $\lim_{n \to \infty} E_{S \sim D^n}[t_n \sup_{x \in \R^d} w_i^S(x)] = 0$.
+	\item $\lim_{n \to \infty} E_{S \sim D^n}\frac{\log T(W,S)}{t_n} = 0$.
+\end{enumerate}
+
+Finally, we will also make the additional assumption that $\D$ has infinite support. Cases where $\D$ has finite support can be somewhat trivially handled: when the sample size goes to infinity, we will have perfect labels for every point in the support, and consequently condition 2. will ensure that any $x' \in V_x^\kappa$ is labeled according to the label of $x$. 
+
+
+We also use the following notation. For any classifier $f: \R^d \to \{\pm 1\}$, we let \begin{equation}\label{eqn:cool_sets}\D_f^+ = \{x: f(x' = +1\text{ for all }x' \in U_x\},\text{ and }\D_f^- = \{x: f(x' = -1\text{ for all }x' \in U_x\}.\end{equation} These sets represent the examples that $f$ robustly labels as $+1$ and $-1$ respectively. These sets are useful since they allows us to characterize the astuteness of $f$, which we do with the following lemma.
+
+\begin{lem}\label{lem:conversion_to_measure_thing}
+For any classifier $f: \R^d \to \{\pm 1\}$, we have $$A_\U(f, \D) \geq A(g, \D) - \mu(\D^+ \setminus \D_f^+) - \mu(D^- \setminus \D_f^-),$$ where $g$ denotes the Bayes optimal classifier.
 \end{lem}
 
 \begin{proof}
-Let $S = \{(x_1, y_1), (x_2, y_2), \dots (x_n, y_n)\}$. 
-Define: $$S_+ = \{(x_i, y_i): y_i = +1\}$$ $$S_- = \{(x_i, y_i): y_i = -1\}.$$ Observe that $S_+$ and $S_-$ are both $r$-separated and have union $S$. Therefore one must have cardinality at least $\frac{|S|}{2}$, which implies the same about $|S_r|$.
-\end{proof}
-
-\begin{proof}(\textbf{Corollary  \ref{thm_NN_gen}}) 
-For convenience, we let $W'$ represent the weight function described by $\ga(S,W, r)$. In particular, $W'_S$ and $W_{S_r}$ are the same classifier, where $S_r$ denotes the largest $r$-separated subset of $S$.
-
-Relabel the points in $S$ so that $$S_r = \{(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m)\},$$ with $ m \leq n$. We will also let $S_r^\X = \{x_1, x_2, \dots, x_m\}$. 
-
-By Theorem \ref{thm_weight_general}, it suffices to show that for any $0 < a < b$, $$\lim_{n \to \infty}\mathbb{E}_{S \sim \D^n} [\frac{1}{m} \sum_{i=1}^{m}\sup_{x \in B(x_i,a)} \sum_{j=1}^{m} w_j^{S_r}(x)I_{d(x_i, x) > b}] = 0,$$ where $w_j$ denote the weight functions corresponding to $W$. Fix $0 < a < b$, and let $\epsilon > 0$. 
-
-Pick $\gamma > 0$ be such that $a+ 2\gamma < b$. Let $B_1, B_2, \dots, B_s$ be a $(\epsilon, \gamma, \alpha)$ decomposition of $\D$. By applying a Chernoff bound, for any $\delta > 0$ there exists $n_0$ such that for $n \geq n_0$, with probability $1-\delta$ over $S \sim \D^n$, $$|S_\X \cap \cup_1^s B_i| \geq (1-2\epsilon)n.$$  By Lemma \ref{lem_half}, $\frac{m}{n} \geq \frac{1}{2}$. It follows that $|S_r^\X \cap \cup_1^s B_i| \geq m(1-4\epsilon)$. 
-
-Let $$J = \{i: |B_i \cap S_r^\X| \geq m\frac{\epsilon}{s}\}.$$ By Lemma \ref{lem_point_count} it follows that  $|S_r^\X \cap \cup_{i \in J} B_i| \geq m(1 - 4\epsilon) - m\epsilon = m(1 - 5\epsilon)$.
-
-Next, observe that if $n$ is sufficiently large, then $$\frac{k_n}{m} \leq \frac{2k_n}{n} \leq \frac{\epsilon}{s}.$$ Therefore, $|B_i \cap S_r^X|_r \geq k_n$ for $i \in J$.
-
-Fix any $B_j$ with $j \in J$, and consider $x$ with $d(x, B_j) \leq a$. Then $d(x, x') \leq a+ 2\gamma < b$ for any $x' \in B_j$. Therefore, since $|S_r^X \cap B_i| \geq k_n$, all $k_n$-nearest neighbors of $x$ have distance at most $b$ to $x$. This implies that $$\sum_1^m w_i^{S_r}(x)I_{d(x_i, x) > b} = 0.$$ 
-
-For convenience, let $$f(x_i) =\sup_{x \in B(x_i, a)}\sum_{j=1}^m w_j^{S_r}(x)I_{d(x, x_j) > b}.$$ For $x_i \in \cup_{j \in J} B_j$, any $x \in B(x_i,a)$ trivially satisfies $d(x, B_i) \leq a$. Therefore, $f(x_i) = 0$ Since $|S_r^\X \cap \cup_{j \in J} B_j| \geq m(1-5\epsilon)$, and $f(x_i) \leq 1$ for all $1 \leq i \leq m$, we have that 
+By property 4 of Lemma \ref{lem:u_is_npr}, $U_x = \{x\}$ for all $x \in \D_{1/2}$. Consequently, if $x \in \D_{1/2}$, there is a $\frac{1}{2}$ chance that any classifier is astute at $(x,y)$. Using this along with the definition of astuteness, we see that 
 \begin{equation*}
 \begin{split}
-\frac{1}{m}\sum_1^m f(x_i) &= \frac{1}{m}(\sum_{x_i \in \cup_{i \in J} B_i} f(x_i) + \sum_{x_i \notin \cup_{i \in J}B_i} f(x_i))\\
-&\leq  \frac{1}{m}(0 + 5\epsilon m (1)) \\
-&= 5\epsilon.
+A_\U(f, \D) &= \Pr_{(x,y) \sim \D} [f(x') = y\text{ for all }x' \in U_x] \\
+&= \Pr_{(x,y) \sim \D}[y = +1\text{ and }x \in (D^+ \cap D_f^+)] + \Pr_{(x,y) \sim \D}[y = -1\text{ and }x \in (D^- \cap D_f^-)] + \frac{1}{2}\Pr_{(x,y) \sim \D}[x \in \D_{1/2}]
 \end{split}
 \end{equation*}
-Since all of our equations hold with probability $1-\delta$ over $S$ for sufficiently large $n$, this last one does as well. Since this entirely expression is always at most $1$ (regardless of $S$), and  since $\delta, \epsilon$ were arbitrary, we have that $$\lim_{n \to \infty} E_{S \sim \D^n}[\frac{1}{m}\sum_1^m f(x_i)] = 0,$$ which completes the proof.  
-\end{proof}
-
-\begin{proof}(\textbf{Corollary \ref{thm_kern_gen}})
-For convenience, we let $W'$ represent the weight function described by $\ga(S,W, r)$. In particular, $W'_S$ and $W_{S_r}$ are the same classifier, where $S_r$ denotes the largest $r$-separated subset of $S$.
-
-Relabel the points in $S$ so that $$S_r = \{(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m)\},$$ with $ m \leq n$. We will also let $S_r^\X = \{x_1, x_2, \dots, x_m\}$. 
-
-By Theorem \ref{thm_weight_general}, it suffices to show that for any $0 < a < b$, $$\lim_{n \to \infty}\mathbb{E}_{S \sim \D^n} [\frac{1}{m} \sum_{i=1}^{m}\sup_{x \in B(x_i,a)} \sum_{j=1}^{m} w_j^{S_r}(x)I_{d(x_i, x) > b}] = 0,$$ where $w_j$ are the weight functions corresponding to $W$. Fix $0 < a < b$, and let $\epsilon > 0$. 
-
-Pick $\gamma > 0$ be such that $a+ 2\gamma < b$. Let $B_1, B_2, \dots, B_s$ be a $(\epsilon, \gamma, \alpha)$ decomposition of $\D$. By applying a Chernoff bound, for any $\delta > 0$ there exists $n_0$ such that for $n \geq n_0$, with probability $1-\delta$ over $S \sim \D^n$, $$|S_\X \cap \cup_1^s B_i| \geq (1-2\epsilon)n.$$  By Lemma \ref{lem_half}, $\frac{m}{n} \geq \frac{1}{2}$. It follows that $|S_r^\X \cap \cup_1^s B_i| \geq m(1-4\epsilon)$. 
-
-Let $$J = \{i: |B_i \cap S_r^\X| \geq \frac{m\epsilon}{s}\}.$$ By Lemma \ref{lem_point_count}, $|S_r^\X \cap \cup_{i \in J} B_i| \geq m(1 - 4\epsilon) - m\epsilon = m(1 - 5\epsilon)$.
-
-Next, consider any $x_i, x_j \in S_r^\X$, and let $x$ be a point such that $d(x_i, x) \leq a+2\gamma$ and $d(x_j, x) > b$. Recall that $W$ is constructed from kernel function $K$ and window parameter $h_n$. We then have that 
-\begin{equation}\label{eqn_kern_ratio}
-\begin{split}
-\frac{w_j^S(x)}{w_i^S(x)} = \frac{K(\frac{d(x_j, x)}{h_n})}{K(\frac{d(x_i, x)}{h_n})}.
-\end{split}
-\end{equation}
-Because $b > a + 2\gamma$, $\frac{d(x_j, x)}{d(x_i, x)} > 1$. Fix any $\beta > 0$. Because $\lim_{n \to \infty} h_n = 0$ and $\lim_{x \to \infty} \frac{K(cx)}{K(x)} = 0$ for $c > 1$, there exists $N$ such that for $n \geq N$, $$\frac{w_j^S(x)}{w_i^S(x)} \leq \frac{\beta\epsilon}{s}.$$ 
-
-Fix $B_j$ with $j \in J$, and consider $x$ with $d(x, B_j) \leq a$. By the triangle inequality, $d(x, x') \leq a+ 2\gamma$ for all $x' \in B_j$. Then we have the following,
-\begin{equation}\label{eqn_weight_bound}
-\begin{split}
-\sum_1^m w_i^{S_r}(x)I_{d(x_i, x) > b} & \stackrel{(a)}{=} \frac{\sum_1^m w_i^{S_r}(x)I_{d(x_i, x) > b}}{\sum_1^m w_i^{S_r}(x)} \\
-&\stackrel{(b)}{\leq} \frac{\sum_1^m w_i^{S_r}(x)I_{d(x_i, x) > b}}{\sum_{x_i \in B_j} w_i^{S_r}(x)} \\
-&\stackrel{(c)}{\leq} \frac{m\sup_{x_i: d(x_i, x)>b}w_i^{S_r}(x)}{m\epsilon/s \inf_{x_i \in B_j} w_i^{S_r}(x)} \\
-&\stackrel{(d)}{\leq} \frac{\beta\epsilon/s}{\epsilon/s} = \beta.
-\end{split}
-\end{equation}
-
-Equation $(a)$ holds because the total sum of weights is always 1, $(b)$ because all weights are nonnegative, $(c)$ because $|B_j \cap S_r^\X| \geq m\epsilon/s$, and $(d)$ because of equation \ref{eqn_kern_ratio}.
-
-Let $$Z_i=\sup_{x \in B(x_i, a)}\sum_{j=1}^m w_j^{S_r}(x)I_{d(x, x_j) > b}.$$ For $x_i \in \cup_1^t B_j$, any $x \in B(x_i,a)$ trivially satisfies $d(x, B_i) \leq a$. By equation \ref{eqn_weight_bound}, it follows that $Z_i \leq \beta.$ Since $|\cup_{j \in J} B_j \cap S_r^\X| \geq m(1-5\epsilon)$ and $Z_i \leq 1$ for all $1 \leq i \leq m$, we have that 
+However, observe by the definitions of $\D^+, \D^-$ and $\D_{1/2}$ that $$A(g, \D) = \Pr_{(x,y) \sim \D}[y = +1\text{ and }x \in D^+] + \Pr_{(x,y) \sim \D}[y = -1\text{ and }x \in D^-] + \frac{1}{2}\Pr_{(x,y) \sim \D}[x \in \D_{1/2}].$$ Substituting this, we find that 
 \begin{equation*}
 \begin{split}
-\frac{1}{m}\sum_1^m Z_i &= \frac{1}{m}(\sum_{x_i \in \cup_{j \in J} B_j} Z_i+ \sum_{x_i \notin \cup_{j \in J} B_j} Z_i)\\
-&\leq (1-5\epsilon)\beta + 5\epsilon.
+A_\U(f, \D) &\geq A(g, \D) - \Pr_{(x,y) \sim \D}[x \in (D^+ \setminus D_f^+)] - \Pr_{(x,y) \sim \D}[x \in (D^- \setminus D_f^-)] \\
+&= A(g, \D) - \mu(\D^+ \setminus \D_f^+) - \mu(D^- \setminus \D_f^-),
 \end{split}
 \end{equation*}
-Since all of our equations hold with probability $1-\delta$ over $S$ for sufficiently large $n$, this last one does as well. Since this entire expression is always at most $1$ (regardless of $S$), and  since $\delta, \epsilon, \beta$ were arbitrary, we have that $$\lim_{n \to \infty} E_{S \sim \D^n}[\frac{1}{m}\sum_1^m Z_i] = 0,$$ which completes the proof. 
+as desired. 
+\end{proof}
+
+Lemma \ref{lem:conversion_to_measure_thing} shows that to understand how $W_S$ converges in astuteness, it suffices to understand how the regions $\D_{W_S}^+$ and $\D_{W_S}^-$ converge towards $D^+$ and $D^-$ respectively. This will be our main approach for proving Theorem \ref{thm:main}. Due to the inherent symmetry between $+$ and $-$, we will focus on showing how the region $\D_{W_S}^+$ converges towards $D^+$. The case for $-$ will be analogous. To that end, we have the following key definition. 
+
+\begin{defn}\label{defn:covered}
+Let $p, \Delta > 0.$ We say $x \in \D^+$ is $(p, \Delta)$-\textbf{covered} if for all $x' \in U_x$ and for all $x'' \in B(x', r_p(x')) \cap supp(\mu)$, $\eta(x'') > \frac{1}{2} + \Delta.$ Here $r_p$ denotes the probability radius (Definition \ref{defn:prob_radius}). We also let $\D_{p, \Delta}^+$ denote the set of all $x \in \D^+$ that are $(p, \Delta)$-covered. 
+\end{defn}
+
+If $x$ is $(p, \Delta)$-covered, it means that for all $x' \in U_x$, there is a set of points with measure $p$ around $x'$ that are both close to $x'$, and likely (with at least probability $\frac{1}{2} + \Delta$) to be labeled as $+1$. Our main idea will be to show that if $x$ is $(p, \Delta)$ covered and $n$ is sufficiently large, $x$ is likely to be in $\D_{W_S}^+$. 
+
+We begin this process by first showing that all $x$ are $(p, \Delta)$-covered for some $p, \Delta$. To do so, it will be useful to have one more piece of notation which we will also use throughout the rest of the section. We let $$\D_{1/2}^{-} = \D^- \cup \D_{1/2} = \supp(\mu) \setminus \D^+.$$ This set will be useful, since Lemma \ref{lem:u_is_npr} implies that for all $x \in \D^+$ and for all $x' \in U_x$, $\d(x, x') < \d(\D_{1/2}^{-}, x').$ We now return to showing that all $x$ are $(p, \Delta$-covered for some $p, \Delta$.
+
+\begin{lem}\label{lem:everything_covered}
+For any $x \in \D^+$, there exists $p, \Delta > 0$ such that $x$ is $(p, \Delta)$-covered.
+\end{lem}
+
+\begin{proof}
+Fix any $x$. Let $f: U_x \to \R$ be the function defined as $f(x') = \d(x', \bad) - \d(x', x)$. Observe that $f$ is continuous. By assumption, $U_x$ is closed and bounded, and consequently must attain its minimum. However, by Lemma \ref{lem:u_is_npr}, we have that $f(x') > 0$ for all $x' \in U_x$. it follows that $\min_{x' \in U_x} f(x') = \gamma$ where $\gamma > 0$.
+
+Next, let $p = \mu(B(x, \gamma/2))$. $p > 0$ since $x \in supp(\mu)$. Observe that for any $x' \in U_x$, $r_p(x') \leq \d(x, x') + \gamma/2$, where, $r_p(x')$ denotes the probability radius of $x'$. This is because $B(x', (\d(x, x') + \gamma/2))$ contains $B(x, \gamma/2)$ which has probability mass $p$. It follows that for any $x' \in U_x$, $\d(x', \bad) \geq r_p(x') + \gamma/2$. Motivated by this observation, let $A$ be the region defined as $$A = \bigcup_{x' \in U_x} B(x', r_p(x')).$$ Then by our earlier observation, we have that $\d(A, \bad) \geq \frac{\gamma}{2}$. Since distance is continuous, it follows that $\d(\overline{A}, \bad) \geq \frac{\gamma}{2}$ as well, where $\overline{A}$ denotes the closure of $A$. 
+
+This means that for any $x'' \in \overline{A} \cap supp(\mu)$, $\eta(x'') > \frac{1}{2}$, since otherwise $\d(\overline{A}, \bad)$ would equal $0$ (as the two sets would literally intersect). Finally, $supp(\mu)$ is a closed set (see Appendix \ref{sec:distribution_details}), and thus $\overline{A} \cap supp(\mu)$ is closed as well. Since $\eta$ is continuous (by assumption from Definition \ref{definition:neighborhood_consistent}), it follows that $\eta$ must maintain its minimum value over $\overline{A} \cap supp(\mu)$. It follows that there exists $2\Delta > 0$ such that $\eta(x'') \geq \frac{1}{2} + 2\Delta > \frac{1}{2} + \Delta$ for all $x'' \in \overline{A} \cap supp(\mu)$. 
+
+Finally, by the definition of $A$, for all $x' \in U_x$, $B(x', r_p(x')) \subset A$. It consequently follows from the definition that $x$ is $(p, \Delta)$-covered, as desired. 
+\end{proof}
+
+While the previous lemma show that some $p, \Delta$ cover any $x \in \D^+$, this does not necessarily mean that there are some fixed $p, \Delta$ that cover \textit{all} $x \in \D^+$. Nevertheless, we can show that this is almost true, meaning that there are some $p, \Delta$ that cover \textit{most} $x \in \D^+$. Formally, we have the following lemma.
+
+\begin{lem}\label{lem:most_covered}
+For any $\epsilon > 0$, there exists $p, \Delta$ such that $\mu(\D^+ \setminus \D_{p, \Delta}^+) < \epsilon$, where $\D_{p, \Delta}^+$ is as defined in Definition \ref{defn:covered}. 
+\end{lem}
+
+\begin{proof}
+Observe that if $x$ is $(p, \Delta)$-covered, then it is also $(p', \Delta')$-covered for any $p' < p$ and $\Delta' < \Delta$. This is because $B(x', r_{p'}(x')) \subset B(x', r_p(x))$ and $\frac{1}{2} + \Delta > \frac{1}{2} + \Delta'$. Keeping this in mind, define $$\mathcal{A} = \{\D_{1/i, 1/j}^+: i, j \in \N\}.$$ For any $x \in \D^+$, by Lemma \ref{lem:everything_covered} and our earlier observation, there exists $A \in \mathcal{A}$ such that $x \in A$. It follows that $\cup_{A \in \mathcal{A}} A = \D^+$. By applying Lemma \ref{lem:measure_lemma}, we see that there exists a finite subset of $\mathcal{A}$, $\{A_1, \dots, A_m\}$ such that $$\mu(A_1 \cup \dots \cup A_m\}) > \mu(\D^+) - \epsilon.$$ Let $A_k = \D_{1/i_k, 1/j_k}^+$ for $1 \leq k \leq m$. From our previous observation once again, we see that $\cup A_i \subset \D_{1/I, 1/J}^+$ where  $I = \max(i_k)$ and $J = \max(j_k)$. It follows that setting $p = 1/I$ and $\Delta = 1/J$ suffices. 
+\end{proof}
+
+Recall that our overall goal is to show that if $x$ is $(p, \Delta)$-covered, $n$ is sufficiently large, then $x$ is very likely to be in $\D_{W_S}^+$ (defined in equation \ref{eqn:cool_sets}). To do this, we will need to find sufficient conditions on $S$ for $x$ to be in $W_S$. This requires the following definitions, that are related to \textit{splitting numbers} (Definition \ref{defn:splitting_number}). 
+
+\begin{defn}\label{defn:Delta_particular_split_thing}
+Let $x \in \R^d$ be a point, and let $S = \{(x_1, y_1), \dots, (x_n, y_n)\}$ be a training set sampled from $\D^n$. For $0 \leq \alpha$, $0 \leq \beta \leq 1$, and $0 < \Delta < \frac{1}{2}$, we define $$W_{x, \alpha, \beta}^{\Delta, S} = \{i: \d(x, x_i) \leq \alpha, w_i^S(x) \geq \beta, \eta(x_i) > \frac{1}{2} + \Delta\}.$$
+\end{defn}
+
+\begin{defn}
+Let $0 < \Delta < \frac{1}{2}$, and let $S = \{(x_1, y_1), \dots, (x_n, y_n)\}$ be a training set sampled from $\D^n$. Then we let $$W^{\Delta, S} = \{W_{x, \alpha, \beta}^{\Delta, S}: x \in \R^d, 0 \leq \alpha, 0 \leq \beta \leq 1\}.$$
+\end{defn}
+
+These convoluted looking sets will be useful for determining the behavior of $W_s$ at some $x \in \D_{p, \Delta}^+$. Broadly speaking, the idea is that if every set of indices $R \subset W^{\Delta, S}$ is relatively well behaved (i.e. the number of $y_i$s that are $+1$ is close to $(|R|(\frac{1}{2} + \Delta)$, the expected amount), then $W_s(x') = +1$ for all $x' \in U_x$. Before showing this, we will need a few more lemmas.
+
+\begin{lem}\label{lem:vc_mimicry}
+Fix any $\delta > 0$ and let $0 <  \Delta < \frac{1}{2}$. There exists $N$ such that for all $n > N$ the following holds. With probability $1 - \delta$ over $S \sim \D^n$, for all $R \in W^{\Delta, S}$ with $|R| > t_n$, $\frac{1}{|R|} \sum_{i \in R} y_i \geq \Delta$ 
+\end{lem}
+
+\begin{proof}
+The key idea is to observe that the set $W^{\Delta, S}$ and the value $T(W, S)$ are completely determined by $\{x_1, \dots, x_n\}$. This is because weight functions choose their weights only through dependence on $x_1, \dots, x_n$. Consequently, we can take the equivalent formulation of first drawing $x_1, \dots, x_n \sim \mu^n$, and then drawing $y_i$ independently according to $y_i = 1$ with probability $\eta(x_1)$ and $0$ with probability $1 - \eta(x_i)$. In particular, we can treat $y_1, \dots, y_n$ as independent from $W^{\Delta, S}$ and $T(W, S)$ conditioning on $x_1, \dots, x_n$. 
+
+Fix any $x_1, \dots, x_n$. First, we see that $|W^{\Delta, S}| \leq T(W, S)$. This is because $W_{x, \alpha, \beta}^{\Delta, S}$ is a subset that is uniquely defined by $W_{x, \alpha, \beta}$ (see Definitions \ref{defn:Delta_particular_split_thing} and \ref{defn:splitting_number}). Second, for any $R \in W^{\Delta, S}$, observe that for all $i \in R$, $y_i$ is a binary variable in $[-1, 1]$ with expected value at least $(\frac{1}{2} + \Delta) - (\frac{1}{2} - \Delta) = 2\Delta$ (again by the definition). It follows that if $|R| \geq t_n$, by Hoeffding's inequality $$\Pr_{y_1 \dots y_n} [\sum_{i \in R} y_i < \Delta] \leq \exp \left( -\frac{2|R|^2\Delta^2}{4|R|} \right) \leq \exp \left( -\frac{t_n\Delta^2}{2} \right).$$ Since there at most $T(W, S)$ sets $R$, it follows that $$\Pr_{y_1 \dots y_n}[\sum_{i \in R} y_i < \Delta\text{ for some }R \in W^{\Delta, S}\text{ with }|R| > t_n] \leq T(W, S)\exp \left( -\frac{t_n\Delta^2}{2} \right).$$ However, by condition 4. of Theorem \ref{thm:main}, it is not difficult to see that this quantity has expectation that tends to $0$ as $n \to \infty$ (unless $T(W, S)$ uniformly equals $1$, but this degenerate case can easily be handled on its own). Thus, for any $\delta > 0$, it follows that there exists $N$ such that for all $n > N$, with probability at least $1 - \frac{\delta}{2}$, $T(W, S)\exp \left( -\frac{t_n\Delta^2}{2} \right) \leq \frac{\delta}{2}$. This value of $N$ consequently suffices for our lemma. 
+\end{proof}
+
+We now relate $\D_{W_S}^+$ (Equation \ref{eqn:cool_sets}) to $W^{\Delta, S}$ as well as the conditions of Theorem \ref{thm:main}.
+
+\begin{lem}\label{lem:proving_it_works}
+Let $S = \{(x_1, y_1), \dots, (x_n, y_n)\}$ and let $0 < \Delta \leq \frac{1}{2}$ and $0 < p < 1$ such that the following conditions hold. 
+\begin{enumerate}
+	\item For all $R \in W^{\Delta, S}$ with $|R| > t_n$, $\frac{1}{|R|} \sum_{i \in R} y_i \geq \Delta$. 
+	\item $\sup_{x \in \R^d} \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)} < \frac{\Delta}{5}$.
+	\item $t_n\sup_{x \in \R^d} w_i^S(x) < \frac{\Delta}{5}$. 
+\end{enumerate}
+Then $\D_{p, \Delta}^+ \subseteq \D_{W_S}^+$. 
+\end{lem}
+
+\begin{proof}
+Let $x \in \D_{p, \Delta}^+$, and let $x' \in U_x$ be arbitrary. It suffices to show that $W_S(x') = +1$ (as $x, x'$ were arbitrarily chosen). From the definition of $W_S$, this is equivalent to showing that $\sum_1^n w_i^S(x')y_i > 0.$ Thus, our strategy will be to lower bound this sum using the conditions given in the lemma statement. 
+
+We first begin by simplifying notation. Since $S$ and $x'$ are both fixed, we use $w_i$ to denote $w_i^S(x')$. Since $n$ is fixed, we will also use $t$ to denote $t_n$. Next, suppose that $|\{x_1, \dots, x_n\} \cap B(x', r_p(x'))| = k$. Without loss of generality, we can rename indices such that $\{x_1, \dots, x_n\} \cap B(x', r_p(x')) \cap B(x', r_p(x')) = \{x_1, \dots, x_k\}$, and $w_1 \geq w_2 \geq \dots \geq w_k.$ 
+
+Let $Y_j = \sum_{i=1}^j y_i$. Our main idea will be to express the sum in terms of these $Y_j$s as follows.  
+\begin{equation*}
+\begin{split}
+\sum_1^n w_iy_i &= \sum_1^k w_iy_i + \sum_{k+1}^n w_iy_i \\
+&= w_kY_k + (w_{k-1} - w_k)Y_{k-1} + \dots + (w_{t+1} -w_{t+2})Y_{t+1} + \sum_{i = 1}^t (w_i - w_{t+1})y_i + \sum_{k+1}^n w_iy_i \\
+&= \underbrace{w_kY_k + \sum_{i = t+1}^{k-1} (w_i - w_{i+1})Y_i}_{\alpha} + \underbrace{\sum_{i = 1}^t (w_i - w_{t+1})y_i}_\beta + \underbrace{\sum_{k+1}^n w_iy_i}_\tau. 
+\end{split}
+\end{equation*}
+
+We now bound $\alpha, \beta$ and $\tau$ in terms of $\Delta$ by using the conditions given in the lemma. We begin with $\beta$ and $\tau$, which are considerably easier to handle.
+
+For $\beta$, we have that 
+\begin{equation*}
+\begin{split}
+\beta = \sum_{i=1}^t (w_i - w_{t+1})y_i \geq \sum_{i=1}^t (w_i - w_{t+1})(-1) \geq -tw_1. 
+\end{split}
+\end{equation*}
+By condition 2 of the lemma, we see that $tw_1 < \frac{\Delta}{5}$, which implies that $\beta \geq  -\frac{\Delta}{5}$.
+
+For $\gamma$, we have that $\gamma = \sum_{k+1}^n w_iy_i \geq -\sum_{k+1}^n w_i$. However, for all $k+1 \leq i \leq n$, by definition of $k$, $\d(x', x_i) > r_p(x')$. It follows from condition 3 of the lemma that $\gamma \geq -\frac{\Delta}{5}$.
+
+Finally, we handle $\alpha$. Recall that $x$ is $(p, \Delta)$-covered. It follows that for all $x'' \in supp(\mu) \cap B(x', r_p(x'))$, $\eta(x'') > \frac{1}{2} + \Delta$. Thus, by the definition of $k$, $\eta(x_i) > \frac{1}{2} + \Delta$ for $1 \leq i \leq k$. It follows that if $w_i > w_{i+1}$ or $i = k$, then 
+\begin{equation*}
+\begin{split}
+W_{x', r_p(x'), w_i}^{\Delta, S} &= \{j: \d(x', x_j) \leq r_p(x'), w_j \geq w_i, \eta(x_j) > \frac{1}{2} + \Delta\} \\
+&= \{1, \dots, i\}.
+\end{split}
+\end{equation*}
+
+This implies that $\{1, \dots, i\} \in W^{\Delta, S}$, and consequently that $Y_i \geq i\Delta$, from condition 1 of the lemma. It follows that for all $t < i \leq k$, $(w_{i} - w_{i+1})Y_i \geq i(w_i - w_{i+1})\Delta$, and that $w_kY_k \geq kw_k\Delta$. Substituting these, we find that 
+\begin{equation*}
+\begin{split}
+\alpha &= w_kY_k + \sum_{i = t+1}^{k-1} (w_i - w_{i+1})Y_i \\
+&\geq kw_k\Delta + \sum_{i = t + 1}^{k-1} i(w_i - w_{i+1})\Delta \\
+&= w_k\Delta + w_{k-1}\Delta + \dots + w_{t+1}\Delta + (t+1)w_{t+1}\Delta. \\
+&\geq (1 - \sum_{1^t} w_i - \sum_{k+1}^n w_i)\Delta \\
+&\geq (1 - \frac{2\Delta}{5})\Delta \\
+&\geq (\frac{4\Delta}{5}),
+\end{split}
+\end{equation*}
+with the last inequalities holding from the arguments given for $\beta$ and $\gamma$ along with the fact that $0 < \Delta \leq  \frac{1}{2}$. Finally, substituting these, we find that $\alpha + \beta + \gamma \geq \frac{4\Delta}{5} - \frac{2\Delta}{5} = \frac{2\Delta}{5} > 0$, as desired. 
+\end{proof}
+
+We are now ready to prove the key lemma that forms one half of the main theorem (the other half corresponding to $\D_{W_S}^-$). 
+
+\begin{lem}
+Let $\delta, \epsilon > 0$. There exists $N$ such that for all $n > N$, with probability $1 - \delta$ over $S \sim \D^n$, $\mu(\D^+ \setminus \D_{W_S}^+) < \epsilon$. 
+\end{lem}
+
+\begin{proof}
+First, by Lemma \ref{lem:most_covered}, let $0 < p$ and $0 < \Delta$ be such that $\mu(\D^+ \setminus \D_{p, \Delta}^+) < \epsilon$. By combining Lemma \ref{lem:vc_mimicry}, condition 3 of Theorem \ref{thm:main}, and condition 2 of Theorem \ref{thm:main} respectively,  we see that there exists $N$ such that for all $n > N$, the following hold:
+\begin{enumerate}
+	\item With probability at least $1 - \frac{\delta}{3}$ over $S \sim \D^n$, for all $R \in W^{\Delta, S}$ with $|R| > t_n$, $\frac{1}{|R|} \sum_{i \in R} y_i \geq \Delta$. 
+	\item With probability at least $1 - \frac{\delta}{3}$ over $S \sim \D^n$, $\sup_{x \in \R^d} \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)} < \frac{\Delta}{5}$.
+	\item With probability at least $1 - \frac{\delta}{3}$ over $S \sim \D^n$, $t_n\sup_{x \in \R^d} w_i^S(x) < \frac{\Delta}{5}$. 
+\end{enumerate}
+By a union bound, this implies that $p, \Delta, S$ satisfy the conditions of Lemma \ref{lem:proving_it_works} with probability at least $1 - \delta$.  Thus, applying the Lemma, we see that with probability $1 - \delta$, $\D_{p, \Delta}^+ \subset \D_{W_S}^+$. This immediately implies our claim. 
+\end{proof}
+
+By replicating all of the work in this section for $\D^-$ and $\D_{p, \Delta}^-$, we can similarly show the following: 
+
+\begin{lem}
+Let $\delta, \epsilon > 0$. There exists $N$ such that for all $n > N$, with probability $1 - \delta$ over $S \sim \D^n$, $\mu(\D^- \setminus \D_{W_S}^-) < \epsilon$. 
+\end{lem}
+
+Combining these two lemmas with Lemma \ref{lem:conversion_to_measure_thing} immediately implies that for all $\delta, \epsilon > 0$, there exists $N$ such that for all $n > N$, with probability $1- \delta$ over $S \sim \D^n$, $$A_\U(W_S, \D) \geq A(g, \D) - \epsilon.$$ Since $V_x^\kappa \subset U_x$ and since $\kappa$ was arbitrary, this implies Theorem \ref{thm:main}, which completes our proof. 
+
+\subsection{Proof of Corollary \ref{cor:nn}}
+
+Recall that $k_n$-nearest neighbors can be interpreted as a weight function, in which $w_i^S(x) = \frac{1}{k_n}$ if $x_i$ is one of the $k_n$ closest points to $x$, and $0$ otherwise. Therefore, it suffices to show that the conditions of Theorem \ref{thm:main} are met. 
+
+We let $W$ denote the weight function associated with $k_n$-nearest neighbors.
+
+\begin{lem}
+$W$ is consistent.
+\end{lem}
+
+\begin{proof}
+It is well known (for example \cite{Dasgupta14}) that $k_n$-nearest neighbors is consistent for $\lim_{n \to \infty} k_n = \infty$ and $\lim_{n \to \infty} \frac{k_n}{n} = 0$. These can easily be verified for our case.
+\end{proof}
+
+\begin{lem}
+For any $0 < p < 1$, $\lim_{n \to \infty} \E_{S \sim \D^n}[ \sup_{x \in \R^d} \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)}] = 0.$ 
+\end{lem}
+
+\begin{proof}
+It suffices to show that for $n$ sufficiently large, all $k_n$-nearest neighbors of $x$ are located inside $B(x, r_p(x))$ for all $x \in \R^d$. We do this by using a VC-dimension type argument to show that all balls $B(x, r)$ contain a number of points from $S \sim \D^n$ that is close to their expectation. 
+
+For $x \in \R^d$ and $r \geq 0$, let $f_{x, r}$ denote the $0-1$ function defined as $f_{x,r}(x') = 1_{x' \in B(x,r)}$. Let $F = \{f_{x, r}: x \in \R^d, r \geq 0\}$ denote the class of all such functions. It is well known that the VC dimension of $F$ is at most $d+2$. 
+
+For $f \in F$, let $\E f$ denote $\E_{(x', y) \sim \D}f(x')$ and $\E_nf$ denote $\frac{1}{n}\sum_1^n f(x_i)$, where $\E_nf$ is defined with respect to some sample $S \sim \D^n$. By the standard generalization result of Vapnik and Chervonenkis (see \cite{Dasgupta07} for a proof), we have that with probability $1- \delta$ over $S \sim \D^n$, \begin{equation}\label{eqn:vc}-\beta_n\sqrt{\E f} \leq \E f - \E_nf \leq \beta_n\sqrt{\E f}\end{equation} holds for all $f \in F$, where $\beta_n = \sqrt{(4/n)((d+2)\ln 2n + \ln(8/\delta)}.$ 
+
+Suppose $n$ is sufficiently large so that $\beta_n \leq \frac{p}{2}$ and $\frac{k_n}{n} < \frac{p}{2}$, and suppose that equation \ref{eqn:vc} holds. Pick any $x \in \R^d$ and consider $f_{x, r}$ where $r > r_p(x)$. This implies $\E f_{x, r} \geq p$. Then by equation \ref{eqn:vc}, we see that $\E_nf \geq \frac{p}{2}$. This implies that all $k_n$ nearest neighbors of $x$ are in the ball $B(x,r)$, and that consequently $\sum_1^n w_i^S(x)1_{\d(x, x_i) > r} = 0$. Because this holds for all $x, r$ with $x \in \R^d$ and $r > r_p(x)$, it follows that equation $2$ implies that $$\sup_{x \in X} \sum_1^n w_i^S(x) 1_{\d(x, x_i) > r_p(x)} = 0.$$ Because equation \ref{eqn:vc} holds with probability at least $1 - \delta$, and $\delta$ can be made arbitrarily small, the desired claim follows. 
+\end{proof}
+
+Let $t_n = \sqrt{d k_n\log n}$.
+
+\begin{lem}
+ $\lim_{n \to \infty} E_{S \sim D^n}[t_n \sup_{x \in \R^d} w_i^S(x)] = 0$.
+\end{lem}
+
+\begin{proof}
+Let $S \sim \D^n$. By the definition of $k_n$ nearest neighbors, $\sup_{x \in \R^d}w_i^S(x) = \frac{1}{k_n}$. Therefore, $t_n\sup_{x \in \R^d} w_i^S(x) = \sqrt{\frac{d\log n}{k_n}}$. By assumption 2. of corollary \ref{cor:nn}, $\lim_{n \to \infty} \frac{d \log n}{k_n} = 0$, which implies that $$\lim_{n \to \infty} \E_{S \sim D^n}[t_n\sup_{x \in \R^d} w_i^S(x)] = \lim_{n \to \infty} \sqrt{\frac{d\log n}{k_n}} = \lim_{n \to \infty} \frac{d \log n}{k_n} = 0,$$ as desired.
+\end{proof}
+
+\begin{lem}
+$\lim_{n \to \infty} E_{S \sim D^n}\frac{\log T(W,S)}{t_n} = 0$.
+\end{lem}
+
+\begin{proof}
+For $S \sim \D^n$, recall that $T(W, S)$ was defined as $$T(W, S) |\{W_{x, \alpha, \beta}: x \in \R^d, 0 \leq \alpha, 0 \leq \beta \leq 1\}|,$$ where $W_{x, \alpha, \beta}$ denotes $$W_{x, \alpha, \beta} = \{i: \d(x, x_i) \leq \alpha, w_i^S(x) \geq \beta\}.$$ Our goal will to be upper bound $\log T(W, S)$. 
+
+To do so, we first need a tie-breaking mechanism for $k_n$-nearest neighbors. For each $x_i \in S$, we independently sample $z_i \in [0, 1]$ from the uniform distribution. We then tie break based upon the value of $z_i$, i.e. if $\d(x, x_i) = \d(x, x_j)$, we say that $x_i$ is closer to $x$ than $x_j$ if $z_i < z_j$. With probability $1$, no two values $z_i ,z_j$ will be equal, so this ensures that this method always works.
+
+Let $A_{x, \alpha} = \{i: \d(x, x_i) \leq \alpha\}$ and let $B_{x, c} = \{i: z_i \leq c\}.$ The key observation is that for any $\alpha, \beta$, $W_{x, \alpha, \beta} = A_{x, \alpha} \cap B_{x, c}$ for some value of $c$. This can be seen by noting that the nearest neighbors of $x$ are uniquely determined by $\d(x, x_i)$ and $z_i$. Therefore, it suffices to bound $|A = A_{x, \alpha}: x \in \R^d, \alpha \geq 0\}|$ and $|B = \{B_{x, c}: x \in \R^d, c \geq 0\}|$. 
+
+To bound $|A|$, observe that the set of closed balls in $\R^d$ has VC-dimension at most $d+2$. Thus by Sauer's lemma, there are at most $O(n^{d+2}$ subsets of $\{x_1, x_2, \dots, x_n\}$ that can be obtained from closed balls. Thus $|A| \leq O(n^{d+2}$. 
+
+To bound $|B|$, we simply note that $B_{x, c}$ consists of all $i$ for which $z_i \leq c$. Since the $z_i$ can be sorted, there are at most $n+1$ such sets. Thus $|B| \leq n+1$.
+
+Combining this, we see that $T(W, S) \leq |A||B| \leq O(n^{d+3})$. Finally, we see that $$\lim_{n \to \infty} \frac{\log T(W,S)}{t_n} = \lim_{n \to \infty} \frac{O(d\log n)}{\sqrt{k_n d \log n}} = \lim_{n \to \infty} \sqrt{\frac{O(d \log n)}{k_n}} = 0,$$ with the last inequality holding by condition 2. of Corollary \ref{cor:nn}. 
 
 \end{proof}
 
-\section{Experimental Details}
-%\begin{figure}[ht]
-%\vskip 0.2in
-%\begin{center}
-%\subfloat[][Training Size = 20]{\includegraphics[width=.45\textwidth]{visual20}}\quad
-%   \subfloat[][Training Size = 50]{\includegraphics[width=.45\textwidth]{visual50}}\\
-%   \subfloat[][Training Size = 500]{\includegraphics[width=.45\textwidth]{visual500}}\quad
-%   \subfloat[][Training Size = 3000]{\includegraphics[width=.45\textwidth]{visual3000}}
-%\end{center}
-%\caption{A visualization of histograms learned with training data sampled from noiseless halfmoon. As training size grows, the histogram classifier becomes increasingly susceptible to adversarial examples in the blue regions.}
-%\label{fig:appendix_fig}
-%\vskip -0.2in
-%\end{figure}
+
+Finally, we note that Corollary \ref{cor:nn} is an immediate consequence of the previous 4 lemmas as we can simply apply Theorem \ref{thm:main}.
+
+\subsection{Proof of Corollary \ref{cor:kern}}
+
+Let $W$ be a kernel classifier constructed from $K$ and $h_n$ such that the conditions of Corollary \ref{cor:kern} hold: that is, 
+\begin{enumerate}
+	\item $K: [0, \infty) \to [0, \infty)$ is decreasing and satisfies $\int_{\R^d}K(x)dx < \infty.$
+	\item $\lim_{n \to \infty} h_n = 0$ and $\lim_{n \to \infty} nh_n^d = \infty$.
+	\item For any $c > 1$, $\lim_{x \to \infty} \frac{K(cx)}{K(x)} = 0$.
+	\item For any $x \geq 0$, $\lim_{n \to \infty} \frac{n}{\log n}K(\frac{x}{h_n}) = \infty$.
+\end{enumerate}
+
+It suffices to show that the conditions of Theorem \ref{thm:main} are met for $W$. Before doing this, we will describe one additional assumption we make for this case.
+
+\paragraph{Additional Assumption:} We assume that $\D, \U$ are such that there exists some compact set $\X \subset \R^d$ such that for all $x \in supp(\mu)$, $U_x \subset \X$. This is primarily for convenience: observe that any distribution can be approximated arbitrarily closely by distributions satisfying these properties (as each $U_x$ is bounded by assumption). Importantly, because of this, we will note that it is possible for conditions 2. and 3. of Theorem \ref{thm:main} to be relaxed to taking supremums over $\X$ rather than $\R^d$. This is because in our proof, we only ever used these conditions in their restriction to $\bigcup_{x \in supp(\mu)} \bigcup{x' \in U_x} B(x', r_p(x'))$.
+
+Using this assumption, we return to proving the corollary. 
+
+\begin{lem}\label{cl:kern_consistency}
+$W$ is consistent with respect to $\D$. 
+\end{lem}
+
+\begin{proof}
+Condition 1. of Corollary \ref{cor:kern} imply that $K$ is a regular kernel. This together with Condition 2. implies that $W$ is consistent: a proof can be found in \cite{devroye96}. 
+\end{proof}
+
+To verify the second condition, it will be useful to have the following definition. 
+
+\begin{defn}\label{defn:probability_epsilon_radius}
+For any $p, \epsilon > 0$ and $x \in \X$, define $r_p^\epsilon$ as $$r_p^\epsilon(x) = \sup \{r: \mu(B(x, r)) - \mu(B(x, r_p(x)) \leq \epsilon\}.$$ 
+\end{defn}
+
+\begin{lem}\label{cl:rad}
+For any $p, \epsilon > 0$, there exists a constant $c_p^\epsilon > 1$ such that $\frac{r_p^\epsilon(x)}{r_p(x)} \geq c_p^{\epsilon}$ for all $x \in \X$, where we set $\frac{r_p^\epsilon(x)}{r_p(x)} = \infty$ if $r_p(x) = 0$. 
+\end{lem}
+
+\begin{proof}
+The basic idea is to use the fact that $\X$ is compact. Our strategy will be to analyze the behavior of $\frac{r_p^{\epsilon}(x)}{r_p(x)}$ over small balls $B(x_0, r)$ centered around some fixed $x_0$, and then use compactness to pick some finite set of balls $B(x_0, r)$. This must be done carefully because the function $x \to \frac{r_p^\epsilon(x)}{r_p(x)}$ is not necessarily continuous. 
+
+Fix any $x_0 \in \X$. First, observe that $r_p^{\epsilon}(x_0) > r_p(x_0)$. This is because $B(x_0, r_p(x_0)) = \cap_{r > r_p(x_0)} B(x_0,r)$, and consequently $\lim_{r \downarrow r_p(x_0)} \mu(B(x_0, r)) = \mu(B(x_0, r_p(x_))).$ 
+
+Next, define $$s_p^\epsilon(x) = \inf\{r: \mu(B(x, r_p(x)) - \mu(B(x,r)) \leq \epsilon\}.$$ We can similarly show that $r_p(x_0) > s_p^{\epsilon}(x_0)$. 
+
+Finally, define $$r_0 = \frac{1}{3}\min(r_p^{\epsilon}(x_0) - r_p(x_0), r_p(x_0) - s_p^{\epsilon}(x_0)).$$ Consider any $x \in B^o(x_0, r_0)$ where $B^o$ denotes the open ball, and let $\alpha = \d(x_0, x)$. Then we have the following. 
+\begin{enumerate}
+	\item $r_p(x) \leq r_p(x_0) + \alpha$. This holds because $B(x, r_p(x_0) + \alpha)$ contains $B(x_0, r_p(x_0))$, which has probability mass at least $p$. 
+	\item $r_p(x) \geq r_p(x_0) - \alpha$. This holds because if $r_p(x) < r_p(x_0) - \alpha$, then there would exists $r < r_p(x_0)$ such that $\mu(B(x_0, r)) \geq p$ which is a contradiction.
+	\item $B(x_0, s_p^{\epsilon}(x_0)) \subset B(x, r_p(x)).$ This is just a consequence of the definition of $r_0$ and the previous observation.
+\end{enumerate}
+By the definitions of $r_p^\epsilon$ and $s_p^\epsilon$, we see that $\mu(B(x_0, r_p^{\epsilon}(x_0)) - \mu(B(x_0, s_p^\epsilon(x_0)) \leq 2\epsilon$. By the triangle inequality, $B(x, r_p^{\epsilon}(x_0) - \alpha) \subset B(x_0, r_p^\epsilon(x_0))$ and $B(x_0, s_p^{\epsilon}(x_0)) \subset B(x, r_p(x))$. it follows that $$\mu(B(x, r_p^{\epsilon}(x_0) - \alpha)) - \mu(B(x, r_p(x))) \leq 2\epsilon,$$ which implies that $r_p^{2\epsilon}(x) \geq r_p^{\epsilon}(x_0) - \alpha$. Therefore we have the for all $x \in B(x_0, r_0)$, $$\frac{r_p^{2\epsilon}(x) }{r_p(x)} \geq \frac{r_p^{\epsilon}(x_0) - \alpha}{r_p(x_0) + \alpha} \geq \frac{2r_p^\epsilon(x_0) + r_p(x_0)}{r_p^\epsilon(x_0) + 2r_p(x_0)}.$$ Notice that the last expression is a constant that depends only on $x_0$, and moreover, since $r_p^\epsilon(x_0) > r_p(x_0)$, this constant is strictly larger than $1$. Let us denote this as $c(x_0)$. Then we see that $\frac{r_p^{2\epsilon}(x)}{r_p(x)} \geq c(x_0)$ for all $x \in B^o(x_0, r_0)$. 
+
+Finally, observe that $\{B^o(x_0, r_0): x_0 \in \X\}$ forms an open cover of $\X$ and therefore has a finite sub-cover $C$. Therefore, taking $c = \min_{B^o(x_0, r_0) \in C}c(x_0)$, we see that $\frac{r_p^{2\epsilon}(x)}{r_p(x)} \geq c > 1$ for all $x \in \X$. Because $\epsilon$ was arbitrary, the claim holds.
+\end{proof}
+
+
+\begin{lem}\label{cl:kern_radius}
+For any $0 < p < 1$, $\lim_{n \to \infty} \E_{S \sim \D^n}[ \sup_{x \in \X} \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)}] = 0.$ 
+\end{lem}
+
+
+\begin{proof}
+Fix $p > 0$, and fix any $\epsilon, \delta > 0$. Pick $n$ sufficiently large so that the following hold.
+\begin{enumerate}
+	\item Let $c_p^\epsilon$ be as defined from Lemma \ref{cl:rad}. \begin{equation}\label{eqn:ratio}\sup_{x \in \X} \frac{K(c_p^\epsilon r_p(x)/h_n)}{K(r_p(x) / h_n)} < \delta.\end{equation} This is possible because of conditions 2. and 3. of Corollary \ref{cor:kern}, and because the function $x \to r_p(x)$ is continuous.
+	\item With probability at least $1 - \delta$ over $S \sim \D^n$, for all $r > 0$, and $x \in \X$, \begin{equation}\label{eqn:uniform_vc}|\mu(B(x,r)) - \frac{1}{n}\sum_1^n 1_{x_i \in B(x, r)}| \leq \epsilon.\end{equation} This is possible because the set of balls $B(x,r)$ has VC dimension at most $d+2$.
+\end{enumerate}
+We now bound $\E_{S \sim \D^n}[ \sup_{x \in \X} \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)}]$ by dividing into cases where $S$ satisfies and doesn't satisfy equation \ref{eqn:uniform_vc}. 
+
+Suppose $S$ satisfies equation \ref{eqn:uniform_vc}. By condition 1. of Corollary \ref{cor:kern}, $K$ is decreasing, and by Lemma \ref{cl:rad}, $r_p^\epsilon(x) \geq c_p^\epsilon r_p(x)$. Therefore, we have that for any $x \in \X$,
+\begin{equation*}
+\begin{split}
+\sum_1^n K(\d(x, x_i)/h_n)1_{\d(x, x_i) \geq r_p^\epsilon(x)} &\leq \sum_1^n K(c_p^\epsilon r_p(x)/h_n)\\
+&\leq n\delta K(r_p(x)/h_n)),
+\end{split}
+\end{equation*}
+where the second inequality comes from equation \ref{eqn:ratio}. 
+
+Next, by the definition of $r_p^\epsilon(x)$, we have that $\mu(B(x, r_p^\epsilon(x)) - \mu(B(x,r_p(x))) \leq \epsilon$. Therefore, by applying equation \ref{eqn:uniform_vc} two times, we see that for any $x \in \X$ $$\sum_1^n K(\d(x, x_i)/h_n)1_{r_p(x) < \d(x, x_i) \leq r_p^\epsilon(x)} \leq 3n\epsilon K(r_p(x)/h_n).$$ Finally, we have that $$\sum_1^n w_i^S(x) \geq \sum_1^n K(r_p(x)/h_n)1_{\d(x, x_i) \leq r_p(x)} \geq n(p - \epsilon)K(r_p(x)/h_n).$$ Therefore, using all three of our inequalities, we have that for any $x \in \X$
+\begin{equation*}
+\begin{split}
+\sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)} &= \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p^\epsilon(x)} + \sum_1^n w_i^S(x)1_{r_p^\epsilon \geq \d(x, x_i) > r_p(x)} \\
+&= \frac{\sum_1^n K(\d(x, x_i)/h_n)1_{\d(x, x_i) > r_p^\epsilon(x)} + \sum_1^n K(\d(x, x_i)/h_n)1_{r_p^\epsilon \geq \d(x, x_i) > r_p(x)}}{\sum_1^n K(\d(x, x_i)/h_n)} \\
+&\leq \frac{ n\delta K(r_p(x)/h_n)) + 3n\epsilon K(r_p(x)/h_n)}{n(p - \epsilon)K(r_p(x)/h_n).} \\
+&= \frac{\delta + 3\epsilon}{p - \epsilon}.
+\end{split}
+\end{equation*}
+If $S$ does \textit{not} satisfy equation \ref{eqn:uniform_vc}, then we simply have $\sup_{x \in \X} \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)} \leq 1$. Combining all of this, we have that 
+$$E_{S \sim \D^n} \sum_1^n w_i^S(x)1_{\d(x, x_i) > r_p(x)} \leq \delta(1) + (1-\delta)\frac{\delta + 3\epsilon}{p - \epsilon}.$$ Since $\delta, \epsilon$ can be made arbitrarily small, the result follows. 
+\end{proof}
+
+By assumption, $\X$ is compact and therefore has diameter $D < \infty$. Define $$t_ n = \sqrt{n\log nK(\frac{D}{h_n})}\text{ for }1 \leq n < \infty.$$
+
+\begin{lem}\label{cl:kern_tn}
+$\lim_{n \to \infty} E_{S \sim D^n}[t_n \sup_{x \in \X} w_i^S(x)] = 0$.
+\end{lem}
+
+\begin{proof}
+Because $K$ is a decreasing function, we have that $K(D / h_n) \leq K(\d(x, x_i) / h_n) \leq K(0)$. As a result, we have that for any $x \in \X$, 
+\begin{equation*}
+\begin{split}
+t_n\sup_{1 \leq i \leq n}w_i^S(x) &= \frac{t_n\sup_{1 \leq i \leq n}K(\d(x, x_i)/h_n)}{\sum_1^n K(\d(x, x_i)/h_n)} \\
+&\leq \frac{t_n K(0)}{nK(D/h_n)} \\
+&= K(0)\sqrt{\frac{n\log nK(D/h_n)}{n^2K(D/h_n)^2}} \\
+&= K(0)\sqrt{\frac{\log n}{nK(D/h_n)}}.
+\end{split}
+\end{equation*}
+However, by condition 4. of Corollary \ref{cor:kern}, $\lim_{n \to \infty} \frac{n}{\log n}K(D/h_n) = \infty$. Therefore, since the above inequality holds for all $ x\in \X$, we have that $$\lim_{n \to \infty} E_{S \sim D^n}[t_n \sup_{x \in \X} w_i^S(x)] \leq \lim_{n \to \infty} K(0)\sqrt{\frac{\log n}{nK(D/h_n)}} = 0.$$
+\end{proof}
+
+\begin{lem}\label{cl:kern_vc}
+$\lim_{n \to \infty} E_{S \sim D^n}\frac{\log T(W,S)}{t_n} = 0$.
+\end{lem}
+
+\begin{proof}
+For $S \sim \D^n$, recall that $T(W, S)$ was defined as $$T(W, S) |\{W_{x, \alpha, \beta}: x \in \X, 0 \leq \alpha, 0 \leq \beta \leq 1\}|,$$ where $W_{x, \alpha, \beta}$ denotes $$W_{x, \alpha, \beta} = \{i: \d(x, x_i) \leq \alpha, w_i^S(x) \geq \beta\}.$$ Our goal will to be upper bound $\log T(W, S)$. 
+
+The key observation is that $W_{x, \alpha, \beta}$ is precisely the set of $x_i$ for which $\d(x, x_i) \leq r$ where $r$ is some threshold. This is because the restriction that $w_i^S(x) \geq \beta$ can be directly translated into $\d(x, x_i) \leq r$ for some value of $r$, as $K$ is a monotonically decreasing function. Thus, $T(W,S)$ is the number of subsets of $S$ that can be obtained by considering the interior of some ball $B(x,r)$ centered at $x$ with radius $r$.
+
+We now observe that the set of closed balls in $\R^d$ has VC-dimension at most $d+2$. Thus by Sauer's lemma, there are at most $O(n^{d+2}$ subsets of $\{x_1, x_2, \dots, x_n\}$ that can be obtained from closed balls. Thus $T(W,S) \leq O(n^{d+2}$. 
+
+Finally, we see that $$\lim_{n \to \infty} \frac{\log T(W,S)}{t_n} = \lim_{n \to \infty} \frac{O(d\log n)}{\sqrt{n\log nK(\frac{D}{h_n})}} \leq \lim_{n \to \infty} \sqrt{\frac{O(d \log n)}{nK(\frac{D}{h_n})}} = 0,$$ with the last equality holding by condition 4. of Corollary \ref{cor:kern}. 
+\end{proof}
+
+Finally, we note that Corollary \ref{cor:kern} is an immediate consequences of Lemmas \ref{cl:kern_consistency}, \ref{cl:kern_radius}, \ref{cl:kern_tn}, and \ref{cl:kern_vc}, as we can simply apply Theorem \ref{thm:main}.
+
+\section{Useful Technical Definitions and Lemmas}\label{sec:useful_lemmas}
+
+\begin{lem}\label{lem:measure_lemma}
+Let $\mu$ be a measure over $\R^d$, and let $\mathcal{A}$ denote a countable collections of measurable sets $A_i$ such that $\mu(\bigcup_{A \in \mathcal{A}} A) < \infty$. Then for all $\epsilon > 0$, there exists a finite subset of $\mathcal{A}$, $\{A_1, \dots, A_m\}$ such that $$\mu(A_1 \cup A_2 \cup \dots \cup A_m) > \mu(\bigcup_{A \in \mathcal{A}} A) - \epsilon.$$ 
+\end{lem}
+
+\begin{proof}
+Follows directly from the definition of a measure.
+\end{proof}
+
+\subsection{The support of a distribution}\label{sec:distribution_details}
+
+Let $\mu$ be a probability measure over $\R^d$.
+
+\begin{defn}
+The \textbf{support} of $\mu$, $\supp(\mu)$, is defined as all $x \in \R^d$ such that for all $r > 0$, $\mu(B(x, r)) > 0$. 
+\end{defn}
+
+From this definition, we can show that $supp(\mu)$ is closed.
+
+\begin{lem}
+$supp(\mu)$ is closed.
+\end{lem}
+
+\begin{proof}
+Let $x$ be a point such that $B(x, r) \cap \supp(\mu) \neq \emptyset$ for all $r > 0$. It suffices to show that $x \in supp(\mu)$, as this will imply closure. 
+
+Let $x$ be such a point, and fix $r > 0$. Then there exists $x' \in B(x, r/2)$ such that $x' \in supp(\mu)$. By definition, we see that $\mu(B(x', r/3)) > 0$. However, $B(x', r/3) \subset B(x, r)$ by the triangle inequality. it follows that $\mu(B(x,r)) > 0$. Since $r$ was arbitrary, it follows that $x \in supp(\mu)$.
+\end{proof}
+
+\section{Experiment Details}\label{sec:experiment_details}
 
 \begin{figure}
-\begin{subfigure}{0.45\textwidth}
-\includegraphics[width=\linewidth]{visual20}
-\caption{Training Size = 20} \label{fig:a}
-\end{subfigure}\hspace*{\fill}
-\begin{subfigure}{0.45\textwidth}
-\includegraphics[width=\linewidth]{visual50}
-\caption{Training Size = 50} \label{fig:b}
-\end{subfigure}
-
-\medskip
-\begin{subfigure}{0.45\textwidth}
-\includegraphics[width=\linewidth]{visual500}
-\caption{Training Size = 500} \label{fig:a}
-\end{subfigure}\hspace*{\fill}
-\begin{subfigure}{0.45\textwidth}
-\includegraphics[width=\linewidth]{visual3000}
-\caption{Training Size = 3000} \label{fig:b}
-\end{subfigure}
-%\caption{Sixth subfigure} \label{fig:f}
-
-\caption{Empirical accuracy/astuteness of different classifiers as a function of training sample size. Accuracy is shown in green, astuteness in purple. Left : Noiseless Setting. Right: Noisy Setting. Top Row: Histogram Classifier, Bottom Row: 1-Nearest Neighbor} \label{fig:1}
+    \centering
+        \includegraphics[scale=0.34] {the_distribution.png}
+    \caption{Our data distribution $\D = (\mu, \eta)$ with $\mu^+$ shown in blue and $\mu^-$ shown in red. Observe that this simple distribution captures varying distances between the red and blue regions, which necessitates having varying sizes for robustness regions. }
+    \label{fig:distribution}
 \end{figure}
 
-\subsection{Optimal attacks against histogram classifiers}
+\paragraph{Data Distribution} Our data distribution $\D = (\mu, \eta)$ is over $\R^2 \times \{\pm 1\}$, and is defined as follows. We let $\mu^+$ consist of a uniform distribution over the circle $x^2 + y^2 = 1$, and $\mu^-$ consist of the uniform distribution over the circle $(x-0.5)^2 + y^2 = 0.04$. The two distributions are weighted so that we draw a point from $\mu^+$ with probability 0.7, and $\mu^-$ with probability $0.3$. Finally, we utilize label noise $0.2$ meaning that the label $y$ matches that given by the Bayes optimal with probability $0.2$. In summary, $\D$ can be described with the following 4 cases:
+\begin{enumerate}
+	\item With probability $0.7 \times 0.8$, we select $(x,y)$ with $x \in \mu^+$ and $y = +1$.
+	\item With probability $0.7 \times 0.2$, we select $(x,y)$ with $x \in \mu^+$ and $y = -1$. 
+	\item With probability $0.3 \times 0.8$, we select $(x,y)$ with $x \in \mu^-$ and $y = -1$.
+	\item With probability $0.3 \times 0.2$, we select $(x,y)$ with $x \in \mu^-$ and $y = +1$.
+\end{enumerate}
+We also include a drawing (Figure \ref{fig:distribution}) of the support of $\D$, with the positive portion $\mu^+$ shown in blue and the negative portion, $\mu^-$ shown in red. 
 
-Let $H$ be a histogram classifier, and let $(x,y)$ be any labeled example. Let $r > 0$ be some fixed robustness radius. Recall that an \textit{adversarial example} against $H$ at $(x,y)$ is any $x'$ such that $x' \in B(x,r)$ and $H(x') \neq y$. Note that if $H(x) \neq y$, then $x$ itself is an adversarial example. Conversely, if $H$ is astute at $(x,y)$ with radius $r$, then no adversarial example exists.
+\paragraph{Computing Robustness Regions} 
 
-For arbitrary classifiers, finding adversarial examples at a given point can be challenging. However, recent work (Yang et. al. 2019) has shown that for non-parametric classifiers, there are tractable methods for doing so. The key insight is that non-parametric classifiers can be construed as a partitioning of input space into convex cells, with each cell having a given label. For example, Figure \ref{fig:appendix_fig} gives a visualization for these cells in a histogram classifier. 
-
-Because these cells are convex, finding an adversarial example for $H$ at $(x,y)$ (here $x$ is a point in $\R^2$, and $y$ is a label) amounts to finding the closest cell $c \in H$ to $x$ such that $H(c) \neq y$. While Yang et. al. (Yang et. al. 2019) presents convex programming algorithms for doing this, the case of histograms in the $\ell_\infty$ metric is much simpler. 
-
-As stated in definition 10, a histogram partitions the input space into hypercubes by iteratively splitting each cube into $2^d$ cubes with half the length. Therefore, the cells of a histogram are all hypercubes of varying sizes. For cell $c$, let $s(c)$ denote the length of the cube that $c$ corresponds to, and let $H(c)$ denote the label $H$ assigns to $c$. The key observation is that $c$ contains an adversarial example for $(x,y)$ if and only if $d(c, x) \leq s(c)/2 + r$, and $H(c) \neq y$. This yields the following algorithm:
+Recall that in order to measure robustness, we utilize the so-called partial \natural\emph{ }regions $V_x^\kappa$ (Definition \ref{def:partial_nat_region}) for varying values of $\kappa$. In the case of our data distribution $\D$, $V_x^\kappa$ consists of points closer to $x$ by a factor of $\kappa$ than they are to $\mu^-$ (resp. $\mu^+$) when $x \in \mu^+$ (resp. $\mu^-$). To represent a region $V_x^\kappa$, we simply use a function $f$ that verifies whether a given point $x' \in V_x^\kappa$. While this methodology is not sufficient for training general classifiers (for a whole litany of reasons: to begin with it assumes full knowledge of the distribution), it will suffice for our toy synthetic experiments. 
 
 
-Algorithm \ref{alg_hist_attack} was further optimized by utilizing nearest-neighbor type algorithms to find the ``closest" cells to $x$. This was done by grouping cells by their radii, and utilizing a separate nearest-neighbor data structure for all cells of a given radius. 
+\paragraph{Trained Classifiers} We train two classifiers, both of which are kernel classifiers. 
 
-Although this algorithm doesn't have the same performance metrics as those presented in (Yang et. al. 2019), it was easily sufficient for computing the empirical astuteness for our experiments.
+The first classifier is an exponential kernel classifier with bandwidth function $h_n = \frac{1}{10\sqrt{\log n}}$ and kernel function $K(x) = e^{-x}$. 
 
-%\begin{algorithm}[tb]
-%   \caption{Optimal attack algorithm for Histogram Classifiers}
-%   \label{alg_hist_attack}
-%\begin{algorithmic}
-%   \STATE {\bfseries Input:} Histogram $H$, labeled point $(x,y) \in \R^2 \times \{\pm 1\}$, robustness radius $r$
-%   \FOR{cell $c \in H$}
-%   \IF{$d(c,x) \leq s(c)/2 + r$ and $H(c) \neq y$}
-%   \STATE{Return $c$}
-%   \ENDIF
-%   \ENDFOR
-%\end{algorithmic}
-%\end{algorithm}
+The second classifier is a polynomial kernel classifier with bandwidth function $h_n = \frac{1}{10n^{1/3}}$ and kernel function $K(x) = \frac{1}{1 + x^2}$. 
 
-\begin{algorithm}[H]
-    \SetAlgoLined
-    {\bfseries Input:} Histogram $H$, labeled point $(x,y) \in \R^2 \times \{\pm 1\}$, robustness radius $r$\;
-    
- 	\For{cell $c \in H$}{
- 		\If{$d(c,x) \leq s(c)/2 + r$ and $H(c) \neq y$}{
- 			Return $c$
- 		}
- 	}
-    
+Both of these kernels are regular kernels, and both bandwidths satisfy sufficient conditions for consistency with respect to accuracy.  In other words, both of these classifiers will converge towards the accuracy of the Bayes optimal.
 
-\caption{Optimal attack algorithm for Histogram Classifiers}
-\end{algorithm}
+However, the first classifier is selected to satisfy the criterion of Corollary \ref{cor:kern}, whereas the second is not. This distinction is reflected in our experiments. 
+
+
+\paragraph{Verifying Robustness} To verify the robustness of classifier $f$ at point $x$ (with respect to $V_x^\kappa$), we simply do a grid search with grid parameter 0.01. We grid the entire regions into points with distance at most $0.01$ between them, and then verify that $f$ has the desired value at all of those points. To ensure proper robustness, we also simply verify that $f$ cannot change enough within a distance of $0.01$ by constructing an upper bound on how much $f$ can possibly change. For kernel classifiers, this is simple to do as there is a relatively straightforward upper bound on the gradient of a Kernel classifier.
+
+
  
