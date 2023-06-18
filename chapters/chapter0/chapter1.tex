@@ -382,6 +382,77 @@ Observe again that Condition 1. is satisfied by any $K$ that decreases more rapi
 %\vskip -0.2in
 %\end{figure}
 
+\begin{figure}
+\begin{subfigure}{0.31\textwidth}
+\includegraphics[width=\linewidth]{hist_noiseless_final}
+%\caption{First subfigure} \label{fig:a}
+\end{subfigure}\hspace*{\fill}
+\begin{subfigure}{0.31\textwidth}
+\includegraphics[width=\linewidth]{hist_noisy_final}
+%\caption{Second subfigure} \label{fig:b}
+\end{subfigure}\hspace*{\fill}
+\begin{subfigure}{0.31\textwidth}
+\includegraphics[width=\linewidth]{visual500}
+%\caption{Fifth subfigure} \label{fig:e}
+\end{subfigure}
+
+\medskip
+\begin{subfigure}{0.31\textwidth}
+\includegraphics[width=\linewidth]{nn_noiseless_final}
+%\caption{Third subfigure} \label{fig:c}
+\end{subfigure}\hspace*{\fill}
+\begin{subfigure}{0.31\textwidth}
+\includegraphics[width=\linewidth]{nn_noisy_final}
+%\caption{Fourth subfigure} \label{fig:d}
+\end{subfigure}\hspace*{\fill}
+\begin{subfigure}{0.31\textwidth}
+ \includegraphics[width=\linewidth]{visual3000}
+%\caption{Sixth subfigure} \label{fig:f}
+
+\end{subfigure}
+
+\caption{Empirical accuracy/astuteness of different classifiers as a function of training sample size. Accuracy is shown in green, astuteness in purple. Left : Noiseless Setting. Right: Noisy Setting. Top Row: Histogram Classifier, Bottom Row: 1-Nearest Neighbor} \label{fig:1}
+\end{figure}
+
+Our theoretical results are, by nature, large sample; we next validate how well they apply to the finite sample case by trying them out on a simple example. In particular, we ask the following question:
+
+\begin{quote}
+How does the robustness of non-parametric classifiers change with increasing sample size?
+\end{quote}
+
+This question is considered in the context of two simple non-parametric classifiers -- one nearest neighbor (which is guaranteed to be $r$-consistent) and histograms (which is not). To be able to measure performance with increasing data size, we look at a simple synthetic dataset -- the Half Moons. 
+
+\subsection{Experimental Setup}
+
+\paragraph{Classifiers and Dataset.} We consider two different classification algorithms -- one nearest neighbor (NN) and a Histogram Classifier (HC).  We use the Halfmoon dataset with two settings of the gaussian noise parameter $\sigma$, $\sigma = 0$ (Noiseless) and $\sigma =0.08$ (Noisy). For the Noiseless setting, observe that the data is already $0.1$-separated; for the Noisy setting, we use Adversarial Pruning (Algorithm~\ref{alg:gen}) with parameter $r = 0.1$ for both classification methods.
+
+\paragraph{Performance Measure.} We evaluate robustness with respect to the $\ell_{\infty}$ metric, that is commonly used in the adversarial examples literature. Specifically, for each classifier, we calculate the {\em{empirical astuteness}}, which is the fraction of test examples on which it is astute.
+
+Observe that computing the empirical astuteness of a classifier around an input $x$ amounts to finding the adversarial example that is {\em{closest to}} $x$ according to the $\ell_{\infty}$ norm. For the $1$-nearest neighbor, we do this using the optimal attack algorithm proposed by Yang et. al.~\cite{YRWC19}. For the histogram classifier, we use the optimal attack framework proposed by~\cite{YRWC19}, and show that the structure of the classifier can be exploited to solve the convex program efficiently. Details are in Appendix C.
+
+We use an attack radius of $r = 0.1$ for the Noiseless setting, and $r = 0.09$ for the Noisy setting. For all classification algorithms, we plot the empirical astuteness as a function of the training set size. As a baseline, we also plot their standard accuracy on the test set. 
+
+\subsection{Results}
+
+The results are presented in Figure~\ref{fig:1}; the left two panels are for the Noiseless setting while the two center ones are for the Noisy setting.  
+
+The results show that as predicted by our theory, for the Noiseless setting, the empirical astuteness of nearest neighbors converges to $1$ as the training set grows. For Histogram Classifiers, the astuteness converges to $0.5$ -- indicating that the classifier may grow less and less astute with higher sample size even for well-separated data. This is plausibly because the cell size induced by the histogram grows smaller with growing training data; thus, the classifier that outputs the default label $-1$ in empty cells is incorrect on adversarial examples that are close to a point with $+1$ label, but belongs to a different, empty cell. The rightmost panels in Figure~\ref{fig:1} provide a visual illustration of this process. 
+
+For the Noisy setting, the empirical astuteness of adversarial pruning followed by nearest neighbors converges to $0.8$. For histograms with adversarial pruning, the astuteness converges to $0.7$, which is higher than the noiseless case but still clearly sub-optimal.
+
+\subsection{Discussion}
+
+Our results show that even though our theory is asymptotic, our predictions continue to be relevant in finite sample regimes. In particular, on well-separated data, nearest neighbors that we theoretically predict to be intrinsically robust is robust; histogram classifiers, which do not satisfy the conditions in Theorem~\ref{thm_stone_cons} are not. Our predictions continue to hold for data that is not well-separated. Nearest neighbors coupled with Adversarial
+Pruning continues to be robust with growing sample size, while histograms continue to be non-robust. Thus our theory is confirmed by practice.
+
+\section{Conclusion}
+
+In conclusion, we rigorously analyze when non-parametric methods provide classifiers that are robust in the large sample limit. We provide a general condition that characterizes when non-parametric methods are robust on well-separated data, and show that Adversarial Pruning of~\cite{YRWC19} works on data that is not well-separated. 
+
+Our results serve to provide a set of guidelines that can be used for designing non-parametric methods that are robust and accurate on well-separated data; additionally, we demonstrate that when data is not well-separated, preprocessing by adversarial pruning~\cite{YRWC19} does lead to optimally astute solutions in the large sample limit. 
+
+
+
 
 %\input{chapters/chapter1/macros}
 %\input{chapters/chapter1/introduction}
