@@ -431,11 +431,11 @@ n \geq \frac{888(d+2)\ln \left(\frac{14208(d+2)}{\delta \min(\alpaca,1)^2 p_\alp
 \end{equation} 
 It is clear that for an appropriate constant, we have $n = O \left(\frac{d\ln\frac{d}{\delta\alpaca p_\alpaca}}{\alpaca^2 p_\alpaca} \right)$. Thus, it suffices to show that if Equation \ref{eqn:VC} holds for all $x, r$, then the desired bound,  Equation \ref{eqn:prop_est_works}, does as well. 
 
-To this end, let $x, r$ be arbitrary, and let $b$ be as defined in Algorithm \ref{alg:estimate}. Let $b' = |S \cap B(x, r)|$ be the number of elements from $S$ in $B(x, r)$. Then we have two cases.
+To this end, let $x, r$ be arbitrary, and let $b$ be as defined in Algorithm \ref{alg:estimate1}. Let $b' = |S \cap B(x, r)|$ be the number of elements from $S$ in $B(x, r)$. Then we have two cases.
 
 \textbf{Case 1: $b' \geq b$}
 
-It follows from Algorithm \ref{alg:estimate} that $Est(x, r, S) = \frac{b'}{n}$. We now set $b$ as  \begin{equation}\label{eqn:defining_b}\frac{b}{n} = \frac{400(d+2)\ln\frac{16n}{\delta}}{n\min(\alpaca, 1)^2} = \frac{100\beta_n^2}{\epsilon^2},\end{equation} which clearly obeys the desired asymptotic bound given in Algorithm \ref{alg:estimate}. Let $c = \sqrt{\frac{b'}{n\beta_n^2}}$. Then $b' \geq b$ implies that $c \geq \frac{10}{\min(\alpaca, 1)}$. It follows that \begin{equation}\label{eqn:c_stuff}\frac{c+1}{c^2} \leq \frac{1}{c-1} \leq \frac{\min(\alpaca, 1)}{9}.\end{equation} Substituting Equations \ref{eqn:defining_b} and \ref{eqn:c_stuff} into  Equation \ref{eqn:VC}, we have 
+It follows from Algorithm \ref{alg:estimate1} that $Est(x, r, S) = \frac{b'}{n}$. We now set $b$ as  \begin{equation}\label{eqn:defining_b}\frac{b}{n} = \frac{400(d+2)\ln\frac{16n}{\delta}}{n\min(\alpaca, 1)^2} = \frac{100\beta_n^2}{\epsilon^2},\end{equation} which clearly obeys the desired asymptotic bound given in Algorithm \ref{alg:estimate1}. Let $c = \sqrt{\frac{b'}{n\beta_n^2}}$. Then $b' \geq b$ implies that $c \geq \frac{10}{\min(\alpaca, 1)}$. It follows that \begin{equation}\label{eqn:c_stuff}\frac{c+1}{c^2} \leq \frac{1}{c-1} \leq \frac{\min(\alpaca, 1)}{9}.\end{equation} Substituting Equations \ref{eqn:defining_b} and \ref{eqn:c_stuff} into  Equation \ref{eqn:VC}, we have 
 \begin{equation}\label{eqn:epsilon_lower_bound}
 \begin{split}
 \frac{Est(x, r, S)}{p(B(x, r))} &\geq \frac{\frac{b'}{n}}{\frac{b'}{n} + \beta_n^2 + \beta_n \sqrt{\frac{b'}{n}}} \\
@@ -469,7 +469,7 @@ We begin by bounding $\beta_n^2$ in terms of $p_\epsilon$. We have,
 &= \frac{p_\alpaca \min(\alpaca, 1)^2}{111}.
 \end{split}
 \end{equation}
-Now, let $r_*$ be as defined in Algorithm \ref{alg:estimate}. Then $|S \cap B(x, r_*)| = b$. Our main idea will be to show that $p(B(x, r_*) \leq p_\alpaca$, and then use Equations \ref{eqn:epsilon_lower_bound} and \ref{eqn:epsilon_upper_bound} for $r_*$ (which is possible since $|S \cap B(x, r_*)| = b$) along with the definition of $p_\alpaca$ (Definition \ref{def:regular}) to bound $Est(x, r, S)$ in terms of $p(B(x, r))$. To this end, we have by Equations \ref{eqn:VC} and \ref{eqn:bound_alpha_n} along with the fact that $b = \frac{100\beta_n^2}{\min(\alpaca, 1)^2}$ (Equation \ref{eqn:defining_b}) that 
+Now, let $r_*$ be as defined in Algorithm \ref{alg:estimate1}. Then $|S \cap B(x, r_*)| = b$. Our main idea will be to show that $p(B(x, r_*) \leq p_\alpaca$, and then use Equations \ref{eqn:epsilon_lower_bound} and \ref{eqn:epsilon_upper_bound} for $r_*$ (which is possible since $|S \cap B(x, r_*)| = b$) along with the definition of $p_\alpaca$ (Definition \ref{def:regular}) to bound $Est(x, r, S)$ in terms of $p(B(x, r))$. To this end, we have by Equations \ref{eqn:VC} and \ref{eqn:bound_alpha_n} along with the fact that $b = \frac{100\beta_n^2}{\min(\alpaca, 1)^2}$ (Equation \ref{eqn:defining_b}) that 
 \begin{equation*}
 \begin{split}
 p(B(x, r_*)) &\leq \frac{|S \cap B(x, r_*)|}{n} + \beta_n^2 + \beta_n \sqrt{\frac{|S \cap B(x, r_*)|}{n}} \\
@@ -481,7 +481,7 @@ p(B(x, r_*)) &\leq \frac{|S \cap B(x, r_*)|}{n} + \beta_n^2 + \beta_n \sqrt{\fra
 It follows from Definition \ref{def:regular} that 
 \begin{equation}\label{eqn:using_regular}
 \left(1 + \frac{\alpaca}{3}\right)^{-1}\frac{p(B(x, r_*))r^k}{r_*^k} \leq p(B(x, r)) \leq \left(1 + \frac{\alpaca}{3}\right)\frac{p(B(x, r_*))r^k}{r_*^k}.\end{equation} 
-Finally, by the definition of $Est(x, r, S)$) (Algorithm \ref{alg:estimate}), we have that $Est(x, r, S) = \frac{Est(x, r_*, S)r^k}{r_*^k}$. Combining this with Equation \ref{eqn:using_regular} the definition of $Est(x,r, S)$ (Algorithm \ref{alg:estimate}) along with Equations \ref{eqn:epsilon_lower_bound} and \ref{eqn:epsilon_upper_bound} (which can be safely applied to $r_*$ by reverting to Case 1), we have
+Finally, by the definition of $Est(x, r, S)$) (Algorithm \ref{alg:estimate1}), we have that $Est(x, r, S) = \frac{Est(x, r_*, S)r^k}{r_*^k}$. Combining this with Equation \ref{eqn:using_regular} the definition of $Est(x,r, S)$ (Algorithm \ref{alg:estimate1}) along with Equations \ref{eqn:epsilon_lower_bound} and \ref{eqn:epsilon_upper_bound} (which can be safely applied to $r_*$ by reverting to Case 1), we have
 \begin{equation*}
 \begin{split}
 \frac{Est(x, r, S)}{p(B(x, r))} &= \frac{\frac{Est(x, r_*, S)r^k}{r_*^k}}{p(B(x, r))} \leq \frac{\frac{Est(x, r_*, S)r^k}{r_*^k}\left(1 + \frac{\alpaca}{3}\right)}{\frac{p(B(x, r_*))r^k}{r_*^k}} \\

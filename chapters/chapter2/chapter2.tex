@@ -290,6 +290,8 @@ Thus, for our methods to extend to an arbitrary hypothesis class, we would requi
 \caption{Adversarial-Perceptron}\label{alg:upper_bound}
 \end{algorithm}
 
+\section{Upper Bounds}\label{sec:upper_bound}
+
 In the previous section, we showed that for any algorithm, there is some distribution $\D \in \F_{r, \rho}$ that is difficult (i.e. requires high sample complexity) to learn robustly. A natural follow-up question is: what about distributions for which the margin, $\gamma$ is very large compared to $r$. 
 
 Observe that in Figure \ref{fig:small_margin_robust} the robustness radius $r$ is very close to the margin. In particular, we can find adversarial examples from $S^+$ and $S^-$ that are very close to the decision boundary $f_{rob}$. By contrast, if $\gamma >> r$, then this no longer holds which suggests that better robust sample complexities might be possible.

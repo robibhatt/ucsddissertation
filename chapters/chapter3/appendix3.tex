@@ -135,7 +135,7 @@ We now show a lower bound on the number of oracle calls required for tolerant le
 Let $U: \mathbb{R}^d \to P(\mathbb{R}^d)$ be any perturbation function such that $U(x)$ has finite Lebesgue measure for all $x \in \mathbb{R}^d$. The sampling oracle $\mathcal{O}_U$ inputs any $x \in \mathbb{R}^d$, and outputs a sample $y$ from the induced distribution on $U(x)$ under the Lebesgue measure.
 \end{defn}
 We prove that tolerant learning requires exponentially many calls to the sampling oracle.
-\begin{customprop}{6}
+\begin{customprop}{4.5.3}
 For any $D>10\gamma > 0$, there exists a hypothesis class $\mathcal{H}$ and a set of robustness regions, $U$ such that the following holds. There exist constants $\epsilon$ and $\delta$ such that for any $n > 0$, any learner $L$ on $n$  samples that achieves 
 $$\ell_U(L(S), \cD) \leq \min_{h \in \cH} \ell_{U^\gamma}(h, \cD) + \epsilon$$
 with probability at least $1-\delta$ must make at least $\Omega\left(\left(\frac{D}{\gamma}\right)^d\right)$ calls to the sampling oracle for some valid data distribution $\cD$,

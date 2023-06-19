@@ -213,11 +213,11 @@ We now turn our attention towards designing estimation algorithms over regular d
 
 Luckily, estimating $k$ turns out to be an extremely well studied task, as for most probability distributions, $k$ is a measure of the \textit{intrinsic dimension}. Because there is a wide body of literature in this topic, we will assume from this point that $k$ has been correctly estimated from $S$ using any known algorithm for doing so (for example \cite{BJPR22}). Nevertheless, for completeness, we provide an algorithm with provable guarantees for estimating $k$ (along with a corresponding bound on the amount of needed data) in Appendix \ref{sec:estimating_alpha}.
 
-We now return to the problem of $p(B(x, r))$ for a small value of $r$, and present an algorithm, $Est(x, r, S)$ (Algorithm \ref{alg:estimate}), that estimates $p(B(x, r))$ from an i.i.d sample $S \sim p^n$.
+We now return to the problem of $p(B(x, r))$ for a small value of $r$, and present an algorithm, $Est(x, r, S)$ (Algorithm \ref{alg:estimate1}), that estimates $p(B(x, r))$ from an i.i.d sample $S \sim p^n$.
 
 \begin{algorithm}
    \caption{$Est(x, r, S)$}
-   \label{alg:estimate}
+   \label{alg:estimate1}
 
    \DontPrintSemicolon
    
