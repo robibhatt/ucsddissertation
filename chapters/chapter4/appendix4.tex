@@ -1,888 +1,325 @@
-
-% \twocolumn
-% [\textbf{Local Inferential Privacy through Data Shuffling -- Supplementary Material }]
-
-\graphicspath{{./chapters/chapter4/}}
-\chapter{ }
-
-
-\section{Appendix}\label{app}
-\subsection{Background Cntd.}\label{app:background}
-
-\subsection{Local Inferential Privacy}  \vspace{-0.2cm}
-%introduce pufferfish inferntial log loss 
-%In this section, we introduce some context for inferential privacy in the \ldp setting. 
-%Inferential privacy captures the privacy loss in the face of an informed adversary in a Bayesian framework. 
-Local inferential privacy captures what information a Bayesian adversary \cite{Pufferfish}, with some prior, can learn in the \ldp setting. 
-Specifically, it measures the largest possible ratio between the adversary's posterior and prior beliefs about an individual’s data after observing a mechanism's output .%\footnote{This quantity is identical to the \ldp parameter of the mechanism when\textit{individuals’ data are independent}\cite{sok,}.}.
-\begin{defn}(Local Inferential Privacy Loss \cite{Pufferfish}) Let $\bx=\langle x_1, \cdots, x_n\rangle$ and let $\by=\langle y_1, \cdots, y_n \rangle$ denote the input (private) and output sequences (observable to the adversary) in the \ldp setting. Additionally, the adversary's auxiliary knowledge is modeled by a prior distribution $\mathcal{P}$ on $\mathbf{x}$. The inferential privacy loss for the input sequence $\mathbf{x}$ is given by
-% \vspace{0cm} 
-\begin{equation}
-% \vspace{-0.1cm}
-\small \mathbb{L}_{\calP}(\mathbf{x})=\max_{\substack{i\in [n]\\ a,b \in \calX}}\Bigg(\log\frac{\mathrm{Pr}_{\calP}[\mathbf{y}|x_i=a]}{\mathrm{Pr}_{\calP}[\mathbf{y}|x_i=b]}\Bigg)
-=\max_{\substack{i\in [n]\\ a,b \in \calX}}\Bigg (	\bigg| \log \frac{\mathrm{Pr}_{\calP}[x_i = a | \bf{y} ]}{\mathrm{Pr}_{\calP}[x_i = b | \bf{y}]}
-	- \log \frac{\mathrm{Pr}_{\calP}[x_i = a]}{\mathrm{Pr}_{\calP}[x_i = b]} \bigg|\Bigg)
-\end{equation}
-\label{def:ip}
-\vspace{-1em}
-\end{defn}
-% Using Bayes' theorem, we have\vspace{-0.2cm}
-% \begin{gather*}\small\vspace{-0.4cm} \mathbb{L}_{\calP}(\mathbf{x})=\max_{\substack{i\in [n]\\ a,b \in \calX}}\Bigg (	\bigg| \log \frac{\mathrm{Pr}_{\calP}[x_i = a | \bf{y} ]}{\mathrm{Pr}_{\calP}[x_i = b | \bf{y}]}
-% 	- \log \frac{\mathrm{Pr}_{\calP}[x_i = a]}{\mathrm{Pr}_{\calP}[x_i = b]} \bigg|\Bigg)\vspace{-0.7cm}\end{gather*}
-Bounding  $\mathbb{L}_{\calP}(\mathbf{x})$  would imply
- that the adversary's belief about the value of any $x_i$ does not change by much even after observing the output sequence $\bf{y}$. This means that an informed adversary does not learn much about the individual $i$'s private input upon observation of the entire private dataset $\by$.
-
-Here we define two rank distance measures \begin{defn}[Kendall's $\tau$ Distance] For any two permutations, $\sigma, \pi \in \mathrm{S}_n$, the Kendall's $\tau$
-distance $\textswab{d}_{\tau}(\sigma, \pi)$ counts the number of pairwise disagreements between $\sigma$ and $\pi$, i.e., the
-number of item pairs that have a relative order in one permutation and a different order in
-the other. Formally, 
-\begin{equation}
-\textswab{d}_{\tau}(\sigma,\pi)=\Big| \ \big\{(i,j) : i < j,  \big[\sigma(i) > \sigma(j) \wedge \pi(i) < \pi(j) \big]\\\hspace{2cm} \\
-		\vee \big[\sigma(i) < \sigma(j) \wedge \pi(i) > \pi(j)\big] \big\} \ \Big|\label{eq:kendalltau}
-\end{equation}  
-\label{def:kendall} 
-\end{defn}
-%Equivalently, $d_{\tau}(\sigma, \pi)$ is defined as the number of adjacent swaps to convert$\sigma^{-1}$into $\pi^{-1}$.
-For example, if $\sigma=(1 \:\: 2 \: \: 3 \: \: 4 \:  \: 5 \: \: 6 \: \: 7 \: \: 8 \: 9 \: 10)$ and  $\pi=(1\:2\:3\:\underline{6} \: 5 \: \underline{4}\:7\:8\:9\:10)$, then $\textswab{d}_{\tau}(\sigma,\pi)=3$.
-
- Next, Hamming distance measure is defined as follows.
- 
-\begin{defn}[Hamming Distance] 
-For any two permutations, $\sigma, \pi \in \mathrm{S}_n$, the Hamming distance $\textswab{d}_{H}(\sigma, \pi)$ counts the number of positions in which the two permutations disagree. Formally, 
-\begin{align*}
-    \textswab{d}_H(\sigma, \pi)
-    &= \Big| \big\{ i \in [n] : \sigma(i) \neq \pi(i) \big\} \Big| 
-\end{align*}
-Repeating the above example, if $\sigma=(1 \:\: 2 \: \: 3 \: \: 4 \:  \: 5 \: \: 6 \: \: 7 \: \: 8 \: 9 \: 10)$ and  $\pi=(1 \: 2 \: 3 \: \underline{6} \: 5 \: \underline{4} \: 7 \: 8 \: 9 \: 10)$, then $\textswab{d}_{H}(\sigma,\pi)=2$.
-\end{defn}
-
-\subsection{\name-privacy and the De Finetti attack}
-\label{app:de finetti}
-We now show that a strict instance of \name privacy is sufficient for thwarting any de Finetti attack \cite{definetti} on individuals. The de Finetti attack involves a Bayesian adversary, who, assuming some degree of correlation between data owners, attempts to recover the true permutation from the shuffled data. As written, the de Finetti attack assumes the sequence of sensitive attributes and side information $(x_1, t_1), \dots, (x_n, t_n)$ are \emph{exchangeable}: any ordering of them is equally likely. By the de Finetti theorem, this implies that they are i.i.d. conditioned on some latent measure $\theta$. To balance privacy with utility, the $\bx$ sequence is non-uniformly randomly shuffled w.r.t. the $\bt$ sequence producing a shuffled sequence $\bz$, which the adversary observes. Conditioning on $\bz$ the adversary updates their posterior on $\theta$ (i.e. posterior on a model predicting $x_i | t_i$), and thereby their posterior predictive on the true $\bx$. The definition of privacy in \cite{definetti} holds that the adversary's posterior beliefs are close to their prior beliefs by some metric on distributions in $\calX$, $\delta(\cdot, \cdot)$: 
-\begin{align*}
-    \delta\Big( \Pr[x_i], \Pr[x_i | \bz] \Big) \leq \alpha 
-\end{align*}
-
-We now translate the de Finetti attack to our setting. First, to align notation with the rest of the paper we provide privacy to the sequence of $\ldp$ values $\by$ since we shuffle those instead of the $\bx$ values as in \cite{definetti}. We use max divergence (multiplicative bound on events used in \DP) for $\delta$: 
-\begin{align*}
-    \Pr[y_i \in O] &\leq e^\alpha \Pr[y_i \in O | \bz] \\
-    \Pr[y_i \in O | \bz] &\leq e^\alpha \Pr[y_i \in O]
-\end{align*}
-which, for compactness, we write as 
-\begin{align}
-    \Pr[y_i \in O] \approx_\alpha \Pr[y_i \in O | \bz] \quad. 
-    \label{eq:definetti privacy}
-\end{align}
-We restrict ourselves to shuffling mechanisms, where we only randomize the order of sensitive values. By learning the unordered values $\{y\}$ alone, an adversary may have arbitrarily large updates to its posterior (e.g. if all values are identical), breaking the privacy requirement above. With this in mind, we assume the adversary already knows the unordered sequence of values $\{y\}$ (which they will learn anyway), and has a prior on permutations $\sigma$ allocating values from that sequence to individuals. We then generalize the de Finetti problem to an adversary with an \emph{arbitrary} prior on the true permutation $\sigma$, and observes a randomize permutation $\sigma'$ from the shuffling mechanism. We require that the adversary's prior belief that $\sigma(i) = j$ is close to their posterior belief for all $i,j \in [n]$: 
-\begin{align}
-    \Pr[\sigma \in \Sigma_{i,j} ] \approx_\alpha \Pr[\sigma \in \Sigma_{i,j} | \sigma'] \quad \forall i,j \in [n], \forall \sigma' \in S_n \quad ,
-    \label{eq:definetti privacy II}
-\end{align}
-where $\Sigma_{i,j} = \{\sigma \in S_n : \sigma(i) = j\}$, the set of permutations assigning element $j$ to $\DO_i$. Conditioning on any unordered sequence $\{y\}$ with all unique values, the above condition is necessary to satisfy Eq. \eqref{eq:definetti privacy} for events of the form $O = \{y_i = a\}$, since $\{y_i = a\} = \{\Sigma_{i,j}\}$ for some $j \in [n]$. For any $\{y\}$ with repeat values, it is sufficient since $\Pr[y_i = a]$ is the sum of probabilities of disjoint events of the form $\Pr[\sigma \in \Sigma_{i,k}]$ for various $k \in [n]$ values. 
-
-We now show that a strict instance of \name-privacy satisfies Eq. \eqref{eq:definetti privacy II}. Let $\widehat{\calG}$ be any group assignment such that at least one $G_i \in \widehat{\calG}$ includes all data owners, $G_i = \{1, 2, \dots, n\}$. 
-
-\begin{prope}
-A $(\widehat{\calG}, \alpha)$-\name-private shuffling mechanism $\sigma' \sim \calA$ satisfies  
-\begin{align*}
-    \Pr[\sigma \in \Sigma_{i,j} ] \approx_\alpha \Pr[\sigma \in \Sigma_{i,j} | \sigma']
-\end{align*}
-for all $i,j \in [n]$ and all priors on permutations $\Pr[\sigma]$. 
-\end{prope}
-
-\begin{proof}
-
-\begin{lemma}
-\label{lem:definetti equivalent}
-    For any prior $\Pr[\sigma]$, Eq. \eqref{eq:definetti privacy II} is equivalent to the condition
-    \begin{align}
-        \frac{\sum_{\hat{\sigma} \in \overline{\Sigma}_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] }{
-        \sum_{\hat{\sigma} \in {\Sigma_{i,j}}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] } 
-        \approx_\alpha 
-        \frac{\sum_{\hat{\sigma} \in \overline{\Sigma}_{i,j}} \Pr[\hat{\sigma}] }{
-        \sum_{\hat{\sigma} \in {\Sigma_{i,j}}} \Pr[\hat{\sigma}] }
-        \label{eq:definetti privacy III}
-    \end{align}
-    where the set $\overline{\Sigma}_{i,j}$ is the complement of ${\Sigma}_{i,j}$. 
-\end{lemma}
-Under grouping $\hat{\calG}$, every permutation $\sigma_a \in {\Sigma}_{i,j}$ neighbors every permutation $\sigma_b \in \overline{\Sigma}_{i,j}$, $\sigma_a \approx_{\hat{\calG}} \sigma_b$, for any $i,j$. By the definition of \name-privacy, we have that for any observed permutation $\sigma'$ output by the mechanism: 
-\begin{align*}
-    \Pr[\sigma' | \sigma = \sigma_a] \approx_\alpha \Pr[\sigma' | \sigma = \sigma_b]
-    \quad \forall \sigma_a \in {\Sigma}_{i,j}, \sigma_b \in \overline{\Sigma}_{i,j}, \sigma' \in S_n 
-    \quad .
-\end{align*}
-This implies Eq. \ref{eq:definetti privacy III}. Thus, $(\widehat{\calG}, \alpha)$-\name-privacy implies Eq. \ref{eq:definetti privacy III}, which implies Eq. \ref{eq:definetti privacy II}, thus proving the property. 
-\end{proof}
-
-Using Lemma \ref{lem:definetti equivalent}, we may also show that this strict instance of \name-privacy is \emph{necessary} to block all de Finetti attacks: 
-
-\begin{prope}
-A $(\widehat{\calG}, \alpha)$-\name-private shuffling mechanism $\sigma' \sim \calA$ is necessary to satisfy 
-\begin{align*}
-    \Pr[\sigma \in \Sigma_{i,j} ] \approx_\alpha \Pr[\sigma \in \Sigma_{i,j} | \sigma']
-\end{align*}
-for all $i,j \in [n]$ and all priors on permutations $\Pr[\sigma]$. 
-\end{prope}
-
-\begin{proof}
-If our mechanism $\calA$ is not $(\widehat{\calG}, \alpha)$-\name-private, then for some pair of true (input) permutations $\sigma_a \neq \sigma_b$ and some released permutation $\sigma' \sim \calA$, we have that 
-\begin{align*}
-    \Pr[\sigma' | \sigma_b] \geq e^\alpha \Pr[\sigma' | \sigma_a]\quad. 
-\end{align*}
-Under $\hat{\calG}$, all permutations neighbor each other, so $\sigma_a \approx_{\hat{\calG}} \sigma_b$. Since $\sigma_a \neq \sigma_b$, then for some $i,j \in [n]$, $\sigma_a \in \Sigma_{i,j}$ and $\sigma_b \in \overline{\Sigma}_{i,j}$: one of the two permutations assigns some $j$ to some $\DO_i$ and the other does not. Given this, we may construct a bimodal prior on the true $\sigma$ that assigns half its probability mass to $\sigma_a$ and the rest to $\sigma_b$, 
-\begin{align*}
-    \Pr[\sigma_a] = \Pr[\sigma_b] = \frac{1}{2} \quad .
-\end{align*}
-Therefore, for released permutation $\sigma'$, the RHS of Eq. \ref{eq:definetti privacy III} is 1, and the LHS is 
-\begin{align*}
-    \frac{\sum_{\hat{\sigma} \in \overline{\Sigma}_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] }{
-        \sum_{\hat{\sigma} \in {\Sigma_{i,j}}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] }
-        &= \frac{\nicefrac{1}{2} \Pr[\sigma' | \sigma_b]}{\nicefrac{1}{2} \Pr[\sigma' | \sigma_a]} \\
-        &\geq e^\alpha \quad , 
-\end{align*}
-violating Eq. \ref{eq:definetti privacy III}, thus violating Eq. \ref{eq:definetti privacy II}, and failing to prevent de Finetti attacks against this bimodal prior. 
-\end{proof}
-
-Ultimately, unless we satisfy \name-privacy shuffling the entire dataset, there exists some prior on the true permutation $\Pr[\sigma]$ such that after observing the shuffled $\bz$ permuted by $\sigma'$, the adversary's posterior belief on one permutation is larger than their prior belief by a factor $\geq e^\alpha$. If we suppose that the set of values $\{y\}$ are all distinct, this means that for some $a \in \{y\}$, the adversary's belief that $y_i = a$ is signficantly larger after observing $\bz$ than it was before. 
-
-Now to prove Lemma \ref{lem:definetti equivalent}: 
-\begin{proof}
-\begin{align*}
-    \Pr[\sigma \in \Sigma_{i,j} ] 
-    &\approx_\alpha \Pr[\sigma \in \Sigma_{i,j} | \sigma'] \\
-    \Pr[\sigma \in \Sigma_{i,j} ]
-    &\approx_\alpha \frac{\Pr[\sigma' | \sigma \in \Sigma_{i,j}] \Pr[\sigma \in \Sigma_{i,j} ]}{\sum_{\hat{\sigma} \in S_n} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}]} \\
-    \sum_{\hat{\sigma} \in S_n} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] 
-    &\approx_\alpha \Pr[\sigma' | \sigma \in \Sigma_{i,j}] \\
-    \sum_{\hat{\sigma} \in S_n} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] 
-    &\approx_\alpha \Pr[\sigma \in \Sigma_{i,j}]^{-1} \sum_{\hat{\sigma} \in \Sigma_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] \\
-    \sum_{\hat{\sigma} \in \Sigma_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] +
-    \sum_{\hat{\sigma} \in \overline{\Sigma}_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] 
-    &\approx_\alpha \Pr[\sigma \in \Sigma_{i,j}]^{-1} \sum_{\hat{\sigma} \in \Sigma_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] \\
-    \sum_{\hat{\sigma} \in \overline{\Sigma}_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] 
-    &\approx_\alpha \sum_{\hat{\sigma} \in \Sigma_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] 
-    \Big( \frac{1}{\Pr[\sigma \in \Sigma_{i,j}]} - 1 \Big)  \\
-    \frac{\sum_{\hat{\sigma} \in \overline{\Sigma}_{i,j}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] }{
-    \sum_{\hat{\sigma} \in {\Sigma_{i,j}}} \Pr[\hat{\sigma}] \Pr[\sigma' | \hat{\sigma}] } 
-    &\approx_\alpha 
-    \frac{\sum_{\hat{\sigma} \in \overline{\Sigma}_{i,j}} \Pr[\hat{\sigma}] }{
-    \sum_{\hat{\sigma} \in {\Sigma_{i,j}}} \Pr[\hat{\sigma}] }
-\end{align*}
-\end{proof}
-
-As such, a strict instance of \name-privacy can defend against any de Finetti attack (i.e. for any prior $\Pr[\sigma]$ on permutations), wherein at least one group $G_i \in \calG$ includes all data owners. Furthermore, it is necessary. This makes sense. In order to defend against any prior, we need to significantly shuffle the entire dataset. Without a restriction of priors as in Pufferfish \cite{Pufferfish}, the de Finetti attack (i.e. uninformed Bayesian adversaries) is an indelicate metric for evaluating the privacy of shuffling mechanisms: to achieve significant privacy, we must sacrifice all utility. This in many regards is reminiscent of the no free lunch for privacy theorem established in \cite{Kifer}. As such, there is a need for more flexible privacy definitions for shuffling mechanisms.  
-
-% Consider that an adversary with a prior on $\bx$ can similarly be written as a prior on the unordered set of values $\{x\}$ and on the permutation allocating values from that set to individuals $\sigma | \{x\}$. Any event may be written as 
-% \begin{align*}
-%     \Pr[\bx \in O] = \Pr[\sigma \in \Sigma | \{x\}] \Pr[\{x\} \in X] 
-% \end{align*}
-% for any event $O \subseteq \calX^n$ and corresponding events $\Sigma \subseteq S_n$ and $X \subseteq \calE$, where $\calE$ is the sigma field generated by all sets of $n$ elements in $\calX$. For shuffling mechanisms, we assume the adversary already knows the set of values $\{x\}$ since they will learn them anyway. Formally, the posterior $\Pr[\{x\} \in X | \bz]$ concentrates on the single outcome of $\{x\} = \{z\}$
-
-% De Finetti's privacy definition asks that the prior $\Pr[y_i]$ is close to the posterior in some distance (I use ldp values here which is analagous to the $x_i$ values used in the paper, since they shuffled the $x_i$ directly): 
-% \begin{align*}
-%     \delta( \Pr[y_i], \Pr[y_i | \bz] ) \leq b
-% \end{align*}
-
-% if we use max divergence as this distance, we get that 
-% \begin{align*}
-%     \Pr[y_i = a] \leq \Pr[y_i = a | \bz]
-% \end{align*}
-% for all $i$, all $a \in \calX$, all $\bz \in \calZ^n$. 
-
-% I'll make this next part brief, but I need to write out a longer bit to make it clear. The point is that we can equivalently have an arbitrary prior/posterior on permutations as the De Finetti paper has a prior posterior on models. I have a more mathematical way of writing this but it take a little effort. De Finetti assumes the sequence of underlying $(y_i, t_i)$ are exchangeable. There is some latent model $f_\theta: \calT \rightarrow \calY$ and a prior on $t_i$'s. Conditioning on knowing $f_\theta$ and the prior on $t_i$'s all the data is iid. Otherwise, by observing a few partially shuffled entries, we can update our posterior belief on the model $\theta$, which then updates our posterior predictive on the true permutation of the remaining points. 
-
-% For shuffling mechanisms, we may assume the adversary knows the orderless set of $\by$, $\{y\}$, since they will see it anyway, and then make our proof for all possible $\{y\}$. Our adversary has a prior on true permutations $\sigma$ and they observe a noisy permutation $\sigma'$. We want their prior to be close to their posterior. 
-
-% \begin{align*}
-%     \Pr[\sigma] \leq e^\epsilon \Pr[\sigma | \sigma']
-% \end{align*}
-% and
-% \begin{align*}
-%     e^\epsilon \Pr[\sigma] \geq \Pr[\sigma | \sigma']
-% \end{align*}
-% for all true permutations $\sigma$ and observed permutations $\sigma'$. Note that this is equivalent to the original posterior/prior requirement on $y_i$: a prior on permutations implies that the belief on $y_i$ is a mixture over the believed permutuations. If we have a large divergence on permutations, we can construct a $\{y\}$ to make the divergence on $y_i$ equally large. Can write a more formal version. 
-% From here the rest is relatively simple: 
-
-% \begin{align*}
-%     \Pr[\sigma] &\approx_{\epsilon} \Pr[\sigma | \sigma'] \\
-%     \Pr[\sigma] &\approx_{\epsilon} \Pr[\sigma' | \sigma] \Pr[\sigma] \big/ \Pr[\sigma'] \\
-%     \Pr[\sigma'] &\approx_{\epsilon} \Pr[\sigma' | \sigma] \\
-%     \sum_{\sigma^*} \Pr[\sigma^*] \Pr[\sigma' | \sigma^*] &\approx_{\epsilon} \Pr[\sigma' | \sigma] \\
-% \end{align*}
-
-% So, if we don't have $\Pr[\sigma' | \sigma] \leq e^\epsilon \Pr[\sigma' | \sigma^*]$ for all $\sigma', \sigma, \sigma^*$, then we can construct a prior $\Pr[\sigma^*]$ that will break the above $\approx_\epsilon$. But also, if we have $\Pr[\sigma' | \sigma] \leq e^\epsilon \Pr[\sigma' | \sigma^*]$, then we \emph{can't} construct a prior $\Pr[\sigma^*]$ to break the above $\approx_\epsilon$. 
-
-% The requirement $\Pr[\sigma' | \sigma] \leq e^\epsilon \Pr[\sigma' | \sigma^*]$ is just \name-privacy for $\alpha = \epsilon$ and with at least one group $G_i \in \calG$ being all data owners. 
-
-% The main part that I need to write out more here is explaining how you need a low divergence on permutations to have a low divergence on beliefs on $y_i$. The proof is by showing that one's beliefs on $y_i$ is just a mixture over these permutations. If I can have a high divergence on permutations, I can construct some $\{y\}$ and some pair of distributions on permutations to make the divergence on $y_i$ equally large. 
- 
-\subsection{ Additional Properties of \name-privacy} \label{app:post-processing}
-
-\begin{lemma}[Convexity] \label{lem:convexity}
-Let $\calA_1, \dots \calA_k: \mathcal{Y}^n \mapsto \mathcal{V}$ be a collection of $k$ $(\alpha,\calG)$-\name private mechanisms for a given group assignment $\calG$ on a set of $n$ entities. Let $\calA: \mathcal{Y}^n \mapsto \mathcal{V}$ be a convex combination of these $k$ mechanisms, where the probability of releasing the output of mechanism $\calA_i$ is $p_i$, and $\sum_{i=1}^k p_i = 1$. $\calA$ is also $(\alpha,\calG)$-\name private w.r.t. $\calG$. 
-\end{lemma}
-\begin{proof}
-For any $(\sigma, \sigma') \in \mathrm{N}_\calG$ and $\by \in \calY$: 
-\begin{align*}
-    \mathrm{Pr} [\calA \big( \sigma( \by) \big) \in O]
-    &= \sum_{i=1}^k p_i \mathrm{Pr} [\calA_i \big( \sigma( \by) \big) \in O] \\
-    &\leq e^\alpha \sum_{i=1}^k p_i \mathrm{Pr} [\calA_i \big( \sigma'( \by) \big) \in O] \\
-    &=  \mathrm{Pr} [\calA \big( \sigma'( \by) \big) \in O]
-\end{align*}
-\end{proof}
-
-% For a given group assignment $\calG$ on a set of $n$ entities and a privacy parameter $\alpha \in \R_{\geq0}$, a randomized  mechanism $\calA: \mathcal{Y}^n \mapsto \mathcal{V} $ is $(\alpha,\mathcal{G})$-\name~private if for all $\mathbf{y} \in \mathcal{Y}^n$ and neighboring permutations $\sigma, \sigma' \in \mathrm{N}_\calG$ and any subset of output $O\subseteq \mathcal{V}$, we have\vspace{-0.2cm} 
-% \begin{gather*} \vspace{-0.5cm}
-%     \mathrm{Pr}[\calA\big(\sigma(\mathbf{y})\big) \in O] \leq e^\alpha \cdot \mathrm{Pr}\big[\calA\big(\sigma'(\mathbf{y})\big) \in O \big] \numberthis \label{eq:privacy} \vspace{-0.2cm}
-% \end{gather*}
-% %where $\bz=\pi(\by)=\langle y_{\pi(1)},\cdots, y_{\pi(n)}\rangle, \pi \in \mathrm{S}_n$
-%  $\sigma(\mathbf{y})$ and $\sigma'(\mathbf{y})$  are defined to be \textit{neighboring sequences}. 
-
-\begin{thm}[Post-processing]\label{theorem:post}
-Let \scalebox{0.9}{$\mathcal{A}: \mathcal{Y}^n \mapsto \mathcal{V}$} be  $(\alpha,\calG)$-\name private for a given group assignment $\calG$ on a set of $n$ entities. Let \scalebox{0.9}{$f : \mathcal{V} \mapsto \mathcal{V}'$} be an
-arbitrary randomized mapping. Then \scalebox{0.9}{$f \circ \mathcal{A} : \mathcal{Y}^n \mapsto \mathcal{V}'$} is also $(\alpha,\calG)$-\name private. \vspace{-0.2cm}\end{thm}
-
-\begin{proof}
-Let $g: \mathcal{V}\rightarrow \mathcal{V}'$ be a deterministic, measurable function. For any output event $\mathcal{Z}\subset \mathcal{V}'$, let $\mathcal{W}$ be its preimage: \newline $\mathcal{W}=\{v \in \mathcal{V}| g(v) \in \mathcal{Z}\}$. Then, for any $(\sigma, \sigma') \in \mathrm{N}_\calG$,
-\begin{align*}
-    \mathrm{Pr}\Big[g\Big(\calA\big(\sigma(\by)\big)\Big)\in \mathcal{Z}\Big] 
-    &= \mathrm{Pr}\Big[\calA\big(\sigma(\by)\big)\in \mathcal{W}\Big] \\ 
-    &\leq e^{\alpha} \cdot \mathrm{Pr}\Big[\calA\big(\sigma'(\by)\big)\in \mathcal{W}\Big]\\ 
-    &=e^{\alpha}\cdot \mathrm{Pr}\Big[g\Big(\calA\big(\sigma'(\by)\big)\Big)\in \mathcal{Z}\Big] 
-\end{align*}
-This concludes our proof because any randomized mapping
-can be decomposed into a convex combination of measurable, deterministic functions \cite{Dwork}, and as Lemma \ref{lem:convexity} shows, a convex combination of $(\alpha,\calG)$-\name private mechanisms is also $(\alpha,\calG)$-\name private. 
-\end{proof}
-
-\begin{thm}[Sequential Composition] \label{theorem:seq}
-If $\calA_1$ and $\calA_2$ are $(\alpha_1, \calG)$- and $(\alpha_2, \calG)$-\name private mechanisms, respectively, that use independent randomness, then releasing the outputs $\big( \calA_1(\by), \calA_2(\by) \big)$ satisfies $(\alpha_1+\alpha_2, \calG)$-\name privacy. 
-\end{thm}
-\begin{proof}
-We have that $\calA_1: \calY^n \rightarrow \mathcal{V}'$ and $\calA_1: \calY^n \rightarrow \mathcal{V}''$ each satisfy \name-privacy for different $\alpha$ values. Let $\calA:\calY^n \rightarrow (\mathcal{V}' \times \mathcal{V}'')$ output $\big(\calA_1(\by), \calA_2(\by)\big)$. Then, we may write any event $\mathcal{Z} \in (\mathcal{V}' \times \mathcal{V}'')$ as $\mathcal{Z}' \times \mathcal{Z}''$, where $\mathcal{Z}' \in \mathcal{V}'$ and $\mathcal{Z}'' \in \mathcal{V}''$. We have for any $(\sigma, \sigma') \in \mathrm{N}_\calG$, 
-\begin{align*}
-    \mathrm{Pr} \big[ \calA\big( \sigma(\by) \big)  &\in \mathcal{Z} \big]  
-    = \mathrm{Pr} \big[ \big(\calA_1\big( \sigma(\by) \big) , \calA_2\big( \sigma(\by) \big) \big) \in \mathcal{Z} \big] \\
-    &= \mathrm{Pr} \big[ \{\calA_1\big( \sigma(\by) \big)  \in \mathcal{Z}'\} \cap \{\calA_2\big( \sigma(\by) \big)   \in \mathcal{Z}'' \} \big]  \\
-    &= \mathrm{Pr} \big[ \{\calA_1\big( \sigma(\by) \big)  \in \mathcal{Z}'\} \big] 
-    \mathrm{Pr} \big[ \{\calA_2\big( \sigma(\by) \big)   \in \mathcal{Z}'' \} \big] \\
-    &\leq e^{\alpha_1 + \alpha_2}
-    \mathrm{Pr} \big[ \{\calA_1\big( \sigma'(\by) \big)  \in \mathcal{Z}'\} \big] 
-    \mathrm{Pr} \big[ \{\calA_2\big( \sigma'(\by) \big)   \in \mathcal{Z}'' \} \big] \\
-    &= e^{\alpha_1 + \alpha_2} \cdot 
-    \mathrm{Pr} \big[ \calA\big( \sigma'(\by) \big)  \in \mathcal{Z} \big] 
-\end{align*}
-\end{proof}
-
-% Proof of Lemma \ref{lemma:LDP} \\
-
-% \textbf{Lemma \ref{lemma:LDP}} \emph{
-% An $\epsilon$-\ldp mechanism is $(k\epsilon, \calG)$-\name~ private for any group assignment $\calG$ such that $
-%         k \geq \max_{G_i \in \calG} |G_i|
-% $
-% }
-% \begin{proof}
-% This follows from $k$-group privacy \cite{Dwork}. $\by$ are $\varepsilon$-LDP outputs $\calA_{\text{LDP}}(\bx)$ from input sequence $\bx$. For any $\sigma \approx_{G_i} \sigma'$, we know by definition that $\sigma(j) = \sigma'(j)$ for all $j \notin G_i$. As such, the permuted sequences $\sigma(\bx)_j = \sigma'(\bx)_j$ for all $j \notin G_i$, and differ in at most $|G_i|$ entries. In other words, 
-% \begin{align*}
-%     \textswab{d}_H \big(\sigma(\bx), \sigma'(\bx)\big) \leq |G_i| 
-% \end{align*}
-% Using this fact, we have from the $k$-group property of LDP that 
-% \begin{align*}
-%     \mathrm{Pr}\big[ \calA_{\text{LDP}} \big( \sigma(\bx) \big) \in O \big] 
-%     \leq e^{|G_i| \epsilon} \mathrm{Pr}\big[ \calA_{\text{LDP}} \big( \sigma'(\bx) \big) \in O \big] 
-% \end{align*}
-% and thus if $k \geq \max_{G_i \in \calG} |G_i|$, 
-% \begin{align*}
-%     \mathrm{Pr}\big[ \calA_{\text{LDP}} \big( \sigma(\bx) \big) \in O \big] 
-%     \leq e^{k \epsilon} \mathrm{Pr}\big[ \calA_{\text{LDP}} \big( \sigma'(\bx) \big) \in O \big] 
-% \end{align*}
-% for all $(\sigma, \sigma') \in \mathrm{N}_\calG$. 
-% \end{proof}
-
-\subsection{Proof for Thm. \ref{thm: semantic guarantee}}\label{app:thm:semantic}
-\label{app:bayesian proof} 
-\textbf{Theorem \ref{thm: semantic guarantee}} 
-\emph{
-For a given group assignment $\calG$ on a set of $n$ data owners, if a shuffling mechanism $\calA:\calY^n\mapsto \calY^n$ is $(\alpha,\calG)$-\name private, then for each data owner $\DO_i, i \in [n]$, %\vspace{-0.1cm}
-\begin{align*}
-   \max_{\substack{i\in [n]\\ a,b \in \calX}} \bigg|\log \frac{\Pr_\calP [x_i = a | \bz, \{y_{G_i}\},\by_{\overline{G}_i}]}{\Pr_\calP [x_i = b | \bz, \{y_{G_i}\},\by_{\overline{G}_i}]} - \log \frac{\Pr_\calP [x_i = a | \{y_{G_i}\},\by_{\overline{G}_i}]}{\Pr_\calP [x_i = b | \{y_{G_i}\},\by_{\overline{G}_i}]} \bigg| \leq \alpha  %\vspace{-0.5cm}
-\end{align*}
-for a prior distribution $\calP$, where \scalebox{0.9}{$\bz=\calA(\by)$} and \scalebox{0.9}{$\by_{\overline{G}_i}$} is the noisy sequence for data owners outside \scalebox{0.9}{$G_i$}.
-}
-\begin{proof}
-We prove the above by bounding the following equivalent expression for any $i \in [n]$ and $a, b \in \calX$. 
-\begin{align*}
-     &\frac{\Pr_\calP[\bz | x_i=a, \{y_{G_i}\}, \by_{\overline{G}_i}]}{\Pr_\calP [\bz | x_i=b, \{y_{G_i}\}, \by_{\overline{G}_i}]}\\
-     &= \frac{\int \Pr_\calP [\by | x_i = a, \{y_{G_i}\}, \by_{\overline{G}_i}] \Pr_\calA[\bz | \by] d\by}{\int \Pr_\calP [\by | x_i = b, \{y_{G_i}\}, \by_{\overline{G}_i}] \Pr_\calA[\bz | \by] d\by} \\
-     &= \frac{\sum_{\sigma \in \mathrm{S}_r} \Pr_\calP[ \sigma(\by_{G_i}^*) | x_i = a, \by_{\overline{G}_i}] \Pr_\calA [\bz | \sigma(\by_{G_i}^*), \by_{\overline{G}_i}] }
-     {\sum_{\sigma \in \mathrm{S}_r} \Pr_\calP[ \sigma(\by_{G_i}^*) | x_i = b, \by_{\overline{G}_i}] \Pr_\calA [\bz | \sigma(\by_{G_i}^*), \by_{\overline{G}_i}]} \\
-     &\leq \max_{\{ \sigma, \sigma' \in \mathrm{S}_r\}}
-     \frac{ \Pr_\calA [\bz | \sigma(\by_{G_i}^*), \by_{\overline{G}_i}]}{ \Pr_\calA [\bz | \sigma'(\by_{G_i}^*), \by_{\overline{G}_i}]}  \\
-     &\leq \max_{\{ \sigma, \sigma' \in \mathrm{N}_{G_i}\}}
-     \frac{\Pr_\calA[\bz | \sigma(\by)]}{\Pr_\calA[\bz | \sigma'(\by)]}  \\
-     &\leq e^\alpha 
-\end{align*}
-The second line simply marginalizes out the full noisy sequence $\by$. The third line reduces this to a sum over permutations of of $\by_{G_i}$, where $r = |G_i|$ and $\by^*_{G_i}$ is any fixed permutation of values $\{y_{G_i}\}$. This is possible since we are given the values outside the group, $\by_{\overline{G}_i}$, and the unordered set of values inside the group, $\{y_{G_i}\}$. Note that the permutations $\sigma$ written here are possible permutations of the \ldp input, not permutations output by the mechanism applied to the input as sometimes written in other parts of this document. 
-
-The fourth line uses the fact that the numerator and denominator are both convex combinations of $\Pr_\calA [\bz | \sigma(\by_{G_i}^*), \by_{\overline{G}_i}]$ over all $\sigma \in \mathrm{S}_r$. 
-
-The fifth line uses the fact that for any $\by_{\overline{G}_i}$, $$(\sigma(\by_{G_i}^*), \by_{\overline{G}_i}) \approx_{G_i} (\sigma'(\by_{G_i}^*), \by_{\overline{G}_i}) \ . $$
-This allows a further upper bound over all neighboring sequences w.r.t. $G_i$, and thus over any permutation of $\by_{\overline{G}_i}$, as long as it is the same in the numerator and denominator. 
-\end{proof}
-
-\paragraph{Discussion}
-The above Bayesian analysis measures what can be learned about $\DO_i$'s $x_i$ from observing the private release $\bz$ relative to some other known information (the conditioned information). 
-%With \ldp alone, we condition on every other data owner's private value $x_j$. This implies that releasing the private sequence $\by$ cannot provide much more information about $x_i$ than releasing every other $\DO_j$'s $x_j$ would. So, only modest information unique to $x_i$ can be garnered by any Bayesian adversary. For Alice, this may be a concern, since making inferences on her disease state from those of her household is indeed a privacy violation. 
-Under \name-privacy, we condition on the bag of \ldp values in Alice's group $\{y_{G_i}\}$ as well as the sequence (order and value) of $\ldp$ values outside her group $\by_{\overline{G_i}}$. This implies that releasing the shuffled sequence $\bz$ cannot provide much more information about Alice's $x_i$ than would releasing the \ldp values outside her neighborhood (her group) and the unordered bag of \ldp values inside her neighborhood, regardless of the adversary's prior knowledge $\calP$. This is a communicable guarantee: if Alice feels comfortable with the data collection knowing that her entire neighborhood's responses will be uniformly shuffled together (including those of her household), then she ought to be comfortable with \name-privacy. Now, we have to provide this guarantee to Bob, a neighbor of Alice, as well as Luis, a neighbor of Bob but \textit{not} of Alice. Thus, Bob, Alice and Luis have \textit{distinct} and \textit{overlapping} groups (neighborhoods). Hence, the trivial solution of uniformly shuffling the noisy responses of every group separately does not work in this case. % Of course, we could instead simply shuffle Alice's neighborhood uniformly, but we could not do this for each data owner's group while still maintaining utility -- the analyst can still estimate disease prevalence within neighborhoods and districts. With overlapping groups this may require shuffling the entire dataset uniformly. 
-\name-privacy, however, offers the above guarantee to each user (knowing that their entire neighborhood is \textit{nearly} uniformly shuffled) while still maintaining utility (estimate disease prevalence within neighborhoods). Semantically, this is very powerful, since it implies that the noisy responses specific to one's household cannot be leveraged to infer one's disease state $x_i$. %The adversary can learn about $x_i$ from the disease prevalence outside Alice's neighborhood and, on average, inside her neighborhood, but not much beyond that. 
-
-% For a given group assignment $\calG$ on a set of $n$ data owners, if a shuffling mechanism $\calA:\calY^n\mapsto \calY^n$ is $(\alpha,\calG)$-\name private, then for each data owner $\DO_i, i \in [n]$, we have 
-% \begin{align}
-%     \mathbb{L}^{\sigma}_{\mathcal{P}}(\bx)
-%     =\max_{\substack{i\in [n]\\ a,b \in \calX}}\Big|\log \frac{\Pr_\calP[\bz | x_i=a, \{y_{G_i}\}]}{\Pr_\calP [\bz | x_i=b, \{y_{G_i}\}]} \Big| 
-%     \leq \alpha  
-% \end{align}
-% for any prior distribution $\calP$ such that $(x_{i},\{y_{G_i}\}) \perp \!\!\! \perp \by_{\overline{G}_i}|\calP$ where $\bz=\calA(\by)$ and $\by_{\overline{G}_i}$ is the (ordered and noisy) data sequence for all data owners outside $G_i$. 
-
-% \begin{align*}
-%      &\frac{\Pr_\calP[\bz | x_i=a, \{y_{G_i}\}]}{\Pr_\calP [\bz | x_i=b, \{y_{G_i}\}]}\\
-%      &= \frac{\int \Pr_\calP [\by | x_i = a, \{y_{G_i}\}] \Pr_\calA[\bz | \by] d\by}{\int \Pr_\calP [\by | x_i = b, \{y_{G_i}\}] \Pr_\calA[\bz | \by] d\by} \\
-%      &= \frac{\int \textcolor{red}{\Pr_\calP [\by_{\overline{G}_i} | x_i = a, \by_{G_i}]} 
-%      \Pr_\calP [\by_{G_i} | x_i = a, \{y_{G_i}\}] 
-%      \Pr_\calA[\bz | \by] d\by}
-%      {\int \textcolor{red}{\Pr_\calP [\by_{\overline{G}_i} | x_i = b, \by_{G_i}]}
-%      \Pr_\calP [\by_{G_i} | x_i = b, \{y_{G_i}\}]
-%      \Pr_\calA[\bz | \by] d\by} \\
-%      &= \frac{\int  \textcolor{red}{\Pr_\calP [\by_{\overline{G}_i} ]} \sum_{\sigma \in \mathrm{S}_m} \ \Pr_\calP [\by_{G_i} = \sigma(\{y_{G_i}\}) | x_i = a]  \ \Pr_\calA[\bz | \by] d\by_{\overline{G}_i}}
-%      {\int  \textcolor{red}{\Pr_\calP [\by_{\overline{G}_i} ]} \sum_{\sigma \in \mathrm{S}_m} \ \Pr_\calP [\by_{G_i} = \sigma(\{y_{G_i}\}) | x_i = b]  \ \Pr_\calA[\bz | \by]  d\by_{\overline{G}_i}} \\
-%      &\leq \sup_{ \by_{\overline{G}_i}} \frac{\sum_{\sigma \in \mathrm{S}_m} \ \Pr_\calP [\by_{G_i} = \sigma(\{y_{G_i}\}) | x_i = a]  \ \Pr_\calA[\bz | \by]}
-%      {\sum_{\sigma \in \mathrm{S}_m} \ \Pr_\calP [\by_{G_i} = \sigma(\{y_{G_i}\}) | x_i = b]  \ \Pr_\calA[\bz | \by]} \\
-%      &\leq \max_{\{ \sigma(\by), \sigma'(\by) : \sigma, \sigma' \in N_{G_i}\}}
-%      \frac{\Pr_\calA[\bz | \sigma(\by)]}{\Pr_\calA[\bz | \sigma'(\by)]} \leq e^\alpha 
-% \end{align*}
-
-% The terms in red highlight the step where we can play with independence. The simplest assumption to add is that $\bx_{G_i} \perp \bx_{\overline{G}_i} | \calP$. We have to change what we currently have -- I had forgotten why I had changed it previously. This is close, though. 
-
-% It's straightforward to see how we could also just condition on knowing $\by_{\overline{G}_i}$, and that would take care of the red terms. 
-
-\subsection{Proof of Theorem \ref{thm: decision theoretic}} 
-
-% \textbf{Theorem \ref{thm: decision theoretic}} \emph{
-%   For $\mathcal{A}(\mathcal{M}(\bx))=\bz$ where $\mathcal{M}(\cdot)$ is $\epsilon$-\ldp and $\mathcal{A}(\cdot)$ is $\alpha$ - \name private, we have  
-% %  \begin{align*}
-% %      \Pr[\calA(\bx) = \bz, \sigma(H) \cap I < l]
-% %      \geq \beta(r,k, l) e^{-(2k \epsilon + \alpha)} \Pr[\calA(\bx) = \bz, \sigma(I) \geq H]
-% %  \end{align*}
-%  \begin{align*}
-%      \Pr[\mathcal{D}_{Adv} \text{ loses}] \geq \binom{r-k}{k} e^{-(2k\epsilon+\alpha)} \cdot \Pr[\mathcal{D}_{Adv} \text{ wins}]
-%  \end{align*}
-%  for any input subgroup $I \subset G_i, r = |G_i|$ and  $k < r/2$. 
+\graphicspath{{./chapters/chapter3/}}
+%\newtheorem*{rep@theorem}{\rep@title}
+%\newcommand{\newreptheorem}[2]{%
+%\newenvironment{rep#1}[1]{%
+% \def\rep@title{#2 \ref{##1}}%
+% \begin{rep@theorem}}%
+% {\end{rep@theorem}}}
+%\makeatother
+%%\newtheorem{thm}{Theorem}
+%\newreptheorem{thm}{Theorem}
+%%\newtheorem{lem}[thm]{Lemma}
+%\newreptheorem{lem}{Lemma}
+%\newtheorem{prop}[thm]{Proposition}
+%\newreptheorem{prop}{Proposition}
+%%\newtheorem{cor}[thm]{Corollary}
+%\newreptheorem{cor}{Corollary}
+%\newtheorem{claim}{Claim}
+%
+%\newtheorem{innercustomgeneric}{\customgenericname}
+%\providecommand{\customgenericname}{}
+%\newcommand{\newcustomtheorem}[2]{%
+%  \newenvironment{#1}[1]
+%  {%
+%   \renewcommand\customgenericname{#2}%
+%   \renewcommand\theinnercustomgeneric{##1}%
+%   \innercustomgeneric
 %  }
- 
-%  \begin{proof}
-%  We first focus on deterministic adversaries and then expand to randomized adversaries afterwards using the fact that randomized adversaries are mixtures of deterministic ones. 
+%  {\endinnercustomgeneric}
+%}
+%
+%\newcustomtheorem{customthm}{Theorem}
+%\newcustomtheorem{customlemma}{Lemma}
+%\newcustomtheorem{customprop}{Proposition}
+%
+%\newcommand{\defref}[1]{Definition~\ref{#1}}
+%\newcommand{\tabref}[1]{Table~\ref{#1}}
+%\newcommand{\figref}[1]{Fig.~\ref{#1}}
+%\newcommand{\eqnref}[1]{\text{Eq.}~(\ref{#1})}
+%\newcommand{\secref}[1]{\textnormal{Section}~\ref{#1}}
+%\newcommand{\appref}[1]{Appendix \ref{#1}}
+%\newcommand{\stepref}[1]{Step \ref{#1}}
+%% \newcommand{\appref}[1]{the Appendix} % for short version of the paper
+%\newcommand{\thmref}[1]{Theorem~\ref{#1}}
+%\newcommand{\corref}[1]{Corollary~\ref{#1}}
+%\newcommand{\propref}[1]{Proposition~\ref{#1}}
+%\newcommand{\lemref}[1]{Lemma~\ref{#1}}
+%\newcommand{\conref}[1]{Condition~\ref{#1}}
+%\newcommand{\assref}[1]{Assumption~\ref{#1}}
+%%\newcommand{\algref}[1]{Algorithm~\ref{#1}}
+%\newcommand{\egref}[1]{Example~\ref{#1}}
+%\newcommand{\algoref}[1]{Algorithm~\ref{#1}}
+%
+%\newcommand{\op}[1]{\operatorname{#1}}
+%\newcommand{\paren} [1] {\ensuremath{ \left( {#1} \right) }}
+%\newcommand{\parenb} [1] {\ensuremath{ \big( {#1} \big) }}
+%\newcommand{\bigparen} [1] {\ensuremath{ \Big( {#1} \Big) }}
+%\newcommand{\biggparen} [1] {\ensuremath{ \bigg( {#1} \bigg) }}
+%\newcommand{\Biggparen} [1] {\ensuremath{ \Bigg( {#1} \Bigg) }}
+%\newcommand{\bracket}[1]{\left[#1\right]}
+%\newcommand{\tuple}[1]{\ensuremath{\left\langle #1 \right\rangle}}
+%%\newcommand{\set}[1]{\ensuremath{\left\{#1\right\}}}
+%\newcommand{\curlybracket}[1]{\ensuremath{\left\{#1\right\}}}
+%\newcommand{\norm}[2]{\ensuremath{\left\langle#1,\:#2\right\rangle_{\cH_{\rK}}}}
+%\newcommand{\normg}[2]{\ensuremath{\left\langle#1,\:#2\right\rangle}}
+%\newcommand{\condcurlybracket}[2]{\ensuremath{\left\{#1\left\lvert\:#2\right.\right\}}}
+%\newcommand{\inmod}[1]{\ensuremath{\left\lvert\left\lvert#1\right\rvert\right\rvert}}
+%\newcommand{\boldalpha}{\ensuremath{\boldsymbol{\alpha}}}
 
-% Our adversary $\mathcal{D}_{Adv}$ is then defined by a deterministic decision function $\eta: \calY^n \rightarrow [n]^k$. Upon observing $\bz$, $\eta(\bz)$ selects $k$ indices in $\bz$ which it believes originated from $I \subset G_i$. 
- 
-%  In the following, let $\Pr_{\bz}$ be the probability of events conditioned on the shuffled output sequence $\bz$, where randomness is over the $\epsilon$-\ldp mechanism $\mathcal{M}$ and the $\alpha$-\name-private shuffling mechanism $\calA$. \footnote{As an abuse of notation, we assume the output space of the \ldp randomizers, $\calY$, have outcomes with non-zero measure e.g. randomized response. The following analysis can be expanded to continuous outputs (with outcomes of zero measure) by simply replacing the output sequence $\bz \in \calY^n$ with an output event $\mathbf{Z} \subseteq \calY^n$.}
- 
-%  The adversary wins if it reidentifies all of the \ldp values originating from $I$. Letting $H = \eta(\bz)$ be the indices of elements in $\bz$ selected by $\eta$, we have that 
-%  \begin{align*}
-%      \Pr_{\bz} [\eta(\bz) \text{ wins}] = \Pr_{\bz} [\sigma(H) = I]
-%  \end{align*}
-%  where $\sigma$ is the shuffling permutation produced by $\calA$, $\bz = \sigma(\by)$ i.e. $z_i = y_{\sigma(i)}$. Concretely, this is equivalent to $\DO_i$ releasing $\DO_{\sigma(i)}$'s \ldp response. Since the permutation and \ldp outptus are randomized, there remains a significant probability that $\sigma(H) \cap I = \emptyset$ i.e. not a single element in $H$ originated from $I$ and $\calA (\mathcal{M}(\bx))$ still output the sequence $\bz$. 
- 
-%  We may rewrite the above probability by marginalizing out all possible $\ldp$ sequences $\by$. Conditioning on the output sequence $\bz$, the only possible \ldp sequences $\by$ are permutations of $\bz$. Note that the probability of any sequence $\by$ is determined by the input $\bx$ and the \ldp mechanism $\mathcal{M}$:  
-%  \begin{align*}
-%      \Pr_{\bz} [\sigma(H) = I]
-%      &= \sum_{\sigma \in \mathrm{S}^n}
-%      \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ] \Pr[\sigma(H) = I  | \by, \sigma] / \Pr[\bz] \\
-%      &= \sum_{\sigma \in \mathrm{S}^n}
-%      \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ] \mathbf{1}\{ \sigma(H) = I  \} / \Pr[\bz]
-%  \end{align*}
-%  Note that $\Pr_\bz [\sigma | \by] = \Pr_\bz [\sigma]$ for the mallows mechanism, which chooses its permutations independently of $\by$. Now consider when $\eta(\bz)$ loses. By similar arguments as above: 
-% \begin{align*}
-%     \Pr_\bz[\eta(\bz) \text{ loses}]
-%     &= \Pr_\bz[\sigma(\bz) \cap I = \emptyset] \\
-%     &= \sum_{\sigma \in \mathrm{S}^n}
-%      \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ] \mathbf{1}\{ \sigma(H) \cap I = \emptyset  \} / \Pr[\bz]
-% \end{align*}
-% % Now, consider the set of permutations $\sigma$ such that $\eta$ reidentifies exactly $s$ \ldp responses from subgroup $I$. Let 
-% % \begin{align*}
-% %     C(s) &= \{ \sigma : | \sigma(H) \cap I | = s \} \\
-% %     C_\emptyset &= \{ \sigma : \sigma(H) \cap I = \emptyset \} 
-% % \end{align*}
-% % Our argument centers on the following lemma
+\def\ind{\mathbbm{1}}
+\def\oc{Online\_Cluster}
+\def\ocns{No\_Sub\_Cluster}
+\def\mem{\mathcal M}
+\def\E{\mathbb{E}}
+\def\R{\mathbb{R}}
+\def\OC{\text{OC}}
+\def\cH{\mathcal H}
+\def\reals{\mathbb{R}}
+\def\cD{\mathcal D}
+\def\Ev{\mathbb{E}}
+\def\cO{\mathcal O}
+\def\cX{\mathcal X}
+\def\cU{\mathcal U}
+\def\cM{\mathcal M}
 
-% Proof of the main theorem follows from the simple fact that there are many more permutations where $\eta(\bz)$ loses and they are close in probability to those where $\eta(\bz)$ wins. 
 
-% \begin{lemma}
-% Let $C = \{\sigma \in \mathrm{S}^n : \sigma(H) = I\}$. For every $\sigma \in C$, we may construct a set of $\binom{r-k}{k}$ permutations $E(\sigma)$ such that
-% \begin{enumerate}
-%     \item $E(\sigma_a) \cap E(\sigma_b) = \emptyset$ for any pair of permutations $\sigma_a, \sigma_b \in C$
-%     \item $\sigma^{'-1} \approx_{G_i} \sigma^{-1}$ for all $\sigma' \in E(\sigma)$ 
-%     \item $\Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)] \leq e^{2k\epsilon} \Pr [\calA(\bx) = \by = \sigma^{'-1}(\bz)]$ for any $\sigma' \in E(\sigma)$
-% \end{enumerate}
-% \end{lemma}
-% \begin{proof}
-% For any permutation $\sigma \in C$, we construct $E(\sigma)$ by first taking its inverse permutation $\sigma^{-1}$. We know that $\sigma^{-1}(I) = H$ by definition. We then construct the permutations of $E(\sigma)$ by swapping the elements $\sigma^{-1}(I)$ with the elements $\sigma^{-1}(J)$ for any subset of $k$ elements outside $I$ but still in $G_i$, $J \subset G_i : J \cap I = \emptyset$, while preserving the relative ordering within $\sigma^{-1}(I)$ and within $\sigma^{-1}(J)$. There are $\binom{r-k}{k}$ such subsets. 
 
-% On the first point, we know that no one permutation could be in both $E(\sigma_a)$ and in $E(\sigma_b)$ since the above operation is reversible (swap the elements $H$ back into position $I$ while preserving order). 
+\chapter{Appendix for Chapter 4}
 
-% On the second point, we only swapped elements within group $G_i$ to determine $\sigma^{'-1}$ from $\sigma^{-1}$, so by definition they are neighboring on $G_i$. 
+\section{Details for the proof of Theorem \ref{thm:lower_bound1}}\label{sec:lower_bound_proof}
 
-% On the third point, the sequence $\by = \sigma^{-1}(\bz)$ only differs from $\sigma^{'-1}(\bz)$ on at most $2k$ indices.  
-% \end{proof}
-
-% Using the above lemma we have that 
-% \begin{align*}
-%     \frac{\Pr_\bz[\eta(\bz) \text{ loses}]}{\Pr_\bz[\eta(\bz) \text{ wins}]}
-%     &\geq \frac{ \sum_{\sigma \in \mathrm{S}^n} \sum_{\sigma' \in E(\sigma)} \Pr [\calA(\bx) = \by = \sigma^{'-1}(\bz)]  \Pr [ \sigma' | \by ] }
-%     { \sum_{\sigma \in \mathrm{S}^n} \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ] } \\
-%     &\geq \max_{\sigma \in \mathrm{S}^n} \frac{\sum_{\sigma' \in E(\sigma)} \Pr [\calA(\bx) = \by = \sigma^{'-1}(\bz)]  \Pr [ \sigma' | \by ]}
-%     {\Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ]} \\
-%     &\geq \binom{r-k}{k}e^{-(2k\epsilon + \alpha)}
-% \end{align*}
-% Where the final line comes from the fact 3 of the Lemma and from the fact that $\sigma^{-1}(\by)$ and $\sigma^{'-1}(\by)$ are neighboring (fact 2 of the Lemma), so the probability of the \name-private shuffler producing the permutations needed to achieve $\bz$, $\sigma$ and $\sigma'$, are close by a factor of $e^-\alpha$. 
-
-% Since this holds conditionally for each $\bz$, it holds marginally across all $\bz$. Furthermore, we may state any randomized adversary as a mixture of deterministic adversaries $\eta(\bz)$, preserving the above bound. This completes the proof. 
-
-% \end{proof} 
-
-\textbf{Theorem \ref{thm: decision theoretic}} 
-
-\emph{
-  For $\mathcal{A}(\mathcal{M}(\bx))=\bz$ where $\mathcal{M}(\cdot)$ is $\epsilon$-\ldp and $\mathcal{A}(\cdot)$ is $\alpha$ - \name private, we have  
- \begin{align*}
-     \Pr[\mathcal{D}_{Adv} \text{ loses}] \geq \lfloor \frac{r-k}{k} \rfloor e^{-(2k\epsilon+\alpha)} \cdot \Pr[\mathcal{D}_{Adv} \text{ wins}]
- \end{align*}
- for any input subgroup $I \subset G_i, r = |G_i|$ and  $k < r/2$. 
- }
- 
- \begin{proof}
- 
-  We first focus on deterministic adversaries and then expand to randomized adversaries afterwards using the fact that randomized adversaries are mixtures of deterministic ones. 
-
-Our adversary $\mathcal{D}_{Adv}$ is then defined by a deterministic decision function $\eta: \calY^n \rightarrow [n]^k$. Upon observing $\bz$, $\eta(\bz)$ selects $k$ elements in $\bz$ which it believes originated from $I \subset G_i$. 
- 
- In the following, let $\Pr_{\bz}$ be the probability of events conditioned on the shuffled output sequence $\bz$, where randomness is over the $\epsilon$-\ldp mechanism $\mathcal{M}$ and the $\alpha$-\name-private shuffling mechanism $\calA$. \footnote{As an abuse of notation, we assume the output space of the \ldp randomizers, $\calY$, have outcomes with non-zero measure e.g. randomized response. The following analysis can be expanded to continuous outputs (with outcomes of zero measure) by simply replacing the output sequence $\bz \in \calY^n$ with an output event $\mathbf{Z} \subseteq \calY^n$.}
- 
- The adversary wins if it reidentifies $> \frac{k}{2}$ of the \ldp values originating from $I$. Let $H = \eta(\bz)$ be the indices of elements in $\bz$ selected by $\eta$. Let $W = \{\sigma \in \mathrm{S}^n : |\sigma(H) \cap I| > \frac{k}{2}\}$ be the set of permutations where the adversary wins and let $L = \{\sigma \in \mathrm{S}^n :\sigma(H) \cap I| \leq \frac{k}{2}\} $ be the set of permutations where the adversary loses. 
- \begin{align*}
-     \Pr_{\bz} [\eta(\bz) \text{ wins}] &= \Pr_{\bz} [\sigma \in W] \\
-     \Pr_{\bz} [\eta(\bz) \text{ loses}] &= \Pr_{\bz} [\sigma \in L] 
- \end{align*}
- where $\sigma$ is the shuffling permutation produced by $\calA$, $\bz = \sigma(\by)$ i.e. $z_i = y_{\sigma(i)}$. Concretely, this is equivalent to $\DO_i$ releasing $\DO_{\sigma(i)}$'s \ldp response. Since the permutation and \ldp outputs are randomized, many subgroups of size $k$ in $G_i$ could have produced the \ldp values $(z_{H_1}, \dots, z_{H_k})$ and then been mapped to $H$ by a permutation. Concretely, there is a reasonable probability that Alice's household output the \ldp values of another $k$-member household in her neighborhood and they output her household's \ldp values. In the worst case, this is $e^{-2k \epsilon}$ less likely than without swapping values, by group \DP guarantees. Since both households are part of the same group $G_i$, the permutation that maps her household to elements $H$ in the output is close in probability to that which maps the other household to elements $H$ in the output. As such, we have in the worst case a $e^{-(2k\epsilon + \alpha)}$ reduction in probability of the other household having swapped \ldp values with Alice's and permuting to subset $H$. 
- 
- The above provides intuition on how we could get the same output $\bz$ many different ways, and how Alice's household could or could not contribute to elements $H$. It does not, however, explain why an adversary who is given output $\bz$ has limited advantage in choosing a subset $H$ such that they recover \emph{most} of Alice's household's values. We formalize this fact as follows. 
- 
- We may rewrite the probabilities of winning or losing by marginalizing out all possible $\ldp$ sequences $\by$. Conditioning on the output sequence $\bz$, the only possible \ldp sequences $\by$ are permutations of $\bz$. Note that the probability of any sequence $\by$ is determined by the input $\bx$ and the \ldp mechanism $\mathcal{M}$:  
- \begin{align*}
-    \Pr_\bz[\eta(\bz) \text{ loses}]
-     &= \Pr_{\bz} [\sigma \in W] \\
-     &= \sum_{\sigma \in W}
-     \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ] / \Pr[\bz] 
- \end{align*}
- Note that $\Pr_\bz [\sigma | \by] = \Pr_\bz [\sigma]$ for the mallows mechanism, which chooses its permutations independently of $\by$. Now consider when $\eta(\bz)$ loses. By similar arguments as above: 
-\begin{align*}
-    \Pr_\bz[\eta(\bz) \text{ loses}]
-    &= \Pr_\bz[\sigma \in L] \\
-    &= \sum_{\sigma \in L}
-     \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ] / \Pr[\bz]
-\end{align*}
-The odds of losing versus winning is given by 
- \begin{align*}
-    \frac{\Pr_\bz[\eta(\bz) \text{ loses}]}{\Pr_\bz[\eta(\bz) \text{ wins}]}
-    &= \frac{ \sum_{\sigma' \in L} \Pr [\calA(\bx) = \by = \sigma^{'-1}(\bz)]  \Pr [ \sigma' | \by ] }
-    { \sum_{\sigma \in W} \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ] } \\
-\end{align*}
-We now show that for each $\sigma$ in the denominator, we may construct $m = \lfloor \frac{r-k}{k} \rfloor$ distinct permutations $\sigma'$ in the numerator that are close in probability to it. 
-\begin{lemma}
-For every $\sigma \in W$ there exists a set of $m = \lfloor \frac{r-k}{k} \rfloor$ permutations, $E(\sigma)$, such that 
-\begin{enumerate}
-    \item $E(\sigma) \subseteq L$
-    \item $\sigma^{-1} \approx_{G_i} \sigma^{'-1}$ 
-    \item $E(\sigma_a) \cap E(\sigma_b) = \emptyset$ for any pair $\sigma_a, \sigma_b \in W$
-    \item $\Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)] \leq e^{2k\epsilon} \Pr [\calA(\bx) = \by = \sigma^{'-1}(\bz)]$ for any $\bx \in \calX^n$ and any $\bz \in \calY^n$
-\end{enumerate}
-\end{lemma}
 \begin{proof}
-Given $\sigma \in W$, we construct $E(\sigma)$ by first taking the inverse $\sigma^{-1}$. Recall that, since $\sigma \in W$, we have that $|\sigma^{-1}(I) \cap H| > \frac{k}{2}$. ($\sigma^{-1}(i) = j$ could be interpreted as data owner $i$'s \ldp value will be output at position $j$). We then divide the remainder of the group $G_i \backslash I$ into $m$ disjoint subsets of size $k$ each, $J_1, J_2, \dots, J_m$. These represent the other distinct subsets of size $k$ that Alice's household could swap \ldp values with. We then produce $m$ permutations, $\sigma^{'-1}_1, \dots, \sigma^{'-1}_m$, by making $\sigma^{'-1}_i(I) = \sigma^{-1}(J_i)$ and $\sigma^{'-1}_i(J_i) = \sigma^{-1}(I)$ (preserving order within those subsets) and $\sigma^{'-1} = \sigma^{-1}$ everywhere else. 
+We want to show that for any $m \in \mathbb{N}$, any learner on $m$ samples must fail with constant probability. Toward this end, set $M = \binom{3m}{m}$, and let $Z^{(M)}_1, Z^{(M)}_2, \dots, Z^{(M)}_M$ be subsets of $\R^d$ as described by Lemma \ref{lem:finding_shatter} (we will drop the superscript in what follows). Let $\mathcal{M}$ denote the set of all subsets of $\{1, \dots, 3m\}$ with exactly $m$ elements. Associate with each $Z_i$ a unique element of $\mathcal{M}$, thus allowing us to rename our subsets as $\{Z_T: T \in \mathcal{M}\}.$ We will now construct a set of robustness regions $U$ from these subsets. For $1 \leq i \leq 3m$, define $$U_{x_i} = \cup_{T: i \in T} Z_T,$$ where $x_i$ is an arbitrary point inside $U_{x_i}$. Note this is well-defined since the $Z^{(M)}$ are mutually disjoint.
 
-On the first point, we know that every $\sigma' \in E(\sigma)$ is also in $L$. We know this because $\sigma^{'-1}_i(I) = \sigma^{-1}(J_i)$. Since $\sigma \in W$, we have that $|\sigma^{-1}(J_i) \cap H| < \frac{k}{2}$ since $|\sigma^{-1}(I) \cap H| \geq \frac{k}{2}$ and $I \cap J_i = \emptyset$ by definition. Thus, $|\sigma^{'-1}_i(I) \cap H| < \frac{k}{2}$, so $|\sigma'_i(H) \cap I| < \frac{k}{2}$ and $\sigma'_i \in L$. 
+By Lemma \ref{lem:finding_shatter}, it follows that if all $x_i$ are given a label of $-1$, then any classifier $h \in \cH_W$ satisfies that $h(z) = 1$ for some subset $T$ and some $z \in Z_T$. However, this will imply that $h$ lacks robustness on all $x \in \{x_i: i \in T\}$, meaning that there are at least $m$ points among $\{x_1, \dots, x_{3m}\}$ where $h$ has robust loss $1$. Furthermore, the second part of Lemma \ref{lem:finding_shatter} implies that for any $T \in \mathcal{M}$, there exists a classifier $h_T$ for which $h_S$ is $-1$ over all $Z_{T'}$ for $T' \neq T$. This implies that $h_T$ is robust at all $x_i$ \textit{except} for $x_i$ with $i \in S$. 
 
-On the second point, we know that the inverse permutations are neighboring $\sigma^{-1} \approx_{G_i} \sigma^{'-1}$ simply by construction -- they only differ on elements in $G_i$. 
+With these observations, we are now prepared to show that for any learner $L$, there exists a distribution $D$ for which $L$ has large expected robust loss. To do this, we use a standard lower bound technique found in \cite{ml_book} that was adapted to the robust setting in \cite{Srebro19}.
 
-On the third point, we know that the sets $E(\sigma_a)$ and $E(\sigma_b)$ are distinct since we can map any permutation $\sigma' \in E(\sigma_a)$ uniquely back to $\sigma_a$ for any $\sigma_a \in W$. We do so by taking its inverse $\sigma^{'-1}$, finding which subset $J_i$ has majority elements from $H$ i.e. $|\sigma^{'-1}(J_i) \cap H| > \frac{k}{2}$. Swap elements back: $\sigma^{'-1}(J_i)$ with $\sigma^{'-1}(I)$. Invert back to $\sigma_a$. 
+ The idea will be to pick $D$ to be the uniform distribution over a random subset of $2m$ points in $\{x_1, \dots, x_{3m}\}$. We will then argue that because $L$ only has access to $m$ points from $D$, it won't be able to distinguish which subset $D$ corresponds to, and this will lead to a large expected loss.
 
-On the fourth point, we know that $\sigma^{-1}(\bz)$ and $\sigma^{'-1}(\bz)$ differ on at most $2k$ indices. As such, by group \DP guarantees, we know that their probabilities must be close to a factor of $e^{-2k\epsilon}$ regardless of $\bz$ and $\bx$. 
+To this end, for any $T \in \cM$, let $D_T$ be the data distribution over $\R^d \times \{\pm 1\}$ where $x$ is chosen at uniform from $\{x_i: i \notin T\}$ and $y$ is always $-1$. We may assume without loss of generality that our learning algorithm, $L$, always outputs a classifier among the set $\{h_T: T \in \cM\}$. This is because Lemma \ref{lem:finding_shatter} implies that any classifier in $h \in \cH_W$ has robust loss that is at least as bad some $h_T$ (namely, if the decision boundary of $h$ crosses $Z_T$). 
+
+Next, let $T, T' \in \cM$ be arbitrary. By definition, $h_T$ lacks robustness on all $x_i$ with $i \in T$, and is perfectly accurate and robust at all other points. It follows that among the $2m$ points in the support of $D_{T'}$, there are $m - |T \cap T'|$ where $h_T$ lacks robustness, implying the the loss of classifier $h_T$ with respect to distribution $D_{T'}$ is $\frac{1}{2} - \frac{|T \cap T'|}{2m}$. Note that this implies that $h_T$ has $0$ robust loss over $D_T$ (thus meeting the first stipulation of Theorem \ref{thm:lower_bound1}). 
+
+Finally, we bound the expected loss of the learner $L$ with respect to a uniformly random choice of $D_T$. Let $\cM$ also denote the uniform distribution over itself, and let $\cU$ denote the uniform distribution over $\{1, 2, 3, \dots, 3m\}$. Taking expectations over $T \sim \cM$ and $S \sim D_T^m$, and letting $h_{L(S)}$ denote the classifier learned by $L$, we have that 
+\begin{equation*}
+\begin{split}
+\E_{T \sim \cM} \E_{S \sim D_T^m} \left[\ell_U(h_{L(S)}, D_T)\right] &= \E_{S \sim \cU^m} \E_{T \sim (\cM | S)} \left[\ell_U(h_{L(S)}, D_T)\right] \\
+&= \E_{S \sim \cU^m} \E_{T \sim \{T': T' \in \cM, S \cap T' = \emptyset\}}\left[ \frac{1}{2} - \frac{|T \cap L(S)|}{2m} \right].\\
+\end{split}
+\end{equation*}
+To bound the inner expectation, observe that since $|S| = m$, $T'$ has a conditional distribution that is an arbitrary (at uniform) subset of at least $2m$ indices. Since $L(S)$ is fixed, it follows that the probability that any element in $L(S)$ is an element of $T'$ is at most $\frac{1}{2}$, meaning that the expected value of $|T \cap L(S)|$ is at most $\frac{|L(S)|}{2} = \frac{m}{2}$. Substituting this, we have that 
+\begin{equation*}
+\begin{split}
+\E_{T \sim \cM} \E_{S \sim D_T^m} \left[\ell_U(h_{L(S)}, D_T)\right] \geq \E_{S \sim \cU^m} \E_{T \sim \{T': T' \in \cM, S \cap T' = \emptyset\}}\left[ \frac{1}{2} - \frac{m}{4m} \right] = \frac{1}{4}.\\
+\end{split}
+\end{equation*}
+By Markov's inequality, any random variable between $0$ and $1$ with expectation $\frac{1}{4}$ is strictly larger than $\frac{1}{8}$ with probability at least $\frac{1}{7}$. Since the loss above is bounded between $0$ and $1$, it follows that $\Pr_{T \sim \cM}\Pr_{S \sim D_T} [\ell_U(h_{L(S)}, D) > \frac{1}{8}] \geq \frac{1}{7}$. Thus, for some $D = D_T$, the desired claim holds, finish the proof.
 \end{proof}
 
-Using the above Lemma we may bound the odds of losing vs. winning. 
+\section{Sample Oracle Lower Bounds}\label{app: lower bound}
+\begin{figure}[h!]
+\centering
+	%\begin{subfigure}[b]{0.11\textwidth}
+	 %  \centering
+		\includegraphics[width=.6\linewidth]{icml1.pdf}
+	%	\caption{The generic task}
+		\label{fig:LB}
+	%\end{subfigure}
+   \caption{Illustration for the sampling oracle lower bound in \propref{prop: lowerbound} in $\R^2$.}
+	\label{fig:illustration}
+\end{figure}
 
-\begin{align*}
-    \frac{\Pr_\bz[\eta(\bz) \text{ loses}]}{\Pr_\bz[\eta(\bz) \text{ wins}]}
-    &= \frac{ \sum_{\sigma' \in L} \Pr [\calA(\bx) = \by = \sigma^{'-1}(\bz)]  \Pr [ \sigma' | \by ] }
-    { \sum_{\sigma \in W} \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ] } \\
-    &\geq \frac{\sum_{\sigma \in W} \sum_{\sigma' \in E(\sigma)} \Pr [\calA(\bx) = \by = \sigma^{'-1}(\bz)]  \Pr [ \sigma' | \by ]}
-    {\sum_{\sigma \in W} \Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ]} \\
-    &\geq \min_{\sigma \in W} \frac{\sum_{\sigma' \in E(\sigma)} \Pr [\calA(\bx) = \by = \sigma^{'-1}(\bz)]  \Pr [ \sigma' | \by ]}{\Pr [\calA(\bx) = \by = \sigma^{-1}(\bz)]  \Pr [ \sigma | \by ]} \\
-    &\geq \lfloor \frac{r-k}{k} \rfloor e^{-(2k\epsilon + \alpha)}
-\end{align*}
-where the last line follows from the fourth point of the above Lemma (for the $2k\epsilon$ term) and the fact that the inverse permutations $\sigma'^{-1}, \sigma^{-1}$ are neighboring (second point of the Lemma) so the probabilities of the mechanism to produce $\sigma$ vs. $\sigma'$ to reach $\bz$ from these neighboring permutations must be close by a factor of $e^{\alpha}$. 
-
-Since the above holds for any $\bz$ and $\bx$, the bound holds on average across all outcomes $\bz$, thus 
-\begin{align*}
-    \Pr[\eta \text{ loses}] \geq \lfloor \frac{r-k}{k} \rfloor e^{-(2k\epsilon+\alpha)} \cdot \Pr[\eta \text{ wins}]
-\end{align*}
-for any deterministic adversary with decision function $\eta$. Finally, we may write any probabilistic adversary as mixture of decision functions. By convexity (same argument used in Lemma \ref{lem:convexity}), the above bound still holds. As such, 
-
-\begin{align*}
-    \Pr[\mathcal{D}_{Adv} \text{ loses}] \geq \lfloor \frac{r-k}{k} \rfloor e^{-(2k\epsilon+\alpha)} \cdot \Pr[\mathcal{D}_{Adv} \text{ wins}]
-\end{align*}
-
- \end{proof}
- 
- \subsection{Utility of Shuffling Mechanism}\label{app:utility}
- We now introduce a novel metric, $(\eta,\delta)$-preservation, for assessing the utility of any shuffling mechanism. Let $S\subseteq [n]$ correspond to a set of indices in $\by$. The metric is defined as follows.
-%representing data owners in Alice's neighborhood for instance.  
-%$(\eta,\delta)$-preservation measures how well the shuffling mechanism preserves the original indices in $S$ after shuffling, i.e. the fraction of data owners in Alice's neighborhood that still correspond to datapoints from the neighborhood after shuffling:
-\begin{defn}($(\eta,\delta)$-preservation) A shuffling mechanism $\calA:\calY^n\mapsto\calY^n$ is defined to be $(\eta,\delta)$-preserving $(\eta, \delta 
-\in [0,1])$ w.r.t to a given subset $S\subseteq [n]$, if \begin{gather}\Pr\big[|S_{\sigma}\cap S|\geq \eta\cdot|S|\big]\geq 1-\delta,  \sigma \in \mathrm{S}_n\end{gather} where $\bz=\calA(\by)=\sigma(\by)$ and $S_{\sigma}=\{\sigma(i)|i \in S\}$. \label{def:utility} 
-% \vspace{-0.2cm}
+We now show a lower bound on the number of oracle calls required for tolerant learning in \citet{Urner22}'s sample oracle model. We first recall the model itself for completeness, focusing on the case of $(\mathbb{R}^d,\ell_2)$ endowed with the standard Lebesgue measure for simplicity.
+\begin{defn}[Sampling Oracle {\cite{Urner22}}]
+Let $U: \mathbb{R}^d \to P(\mathbb{R}^d)$ be any perturbation function such that $U(x)$ has finite Lebesgue measure for all $x \in \mathbb{R}^d$. The sampling oracle $\mathcal{O}_U$ inputs any $x \in \mathbb{R}^d$, and outputs a sample $y$ from the induced distribution on $U(x)$ under the Lebesgue measure.
 \end{defn}
-For example, consider \scalebox{0.9}{$S=\{1,4,5,7,8\}$}. If \scalebox{0.9}{$\calA(\cdot)$} permutes the output according to  \scalebox{0.9}{$\sigma=(\underline{5}\:3\:2\:\underline{6}\:\underline{7}\:9\:\underline{8}\:\underline{1}\:4\:10)$}, then  \scalebox{0.9}{$S_{\sigma}=\{5,6,7,8,1\}$}  which preserves \scalebox{0.9}{$4$} or \scalebox{0.9}{$80\%$} of its original indices.  This means that for any data sequence $\by$, at least \scalebox{0.9}{$\eta$} fraction of its data values corresponding to the subset \scalebox{0.9}{$S$} overlaps with that of shuffled sequence $\bz$ with high probability \scalebox{0.9}{$(1-\delta)$}. Assuming, \scalebox{0.9}{$\{y_S\}=\{y_{i}|i
-\in S\}$} and \scalebox{0.9}{$\{z_S\}=\{z_i|i \in S\}=\{y_{\sigma(i)}| i \in S\}$} denotes the set of data values corresponding to $S$ in data sequences $\by$ and $\bz$ respectively, we  have \scalebox{0.9}{$\Pr\big[|\{y_S\}\cap \{z_S\}|\geq \eta \cdot |S|\big]\geq 1-\delta, \: \forall \by $}.
-For example, let $S$ be the set of individuals from Nevada. Then, for a shuffling mechanism that provides \scalebox{0.9}{$(\eta =0.8, \delta=0.1)$}-preservation to $S$, with probability \scalebox{0.9}{$\geq 0.9$}, \scalebox{0.9}{$\geq 80\%$} of the values that are reported to be from Nevada in $\bz$ are genuinely from Nevada. The rationale behind this metric is that it captures the utility of the learning allowed by \name-privacy -- if $S$ is equal to some group \scalebox{0.9}{$G \in \calG$}, \scalebox{0.9}{$(\eta, \delta)$} preservation allows overall statistics of \scalebox{0.9}{$G$} to be captured. Note that this utility metric is \textit{agnostic of both the data distribution and the analyst's query}. Hence, it is a conservative analysis of utility which serves as a lower bound for learning from $\{z_S\}$. We suspect that with the knowledge of the data distribution and/or the query, a tighter utility analysis is possible. \\
-A formal utility analysis of Alg. \ref{algo:main} is presented in App. \ref{app:utility:formal}. Empirical evaluation of $(\eta,\delta)$ - preservation is presented in App. \ref{app:extraresults}. 
-\subsection{Discussion on Properties of Mallows Mechanism}\label{app:prop}
+We prove that tolerant learning requires exponentially many calls to the sampling oracle.
+\begin{customprop}{6}
+For any $D>10\gamma > 0$, there exists a hypothesis class $\mathcal{H}$ and a set of robustness regions, $U$ such that the following holds. There exist constants $\epsilon$ and $\delta$ such that for any $n > 0$, any learner $L$ on $n$  samples that achieves 
+$$\ell_U(L(S), \cD) \leq \min_{h \in \cH} \ell_{U^\gamma}(h, \cD) + \epsilon$$
+with probability at least $1-\delta$ must make at least $\Omega\left(\left(\frac{D}{\gamma}\right)^d\right)$ calls to the sampling oracle for some valid data distribution $\cD$,
+\end{customprop}
+\begin{proof}[Proof of Proposition \ref{prop: lowerbound}]
 
-% \textbf{Property \ref{prop:1}} 
-\begin{prope}
-\label{prop:1}
-% \emph{
-For group assignment $\calG$, a  mechanism $\calA(\cdot)$ that shuffles according to a permutation sampled from the Mallows model $\mathbb{P}_{\theta,\textswab{d}}(\cdot)$, satisfies $(\alpha, \calG)$-\name privacy where
+Appealing to Yao's Minimax Principle, it is enough to find a class $\mathcal{H}$ and strategy for the adversary (over valid choices of perturbation sets and data distributions) such that any deterministic learner using at most $O((\frac{D}{\gamma})^d)$ oracle calls incurs at least constant error ($\epsilon$) over the optimum in $\mathcal{H}$ with constant probability ($\delta$). 
+
+With this in mind, fix $D_0 =D-9\gamma$, let $r = 4\gamma$, and let $e_1$ denote the first canonical basis vector in $\R^d$. Our (marginal) data distribution will consist of two points in $\R^d$ $\curlybracket{(\frac{D_0}{2}+4\gamma)e_1,-(\frac{D_0}{2}+4\gamma)e_1}$. For the ease of notation, we denote $v \coloneqq (\frac{D_0}{2}+4\gamma)e_1$. Note, $||v- (-v)||_2 = D_0 + 2r$. We now define the underlying hypothesis class $\cH$ which consists of two linear classifiers $\cH \coloneqq \curlybracket{h_{1},h_{2}}$ such that $h_1 = sgn(\langle e_1, \cdot \rangle)$ and $h_2 = (\langle e_1, \cdot \rangle - D_0 - 4\gamma)$. Note that $h_1$ is a perpendicular bisector of the line segment joining $v$ and $-v$, and $h_2$ is parallel to $h_1$ but biased to the left of $v$.
+
+Finally, we construct two perturbation sets with bounded diameter $U$ and $V$. Fix $v' = 2\gamma e_1$.
+%points $v'$ and $-v'$ such that $v,v'$ are co-linear, $||x_1 - x_1'|| = \frac{D_0}{2} + 2\gamma$, and $||x_2 - x_2'|| = \frac{D_0}{2} + 2\gamma$. 
+We define balls of radius $r>0$ for any given $x \in \R^d$ as $B_2(x, r)\coloneqq$ $\curlybracket{x' \in \R^d: ||x' - x||_2 \le r}$. First, we define a perturbation $U$ and its $\gamma$-perturbed region $U^\gamma$ as follows:
+%Let the perturbation sets $U,V$ and their $\gamma$-perturbed sets for $\curlybracket{x_1,-v}$ be defined as 
+\begin{gather*}
+ U \coloneqq \curlybracket{U_{v},U_{-v}} \textnormal{where for any } x \in \curlybracket{v,-v}, U_{x} = B_2\paren{x, \frac{D_0}{2}},\\
+ U^{\gamma}\coloneqq \curlybracket{U_{v}^\gamma,U_{-v}^\gamma} \textnormal{where for any } x \in \curlybracket{v,-v}, U_{x}^{\gamma} = B_2\paren{x, \frac{D_0}{2} +\gamma}
+\end{gather*}
+Similarly, we define another perturbation set $V$ and its $\gamma$-perturbed region $V^{\gamma}$:
+\begin{gather*}
+V\coloneqq \curlybracket{V_{v},V_{-v}} \textnormal{where for any } x \in \curlybracket{v,-v}, V_{x} = U_{x}\cup B_2\paren{x',\frac{5\gamma}{2}},\\
+V^{\gamma}\coloneqq \curlybracket{V_{v}^\gamma,V_{-v}^\gamma} \textnormal{where for any } x \in \curlybracket{v,-v}, V_{x}^\gamma = U_{x}^\gamma \cup B_2\paren{x',\frac{7\gamma}{2}}
+    %V \coloneqq \curlybracket{B\paren{x_1, \frac{D}{2}}\bigcup B\paren{x_1',\frac{5\gamma}{2}},B\paren{-v, \frac{D}{2}}\bigcup B\paren{x_2',\frac{5\gamma}{2}}}\\
+ %V^{\gamma} \coloneqq \curlybracket{B\paren{x_1, \frac{D}{2}+\gamma}\bigcup B\paren{x_1',\frac{7\gamma}{2}},B\paren{x_2, \frac{D}{2}}\bigcup B\paren{x_2',\frac{7\gamma}{2}}}
+\end{gather*}
+where $x' = v'$ or $-v'$ if $x = v$ or $-v$ respectively. We assume that the perturbation set for $\R^d\setminus \curlybracket{v,-v}$ is null for simplicity. 
+Observe that $\bigcap\limits_{x' \in \curlybracket{v,-v}} U_{x'} = \emptyset$ and so is the intersection of perturbations in $U^\gamma$.
+%First, we note that $V$ is a $\gamma$-\textbf{perturbed regions} of $U$.
+But, we note that $\bigcap\limits_{x' \in \curlybracket{v,-v}} V_{x'} \not= \emptyset$. This entire construction is illustrated in Figure \ref{fig:illustration}.
+%Furthermore, we can pick $p_0$ such that the measure of the intersection of the sets $V^{\gamma}_{x_1}$ and $V^{\gamma}_{x_2}$ is upper bounded by $\paren{\frac{\gamma}{D}}^d$, i.e. $\mu\paren{V^{\gamma}_{x_1}\cap V^{\gamma}_{x_2}} \le \paren{\frac{\gamma}{D}}^d$.
+% As considered in \citet{Urner22}, for a perturbation set $Z = U$ or $Z = V$, a sampling oracle samples based on the induced probability measure $P_{Z_x}^{\mu}$ over $Z_x \in Z$ as follows. For any set $Z'\subseteq Z_x$ in the $\sigma$-algebra over $Z_x$, we define 
+% $P_{Z_x}^{\mu}(Z') = \frac{\mu(Z')}{\mu(Z_x)}$.
+
+We are now ready to describe the adversary's strategy, who chooses one of $U$ or $V$ independently with probability $1/2$, and employs a single fixed choice of data distribution $\cD$ where $\Pr[Y = -1 | -v] = \Pr[Y = 1 | v] = 1$, and the marginal distribution is uniform over $v$ and $-v$. Note that if the perturbation set is $U$, then $h_1$ is optimal as $\ell_U\paren{h_1,\cD} = 0$ whereas $\ell_U\paren{h_2,\cD} = 1/2$. On the other hand if $V$ is chosen then $h_2$ is optimal as $\ell_V\paren{h_2,\cD} = \frac{1}{2}$ and $\ell_V\paren{h_1,\cD} = 1$. The idea is to show that the learner cannot distinguish between $U$ and $V$ with high probability, and thus cannot choose the right hypothesis. We note that since the data distribution is fixed and known to the learner, we only need to consider randomness over the sample oracle---labeled samples have no effect on the bound.
+
+More formally, we split our analysis into two cases based on whether or not the learner draws an (oracle) sample in $V^\gamma \setminus U^\gamma$. First, note that conditioned on the fact that the learner draws no such sample, by construction the posterior probability of $U$ is strictly higher than that of $V$. This means the learner's expected excess error is minimized by always outputting $h_1$ on such samples. On the other hand, if the learner observes a sample in $V^\gamma \setminus U^\gamma$, they can always achieve optimal error by outputting $h_2$. 
+
+Since the above learning rule minimizes the learner's expected excess error, it is enough to bound the expected error of this rule:
 \begin{align*}
- \Delta(\sigma_0 : \textswab{d}, \calG) &= \max_{(\sigma, \sigma') \in N_\calG} |\textswab{d}(\sigma_0 \sigma, \sigma_0) - \textswab{d}(\sigma_0 \sigma', \sigma_0)|\\
- \text{and}&\\
-    \alpha 
-    &= \theta \cdot \Delta(\sigma_0 : \textswab{d}, \calG)
-\end{align*} 
-We refer to $\Delta(\sigma_0 : \textswab{d}, \calG) $ as the sensitivity of the rank-distance measure $\textswab{d}(\cdot)$
-\end{prope}
-% }
+    \mathbb{E}_{Z,S \sim \mathcal{O}_Z}[OPT_Z - \ell_{Z}(\mathcal{A}(S),\cD)] &\geq \frac{1}{2}\Pr[S \subset U^\gamma \wedge Z=V]\\
+    &= \frac{1}{2}\Pr[Z=V]\Pr[S \subset U^\gamma | Z=V]\\
+    &= \frac{1}{4}\Pr[S \subset U^\gamma | Z=V]
+\end{align*}
+
+The key observation is then simply to notice that $\Pr[S \subset U^\gamma | Z=V]$ is constant whenever the learner draws at most $O((\frac{D}{\gamma})^d)$ oracle samples. This follows from the fact that under the induced distribution $P_{V^\gamma}$ on $V$:
+\begin{equation}
+ P_{V^\gamma}(V^\gamma\setminus U^\gamma) = \frac{\mu(V^\gamma\setminus U^\gamma)}{\mu(V^{\gamma})} \le \frac{\mu(B_2(v',\frac{7\gamma}{2}))}{\mu(U^\gamma_v) + \mu(B_2(v',\frac{7\gamma}{2}))} \le \frac{(\frac{7}{2}\gamma)^d}{D_0^d}\nonumber
+\end{equation}
+where $\mu$ is the standard Lebesgue measure. Similarly we then have
+\begin{align*}
+    P_{V^\gamma}(U^\gamma) \ge 1 - \frac{(\frac{7}{2}\gamma)^d}{D_0^d} \label{eq: U}
+\end{align*}
+and finally that
+\begin{align*}
+    \Pr[S \subset U^\gamma | Z=V] \geq \paren{1 - \frac{(\frac{7}{2}\gamma)^d}{D_0^d}}^{|S|}
+\end{align*}
+which is at least some constant when $|S| \leq c(\frac{D_0}{\gamma})^d$ for some sufficiently small absolute constant $c<0$. Since $D_0 = D - 9\gamma$, there exists $c'$ such that this holds when $|S| \leq c'(\frac{D}{\gamma})^d$ which implies the proposition.
+% the probability the learner draws no sample in $V^\gamma \setminus U^\gamma$ is high.
+
+% Fix a training sample of size $N$, say $S_N \coloneqq \curlybracket{(x_i,y_i)}_{i=1}^N$ such that the learner calls the sampling oracle for less than $Q_N = \paren{\frac{D}{\gamma}}^d$ times.
+
+% Now, if the adversary picks the perturbation set to be $U$, then we know that the sampling oracle can sample only from $U^\gamma$. In this case, note that as the sampling oracle provides a perturbed sample from $U^\gamma$ the learner could correctly pick the optimal hypothesis $\hat{h}\coloneqq h_1$ as it distinguishes $U$ from $V$. Thus, the expected error $\ell_U(\hat{h},\cD) = 0$ if learner picks $\cA^\gamma(S_N) = h_1$, otherwise $\ell_U(h_2,\cD) = \frac{1}{2}$. 
+
+% Consider the case that the adversary picks $V$ as the perturbation set. The sampling oracle can sample perturbed points from $V^\gamma$. First, note that for all $x \in \curlybracket{v,-v}$, $U_x^\gamma \subset V_{x}^\gamma$. Thus, it is possible that the sampling oracle samples perturbed points only from $U^\gamma$. If that is the case, then $\ell_V(\hat{h},\cD) = 1$ if $\cA^{\gamma}(S_N) = h_1$. But in case if the algorithm picks $\cA^\gamma(S_N) = h_2$ then $\ell_V(\hat{h},\cD) = \frac{1}{2}$. But then $\ell_U(\hat{h},\cD) = \frac{1}{2}$ because sampling oracle only sampled from $U^\gamma$. %Thus, the expected error over the choice of perturbation sets is $\frac{1}{2}\ell_U(\hat{h},\cD) + \frac{1}{2}\ell_V(\hat{h},\cD) \ge \frac{1}{2}$ if oracle picks points from $U^\gamma$.
+
+% Now, consider that the sampling oracle picks perturbed points from $V^\gamma\setminus U^\gamma$. If $\cA^\gamma(S_N) = h_1$ then $\ell_V(\cA^\gamma(S_N),\cD) = 1$, otherwise $\ell_V(\cA^\gamma(S_N) = h_2,\cD) = \frac{1}{2}$. Thus, in order to minimize the error, $\cA^{\gamma}$ chooses $h_2$ upon given the training sample $S_N$.% and thus the total error $\frac{1}{2}\ell_U(\hat{h},\cD) + \frac{1}{2}\ell_V(\hat{h},\cD) = \frac{1}{4}$. 
+
+% Note that sampling oracle can sample a perturbed point in $V^\gamma\setminus U^\gamma$ with probability
+% \begin{equation}
+%  P_{V^\gamma}^{\mu}(V^\gamma\setminus U^\gamma) = \frac{\mu(V^\gamma\setminus U^\gamma)}{\mu(V^{\gamma})} \le \frac{\mu(B_2(v',\frac{7\gamma}{2}))}{\mu(U^\gamma_v) + \mu(B_2(v',\frac{7\gamma}{2}))} \le \frac{(\frac{7}{2}\gamma)^d}{D^d}\nonumber
+% \end{equation}
+% Similarly,
+% \begin{align}
+%     P_{V^\gamma}^{\mu}(U^\gamma) \ge 1 - \frac{(\frac{7}{2}\gamma)^d}{D^d} \label{eq: U}
+% \end{align}
+% %Note that in order to sample for $V^\gamma\setminus U^\gamma$, sampling oracle has to sample perturbed examples from $V_{x_1}^{\gamma}\cap V_{x_2}^{\gamma}$. We know that $\mu\paren{V^{\gamma}_{x_1}\cap V^{\gamma}_{x_2}} \le \paren{\frac{\gamma}{D}}^d$. 
+% If $Q_N \le \frac{D^d}{(\frac{7}{2}\gamma)^d}$, then using \eqref{eq: U} there is a non-trivial constant probability $p_0 > 0$ that sampling oracle picks points in $U^\gamma$. Now, we can bound the expected error over randomized choices of perturbation set as follows:
+% \begin{align}
+%     \expctover{S_N}{\expctover{Z\sim(U,V)}{\ell_Z(\cA^\gamma(S_N),\cD)}} &\ge P_{\cD}(\textnormal{\textbf{1}}\curlybracket{S_N \sim U^\gamma})\cdot\paren{\frac{1}{2}\ell_U(\cA^\gamma(S_N),\cD) + \frac{1}{2}\ell_V(\cA^\gamma(S_N),\cD)}\label{eq: bound1}\\
+%     &\ge p_0\cdot\paren{\frac{1}{4} + \frac{1}{4}}\label{eq: bound2}\\
+%     &= \frac{p_0}{2}\nonumber
+% \end{align}
+% In \eqnref{eq: bound1}, we consider the samples $S_N$ that fall in $U^\gamma$. In \eqnref{eq: bound2}, we note that if $\cA(S_N) = h_1$ then the expected error is $\frac{1}{2}\ell_U(h_1,\cD) + \frac{1}{2}\ell_V(h_1,\cD) \ge \frac{1}{2}$. In case, $\cA^\gamma(S_N)= h_2$ then the expected error is $\frac{1}{2}\ell_U(h_2,\cD) + \frac{1}{2}\ell_V(h_2,\cD) \ge \frac{1}{4} + \frac{1}{4} = \frac{1}{2}$. This implies that the randomized algorithm forces a lower bounded error for any deterministic tolerant algorithm $\cA^\gamma$ if $Q_N \le \frac{D^d}{(\frac{7}{2}\gamma)^d}$.
+%%%%%%%%%%%%%%
+%But then $\cA^\gamma$ incurs at least error $c_0\ell_V(\hat{h},\cD) > \frac{c_0}{2}$ with constant probability over the choice of $S_N$. Using Yao's minimax theorem, total expected costas argued above the total error is at least $\frac{1}{2}$ with constant probability. which implies that the tolerant algorithm $\cA^\gamma$ is forced to call the sampling oracle at least $\paren{\frac{D}{\gamma}}^d$ times in order to distinguish $V$ from $U$ in order to incur optimal error with high probability. Given that the tolerant algorithm $\cA^\gamma$ calls sampling oracle for less than $\paren{\frac{D}{\gamma}}$The probability that the sampling oracle picks points from $U^\gamma$,It is evident that to distinguish $V$ from $U$, sampling oracle needs to sample examples from $V^\gamma \setminus U^\gamma$ when the adversary picks $V$, otherwise the total error is at least $\frac{1}{2}$. 
+%%%%%%%%%%%%%
+%Otherwise the learner will choose $h_1$ for $V$, and incurs an expected loss of $\frac{1}{2}\times\ell_V(h_1,\cD) = \frac{1}{4}$ \textcolor{red}{HY: Again, should $\ell_V(h_1,\cD) = 1?$} and vice versa. \textcolor{red}{HY: What does vice versa mean here? When the adversary chooses $U$?}
+%Irrespective of the hypothesis returned by any tolerant algorithm, adversary could also pick the perturbation set that leads to a wrong optimal.
+ 
+
+
+%\begin{align*}
+%    \expctover{Z \sim \paren{U,V}}{\ell_Z(\hat{h},\cD)} = \frac{1}{2}\ell_U(\hat{h},\cD) + \frac{1}{2}\ell_V(\hat{h},\cD)
+%\end{align*}
+
+\end{proof}
+
+We note that in \citet{Urner22}, the sampling oracle is defined more generally for any \textit{doubling-measure} $\mu$, that is any measure for which there exists some ``doubling-constant'' $C>0$ such that for all $x \in \mathbb{R}^d$ and $r \in \mathbb{R}^+$:
+\[
+0 < \mu(B(x,2r)) \leq C\mu(B(x,r)) < \infty.
+\]
+In this more general setting, one can prove a lower bound that scales with the doubling-constant (typically exponential in the associated doubling-dimension of the metric space) simply by appropriately increasing the concentration of measure on $U^\gamma$. 
+
+
+\section{Robust VC for $k$ points}\label{app: robust vc bound}
+In this section, we prove that the size-$k$ perturbation sets only cost a $\log(k)$ factor over the VC dimension of the original class. To formalize this, we first recall a few basic definitions standard to the (adversarially robust) learning literature.
+
+\begin{defn}[Robust Loss Class]
+Given a hypothesis $h: \cX \to \{0,1\}$ and perturbation function $U:\cX \to P(\cX)$, let $h^\ell_U: X \times \{0,1\}$ be the function over labeled samples measuring the robust loss of $h$:
+\[
+h^\ell_U(x,y) = \begin{cases}
+0 & \text{ if } \ \forall x' \in U(x): h(x')=y\\
+1 & \text{ else.}
+\end{cases}
+\]
+The robust loss class of $(\cX,\cH)$ is the hypothesis class over $\cX \times \{0,1\}$ given by:
+\[
+\mathcal{L}^U_{\cH} \coloneqq \{ h^\ell_U : h \in \cH\}.
+\]
+\end{defn}
+We are interested in analyzing a standard complexity measure of the robust loss class called VC dimension
+\begin{defn}[VC Dimension]
+The VC dimension of a hypothesis class $(\cX,\cH)$ is the size of largest subset $S \subseteq \cX$ such that $\cH$ obtains all $2^{|S|}$ labelings on $S$. We say such a set is \textit{shattered} by $\cH$.
+\end{defn}
+% We define the robust VC dimension of a class $(X,H)$ as the VC dimension of its robust loss class.
+% \begin{defn}[Robust VC Dimension]
+% The robust VC dimension of a hypothesis class $(X,H)$ with respect to perturbation function $U:X \to P(X)$ is $vc(\mathcal{L}^U_H)$.
+% \end{defn}
+We show the VC dimension of the robust loss class incurs at most $\log(k)$ blow-up over the original class.
+\begin{prop}[Overhead of Robust VC]\label{prop:finite-RVC}
+Let $(\cX,\cH)$ be a hypothesis class of VC-dimension $d$ and $U: \cX \to P(\cX)$ any perturbation function with support bounded by some $k \in \mathbb{N}$. Then the VC dimension of $\mathcal{L}^U_{\cH}$ is at most $O(d\log(dk))$.
+\end{prop}
+This result was also independently communicated to us by Omar Montasser. The proof of Proposition \ref{prop:finite-RVC} relies on the classical Sauer-Shelah-Perles lemma, which we recall here for completeness.
+\begin{lem}[Sauer-Shelah-Perles \cite{sauer1972density,shelah1972combinatorial}]
+Let $(\cX,\cH)$ be a hypothesis class of VC-dimension $d$. Then for any finite subset $S \subseteq \cX$, $\cH$ obtains at most $O(|S|^d)$ distinct labelings on $S$.
+\end{lem}
+Proposition \ref{prop:finite-RVC} simply follows from using Sauer-Shelah-Perles to bound the total number of permissible patterns across perturbation sets of a sample in the loss space.
+\begin{proof}[Proof of Proposition \ref{prop:finite-RVC}] Let $m \in \mathbb{N}$ and assume there exists a sample $S=(x_1,y_1), \ldots, (x_m,y_m)$ that is shattered by $\mathcal{L}^U_{\cH}$. We will show $m \leq O(d\log(kd))$. With this in mind, let $T=\bigcup_{i=1}^m U(x_i)$ denote the set of at most $km$ points corresponding to the robustness regions of our sample. The key observation is the following (essentially trivial) claim:
+\begin{claim}
+Any two $g_{U}^\ell,h_{U}^\ell \in \mathcal{L}^U_{\cH}$ that give distinct labelings of $S$ correspond to $g,h \in \cH$ with distinct labelings of $T$.
+\end{claim} 
+By robust shattering, there exist $2^m$ distinct labelings of $S$ by $\mathcal{L}^U_{\cH}$, so the above claim implies $\cH$ must have $2^m$ distinct labelings of $T$. However the latter has at most $O((km)^d)$ labelings by VC dimension, so
+\[
+2^m \leq O((km)^d) \Rightarrow m \leq O(d\log(dk))
+\]
+by standard manipulations. Finally, we note the claim is immediate from definition, since the behavior of a function $h_U^\ell \in \mathcal{L}^U_{\cH}$ on $S$ depends only on the labels of its corresponding hypothesis $h \in \cH$ on $T$ by definition. 
+\end{proof}
+
+\section{Proof of Theorem \ref{thm:upper_bound_general}}\label{sec:proof_extension}
+
+We begin by defining $v_{ball}$, which is the adversarial VC dimension when the robustness regions are all balls of a fixed radius. We start by precisely defining these robustness regions. 
+
+\begin{defn}
+Let $U^r$ be the set of robustness regions defined by $\{U_x^r = B(x, r)\}$, where $B(x, r)$ denotes the closed ball of $\ell_2$-radius $r$ centered at $x$. 
+\end{defn}
+
+We now define the adversarial VC dimension of a set of classifiers $\cH$ for a fixed set of regions, $U^r$.
+
+\begin{defn}
+Let $\cH$ be a set of classifier. Then the adversarial VC dimension of $\cH$ with respect to $U^r$ is the maximum integer $v$, for which there exist $v$ labeled points, $(x_1, y_1), \dots, (x_r, y_r)$ so that for any subset $S \subset \{(x_1, y_1) ,\dots, (x_r, y_r)\}$, there exists $h_S \in \cH$ with $$\ell(h_S, (x_i, y_i) = \begin{cases}0 & i \in S \\ 1 & i \notin S\end{cases}.$$ We denote this by $v_{ball}^r$.
+\end{defn}
+
+Finally, we define $v_{ball}$ as the maximum value of $v_{ball}^r$ over all $r > 0$. Note that this quantity has been well studied -- for example \cite{Cullina18} shows that for linear classifiers, $v_{ball} = O(d)$. 
+
+\paragraph{Proving Theorem \ref{thm:upper_bound_general}} We now turn our attention towards the proof. The key observation is that the main steps from the proof of Theorem \ref{thm:upper_bound1} \textit{perfectly} carry over. In particular, Lemma \ref{lem:r_works} exactly holds in this setting, and the argument given in the proof of Theorem \ref{thm:upper_bound1} also holds provided that an appropriate choice of $V$ exists. The only issue arises from Lemma \ref{lem:v_construct}, which requires that $\cH$ be regular. To remedy this, we now state and prove a different version of this lemma that uses a union of balls (of fixed radius) for $V_x$ rather than a finite set of points. 
+
+\begin{lem}\label{lem:v_construct_new}
+Let $\cH$ by an arbitrary hypothesis class. For all $r \in [\frac{\epsilon\delta\gamma}{7}, \gamma]$, let $\alpha$, $U^r$ and $U^{r-\alpha}$ be as described in the proof of Theorem \ref{thm:upper_bound1}. Then there exists a set of robustness regions $V^r = \{V_x^r: x \in \reals^d\}$ satisfying the following two properties.  
+\begin{enumerate}
+	\item $V_x^r$ is a union of $O\left(\left(\frac{D}{\epsilon\delta\gamma}\right)^d\right)$ balls of radius , where $D$ denotes the maximum diameter of $U_x$. 
+	\item Let $\alpha = \frac{\epsilon\delta\gamma}{7}$. For all labeled points $(x,y)$ and for all classifiers $h \in \cH$, $$\ell_{U^{r - \alpha}}(h, (x,y)) \leq \ell_{V^r}(h, (x,y)) \leq \ell_{U^r}(h, (x,y)).$$
+\end{enumerate}
+\end{lem}
+
 \begin{proof}
-% Start with a useful lemma. 
-% \begin{lemma}
-% Consider any pair of neighboring permutations $\sigma \approx_{G_i} \sigma'$ w.r.t. group $G_i$. Consider any third permutation $\sigma^* \in \mathrm{S}_n$. Then, the permutations that turn $\sigma$ and $\sigma'$ into $\sigma^*$ are also neighboring w.r.t. $G_i$. Formally, if 
-% \begin{align*}
-%     \sigma^*(\by) &= \sigma_a \big( \sigma(\by) \big) \\
-%     \sigma^*(\by) &= \sigma_b \big( \sigma'(\by) \big)  
-% \end{align*}
-% then, $\sigma_a \approx_{G_i} \sigma_b$.
-
-Consider two permutations of the initial sequence $\by$, $\sigma_1(\by), \sigma_2(\by)$ that are neighboring w.r.t. some group $G_i \in \calG$, $\sigma_1 \approx_{G_i} \sigma_2$. Additionally consider any fixed released shuffled sequence $\bz$. Let $\Sigma_1, \Sigma_2$ be the set of permutations that turn $\sigma_1(\by), \sigma_2(\by)$ into $\bz$, respectively: 
-\begin{align*}
-    \Sigma_1 
-    & = \{\sigma \in \mathrm{S}_n : \sigma \sigma_1(\by) = \bz \} \\
-    \Sigma_2 
-    & = \{\sigma \in \mathrm{S}_n : \sigma \sigma_2(\by) = \bz \} \quad .
-\end{align*}
-In the case that $\{y\}$ consists entirely of unique values, $\Sigma_1, \Sigma_2$ will each contain exactly one permutation, since only one permutation can map $\sigma_i(\by)$ to $\bz$. 
-
-\begin{lemma}
-For each permutation $\sigma_1' \in \Sigma_1$ there exists a permutation in $\sigma_2' \in \Sigma_2$ such that 
-\begin{align*}
-    \sigma_1' \approx_{G_i} \sigma_2' \quad . 
-\end{align*}
-\end{lemma}
-Proof follows from the fact that --- since only the elements $j \in G_i$ differ in $\sigma_1(\by)$ and $\sigma_2(\by)$ --- only those elements need to differ to achieve the same output permutation. In other words, we may define $\sigma_1', \sigma_2'$ at all inputs $i \notin G_i$ identically, and then define all inputs $i \in G_i$ differently as needed. As such, they are neighboring w.r.t. $G_i$. 
-
-Recalling that Alg. 1 applies $\sigma_0^{-1}$ to the sampled permutation, we must sample $\sigma_0\sigma_1'$ (for some $\sigma_1' \in \Sigma_1$) for the mechanism to produce $\bz$ from $\sigma_1(\by)$. Formally, since $\sigma_1' \sigma_1 (\by) = \bz$ we must sample $\sigma_0 \sigma_1'$ to get $\bz$ since we are going to apply $\sigma_0^{-1}$ to the sampled permutation. 
-\begin{align*}
-    \Pr\big[ \calA \big( \sigma_1(\by) \big) = \bz \big] 
-    &= \mathbb{P}_{\theta,\textswab{d}}\big(\sigma_0\sigma', \sigma' \in \Sigma_1 : \sigma_0\big) \\
-    \Pr\big[ \calA \big( \sigma_2(\by) \big) = \bz \big] 
-    &= \mathbb{P}_{\theta,\textswab{d}}\big(\sigma_0\sigma', \sigma' \in \Sigma_2 : \sigma_0\big) 
-\end{align*}
-
-Taking the odds, we have
-\begin{align*}
-     \frac{\mathbb{P}_{\theta,\textswab{d}}\big(\sigma_0\sigma', \sigma' \in \Sigma_1 : \sigma_0\big)}{
-     \mathbb{P}_{\theta,\textswab{d}}\big(\sigma_0\sigma'', \sigma'' \in \Sigma_2 : \sigma_0\big)} 
-    &= \frac{\sum_{\sigma' \in \Sigma_1}\mathbb{P}_{\Theta,\textswab{d}}(\sigma_0\sigma' : \sigma_0)}{
-    \sum_{\sigma'' \in \Sigma_2}\mathbb{P}_{\Theta,\textswab{d}}(\sigma_0\sigma'' : \sigma_0)} \\
-    &=\frac{\sum_{\sigma' \in \Sigma_1} e^{-\theta \textswab{d}(\sigma_0\sigma', \sigma_0)}}{
-    \sum_{\sigma'' \in \Sigma_2} e^{-\theta \textswab{d}(\sigma_0\sigma'', \sigma_0)}}\\
-    &\leq \frac{e^{-\theta \textswab{d}(\sigma_0\sigma_a, \sigma_0)}}{e^{-\theta \textswab{d}(\sigma_0\sigma_b, \sigma_0)}} \\
-    &\leq e^{\theta|  \textswab{d}(\sigma_0\sigma_a, \sigma_0) - \textswab{d}(\sigma_0\sigma_b, \sigma_0) |} \\
-    &\leq e^{\theta \Delta}
-\end{align*}
-where 
-\begin{align*}
-    \sigma_a &= \arg \max_{\sigma' \in \Sigma_1} e^{-\theta \textswab{d}(\sigma_0 \sigma', \sigma_0)} 
-    \text{ and } \\
-    \sigma_a &= \arg \min_{\sigma'' \in \Sigma_2} e^{-\theta \textswab{d}(\sigma_0 \sigma'', \sigma_0)} ~.
-\end{align*}
-Therefore, setting $\alpha = \theta \cdot \Delta$, we achieve $(\alpha, \calG)$-\name privacy. 
+Since $U_x^{r-\alpha}$ has diameter at most $D$, it follows that it can be covered with $O\left(\left(\frac{D}{\epsilon\delta\gamma}\right)^d\right)$ balls of radius $\frac{\alpha}{2}$. We let $V_x^r$ be any such cover that is minimal (meaning that (1.) is satisfied), meaning that each ball intersects $U_x^{r-\alpha}$. It follows that for all $x$, $U_x^{r-\alpha} \subseteq V_x^r \subseteq U_x^r$, which immediately implies (2.) and completes the proof. 
 \end{proof}
 
-% \textbf{Property \ref{prop:2}}
-% \emph{
-\begin{prope}
-\label{prope:2}
-The sensitivity of a rank-distance is an increasing function of the width $\omega_{\calG}^{\sigma_0}$. For instance, for Kendall's $\tau$ distance $\textswab{d}_\tau(\cdot )$, we have 
-$\Delta(\sigma_0 : \textswab{d}_\tau, \calG)
-    =\frac{\omega_{\calG}^{\sigma_0}(\omega_{\calG}^{\sigma_0} + 1)}{2}$. 
-% }
-\end{prope}
-%  \begin{lemma}
-%  For any two neighboring permutations $\sigma \approx_{\calG} \sigma'$: 
-%  \begin{align*}
-%      \bigg| \log \frac{\mathbb{P}_{\Theta,\textswab{d}}(\sigma:\sigma_0)}{\mathbb{P}_{\Theta,\textswab{d}}(\sigma':\sigma_0)} \bigg| 
-%      &\leq \theta \Delta(\sigma_0 : \textswab{d}, \calG) 
-%  \end{align*}\label{lem:prop1}
-%  \end{lemma}
- 
-%  The above lemma essentially gives the proof for Prop. \ref{prop:1}.
- 
-%  \begin{lemma}For Kendall's $\tau$ distance,
-%  \begin{align*}
-%      \bigg| \log \frac{\mathbb{P}_{\Theta,\textswab{d}}(\sigma_s:\sigma_0)}{\mathbb{P}_{\Theta,\textswab{d}}(\sigma_s':\sigma_0)} \bigg| \leq \theta \Delta(\sigma_0 : \textswab{d}, \calG)
-%  \end{align*}\end{lemma}
-
-To show the sensitivity of Kendall's $\tau$, we make use of its triangle inequality. 
-
- \begin{proof}
- Recall from the proof of the previous property that the expression $\textswab{d}(\sigma, \sigma_0) = \textswab{d}\big( \sigma_0\sigma, \sigma_0 \big)$, where $\textswab{d}$ is the actual rank distance measure e.g. Kendall's $\tau$. As such, we require that 
- 
- \begin{align*}
-     \big|  \textswab{d}(\sigma_0\sigma_a, \sigma_0) - \textswab{d}(\sigma_0\sigma_b, \sigma_0) \big|
-     &\leq \frac{\omega_{\calG}^{\sigma_0}(\omega_{\calG}^{\sigma_0} + 1)}{2}
- \end{align*}
-
-for any pair of permutations $(\sigma_a, \sigma_b) \in N_\calG$. 
- 
- For any group $G_i \in \calG$, let $W_i \subseteq n$ represent the smallest contiguous subsequence of indices in $\sigma_0$ that contains all of $G_i$. 
-
-For instance, if $\sigma_0 = [2,4,6,8,1,3,5,7]$ and $G_i = \{2,6,8\}$, then $W_i = \{2,4,6,8\}$. Then the group width width is $\omega_i = |W_i| - 1 = 3$. Now consider two permutations neighboring w.r.t. $G_i$, $\sigma_a \approx_{G_i} \sigma_b$, so only the elements of $G_i$ are shuffled between them. We want to bound 
-\begin{align*}
-    \big|  \textswab{d}(\sigma_0\sigma_a, \sigma_0) - \textswab{d}(\sigma_0\sigma_b, \sigma_0) \big| 
-\end{align*}
-For this, we use a pair of triangle inequalities: 
-\begin{align*}
-    \textswab{d}(\sigma_0\sigma_a, \sigma_0\sigma_b) 
-    &\geq \textswab{d}(\sigma_0\sigma_a, \sigma_0) - \textswab{d}(\sigma_0\sigma_b, \sigma_0) 
-    \quad \& \quad 
-    \textswab{d}(\sigma_0\sigma_a, \sigma_0\sigma_b) 
-    &\geq \textswab{d}(\sigma_0\sigma_b, \sigma_0) - \textswab{d}(\sigma_0\sigma_a, \sigma_0)
-\end{align*}
-so, 
-\begin{align*}
-     \big|  \textswab{d}(\sigma_0\sigma_a, \sigma_0) - \textswab{d}(\sigma_0\sigma_b, \sigma_0) \big| &\leq \textswab{d}(\sigma_0\sigma_a, \sigma_0\sigma_b)
-\end{align*}
-
-
-% We make use of the fact that by only permuting the contents of $W_i$ in $\sigma_0$, we can construct some $\sigma_0'$ such that $\textswab{d}(\sigma , \sigma_0) = \textswab{d}(\sigma' , \sigma_0')$. By the triangle inequality, we have
-% \begin{align*}
-% \textswab{d}(\sigma' , \sigma_0) &\leq \textswab{d}(\sigma' , \sigma_0') + \textswab{d}(\sigma_0 , \sigma_0') \\
-% &= \textswab{d}(\sigma , \sigma_0) + \textswab{d}(\sigma_0 , \sigma_0') \\
-% \textswab{d}(\sigma' , \sigma_0) - \textswab{d}(\sigma , \sigma_0) 
-% &\leq \textswab{d}(\sigma_0 , \sigma_0')
-% \end{align*}
-% Thus,
-% \begin{align*}
-%     |\textswab{d}(\sigma , \sigma_0) - \textswab{d}(\sigma' , \sigma_0) |
-%     &\leq |\textswab{d}(\sigma_0 , \sigma_0')|
-% \end{align*}
-Since $\sigma_0\sigma_a$ and $\sigma_0\sigma_b$ only differ in the contiguous subset $W_i$, the largest number of discordant pairs between them is given by the maximum Kendall's $\tau$ distance between two permutations of size $\omega_i + 1$:  
-\begin{align*}
-    |\textswab{d}(\sigma_0\sigma_a , \sigma_0\sigma_b)|
-    &\leq \frac{\omega_i(\omega_i + 1)}{2}
-\end{align*}
-Since $\omega_{\calG}^{\sigma_0} \geq \omega_i$ for all $G_i \in \calG$, we have that 
-\begin{align*}
-    \Delta(\sigma_0 : \textswab{d}, \calG) \leq 
-    \frac{\omega_{\calG}^{\sigma_0}(\omega_{\calG}^{\sigma_0} + 1)}{2}
-\end{align*}
-\end{proof}
- 
-
-
-
-\subsection{Hardness of Computing The Optimum Reference Permutation}\label{app:NP}
-\begin{thm} The problem of finding the optimum reference permutation, i.e., $\sigma^*_0=\arg\min_{\sigma\in \mathrm{S}_n}\omega_{\calG}^{\sigma}$ is NP-hard. \label{thm:NP} \end{thm}
-\begin{proof} We start with the formal
-representation of the problem as follows.
-
-\textit{Optimum Reference Permutation Problem.} Given n subsets $\calG=\{G_i\in 2^{[n]}, i \in [n]\}$,  find the permutation $\sigma^*_0=\arg\min_{\sigma\in \mathrm{S}_n}\omega_{\calG}^{\sigma}$.  
-
-Now, consider the following job-shop scheduling problem.
-
-\textit{Job Shop Scheduling.} There is one job $J$ with $n$ operations $o_i, i \in [n]$ and $n$ machines such that $o_i$ needs to run on machine $M_i$.  Additionally, each machine has a sequence dependent processing time $p_i$. Let $S$ be the sequence till 
-There are $n$ subsets $S_i \subseteq [n]$, each corresponding to a set of operations that need to occur in contiguous machines, else the processing times incur penalty as follows. Let $p_i$ denote the processing time for the machine running the $i$-th operation scheduled. Let $\mathbb{S}_i$ be the prefix sequence  with $i$ schedulings. For instance, if the final scheduling is $ 1\:3\:4\:5\:9\:8\:10\:6\:7\:2$ then $\mathbb{S}_4=1345$. Additionally, let $P^j_{\mathbb{S}_i}$ be the shortest subsequence such of $\mathbb{S}_i$ such that it contains all the elements in $S_j \cap \{\mathbb{S}_{i}\}$. For example for $S_1=\{3,5,7\}$, $P^1_{\mathbb{S}_{4}}=345$. 
-\begin{gather}p_i=\max_{i\in [n]}(|P^j_{\mathbb{S}_i}|-|S_j \cap \{\mathbb{S}_i\}|)\end{gather}
- The objective is to find a scheduling for $J$ such that it minimizes the makespan, i.e., the completion time of the job. Note that $p_n=\max_i{p_i}$, hence the problem reduces to minimizing $p_n$.
-
-\begin{lemma}The aforementioned  job shop scheduling problem with sequence-dependent processing time is NP-hard.\end{lemma}
-\begin{proof} Consider the following instantiation of the sequence-dependent job shop scheduling problem where the processing time is given by $p_i$=$p_{i-1}+w_{kl}, p_1=0$ where $\mathbb{S}_i[i-1]=k$, $\mathbb{S}_i[i]=l$ and $w_{ij}, j\in S_i$  represents some associated weight.    This problem is equivalent to the travelling salesman problem (TSP) \cite{TSP} and is therefore, NP-hard. Thus, our aforementioned job shop scheduling problem is also clearly NP-hard. \end{proof}
-
-\textit{Reduction:}
-Let the $n$ subsets $S_i$ correspond to the groups in $\calG$. Clearly, minimizing $\omega^{\sigma}_{\calG}$ minimizes $p_n$. Hence, the optimal reference permutation gives the solution to the scheduling problem as well. 
-
- \end{proof}
- 
- 
- \begin{figure}[h]
-\begin{subfigure}[b]{\columnwidth}\centering
-    \includegraphics[width=0.7\linewidth]{./figures/BFS_graph.png}
-        \caption{Group graph}
-        \label{fig:BFS:graph}
-    \end{subfigure}\\
-    \begin{subfigure}[b]{\columnwidth}\centering
-    \includegraphics[width=0.5\columnwidth]{./figures/BFS_order.png}
-        \caption{BFS reference permutation $\sigma_0$}
-        \label{fig:BFS:order}
-    \end{subfigure}
-    \caption{Illustration of Alg. 1}
-    \label{fig:alg:example}
-\end{figure}
- 
- 
- \subsection{Illustration of Alg. 1}\label{app:alg:illustration}
- We now provide a small-scale step-by-step example of how Alg. 1 operates. 
- 
- Fig. \ref{fig:BFS:graph} is an example of a grouping $\calG$ on a dataset of $n = 8$ elements. The group of $\DO_i$ includes $i$ and its neighbors. For instance, $G_8 = \{8,3,5\}$. To build a reference permutation, Alg. 1 starts at the index with the largest group, $i = 5$ (highlighted in purple), with $G_5 = \{5,2,3,8,4\}$. As shown in Figure \ref{fig:BFS:order}, the $\sigma_0$ is then constructed by following a BFS traversal from $i=5$. Each $j \in G_5$ is visited, queuing up the neighbors of each $j \in G_5$ that haven't been visited along the way, and so on. The algorithm completes after the entire graph has been visited. 
- 
- The goal is to produce a reference permutation in which the width of each group in the reference permutation $\omega_i$ is small. In this case, the width of the largest group $G_5$ is as small as it can be $\omega_5 =5-1 = 4$. However, the width of $G_4 = \{4,5,7\}$ is the maximum possible since $\sigma^{-1}(5) = 1$ and $\sigma^{-1}(7) = 8$, so $\omega_4 = 7$. This is difficult to avoid when the maximum group size is large as compared to the full dataset size $n$. Realistically, we expect $n$ to be significantly larger, leading to relatively smaller groups. 
- 
- With the reference permutation in place, we compute the sensitivity: 
- \begin{align*}
-     \Delta(\sigma_0 : \textswab{d}, \calG)
-     &= \frac{\omega_4 (\omega_4 + 1)}{2} \\
-     &= 28
- \end{align*}
- Which lets us set $\theta = \frac{\alpha}{28}$ for any given $\alpha$ privacy value. To reiterate, lower $\theta$ results in more randomness in the mechanism. 
- 
- We then sample the permutation $\hat{\sigma} = \mathbb{P}_{\theta, \textswab{d}}(\sigma_0)$. Suppose 
- \begin{align*}
-     \hat{\sigma}
-     &= [3 \ 2\ 5\ 4\ 8\ 1\ 7\ 6]
- \end{align*}
- Then, the released $\bz$ is given as 
-  \begin{align*}
-     \bz = \sigma^* &= \sigma^{-1} \hat{\sigma} (\by)\\
-     &= [y_1 \ y_2\ y_5\ y_8\ y_3\ y_7\ y_6\ y_4]
- \end{align*}
- One can think of the above operation as follows. What was 5 in the reference permutation ($\sigma_0(1) = 5$) is 3 in the sampled permutation $(\hat{\sigma}(1) = 3)$. So, index 5 corresponding to $\DO_5$ now holds $\DO_3$'s noisy data $y_3$. As such, we shuffle mostly between members of the same group, and minimally between groups. 
-
-%\newcommand{\calO}{\mathcal{O}}
-
- The runtime of this mechanism is dominated by the Repeated Insertion Model sampler \cite{RIM}, which takes $\calO(n^2)$ time. It is very possible that there are more efficient samplers available, but RIM is a standard and simple to implement for this first proposed mechanism. Additionally, the majority of this is spent computing sampling parameters which can be stored in advanced with $\calO(n^2)$ memory. Furthermore, sampling from a Mallows model with some reference permutation $\sigma_0$ is equivalent to sampling from a Mallows model with the identity permutation and applying it to $\sigma_0$. As such, permutations may be sampled in advanced, and the runtime is dominated by computation of $\sigma_0$ which takes $\calO(|V| + |E|)$ time (the number of vertices and edges in the graph). 
- 
- A future direction could be exploring even better heuristics for computing $\sigma_0$. One possibility could be based on ranked enumeration of the permutations \cite{deep2021ranked,deep2021enumeration}.
- \subsection{Proof of Thm. \ref{thm:privacy}}\label{app:thm:privacy}
- \textbf{Theorem \ref{thm:privacy}}
- \emph{Alg. 1 is $(\alpha,\calG)$-\name~private. }
- \begin{proof} The proof follows from Prop. \ref{prop:1}. Having computed the sensitivity of the reference permutation $\sigma_0$, $\Delta$, and set $\theta = \alpha / \Delta$, we are guaranteed by Property \ref{prop:1} that shuffling according to the permutation $\hat{\sigma}$ guarantees $(\alpha, \calG)$-\name privacy. 
- 
-%  In the algorithm, we permute by $\sigma_0^{-1} \hat{\sigma}$. Since this is equivalent to first permuting by $\hat{\sigma}$ and then permuting by $\sigma_0^{-1}$, this too guarantees $(\alpha, \calG)$-\name privacy by the immunity to post-processing property (Thm. \ref{theorem:post}).
- \end{proof}.
-% \arc{rearranged the proof a bit, refer to lemma \ref{lem:prop1} to prove this, should be straighforward just need to argue that $\sigma^*$ and $\hat{\sigma}$ have same probabilistic distribution (they have 1:1 mapping) which I think you try to show below. Also no need to refer to Kendall's tau here since the Alg. 1 is generic}
-%  Start with a Lemma: 
-
-%  (Proof essentially by definition of $\Delta$) 
- 
-%  Add a prop
-%  \begin{prop}
-%  If $\sigma \approx_{\calG} \sigma'$, then $\gamma \sigma \approx_{\calG} \gamma \sigma'$ for any $\gamma \in \mathrm{S}$. 
-%  \end{prop}
-%  \begin{proof}
-%  By def'n, for some group $G_i \in \calG$, $\sigma(j) = \sigma'(j)$ for all $j \notin G_i$, then $\gamma(\sigma(j)) = \gamma(\sigma(j))$ for all $j \notin G_i$.   
-%  \end{proof}
- 
-%  Main proof of \ref{thm: privacy} (sketch). We want to show that $\Pr[\bz | \by_{\sigma}] \leq e^\alpha \Pr[\bz | \by_{\sigma'}]$, where $\sigma \approx_{\calG} \sigma'$. Recall from the algorithm that we sample some $\sigma_s$ from Mallows given ref permutation $\sigma_0$, and apply $\sigma_0^{-1} \sigma_s$ to $\by$. Define $\sigma_a$ as the permutation that goes from $\by_{\sigma}$ to $\bz$, $\sigma_z = \sigma_a \sigma$ and $\sigma_z = \sigma_b \sigma'$ for $\by_{\sigma'}$. We then have that 
-%  \begin{align*}
-%      \sigma_0 \sigma_a &= \sigma_s \\
-%      \sigma_0 \sigma_b &= \sigma_s'
-%  \end{align*}
-%  So, $\sigma_s$ must be sampled to get from $\by_\sigma$ to $\bz$ and $\sigma_s'$ needs to be sampled to get from $\by_{\sigma'}$ to $\bz$. From the above proposition we have that $\sigma_s \approx_{\calG} \sigma_s'$. It follows from the above lemma that 
-%  \begin{align*}
-%      \bigg| \log \frac{\mathbb{P}_{\Theta,\textswab{d}}(\sigma_s:\sigma_0)}{\mathbb{P}_{\Theta,\textswab{d}}(\sigma_s':\sigma_0)} \bigg| \leq \theta \Delta(\sigma_0 : \textswab{d}, \calG)
-%  \end{align*}
-% So, setting $\theta = \frac{\alpha}{\Delta(\sigma_0: \textswab{d}, \calG)}$ satisifies our privacy definition. 
-
-% It remains to show that for Kendall $\tau$ that 
-% \begin{align*}
-%     \Delta(\sigma_0 : \textswab{d}, \calG)
-%     &= \frac{w (w+1)}{2}
-% \end{align*}
-
-%  \begin{proof}
-%  \begin{align*}
-%     \bigg| \log \frac{\mathbb{P}_{\Theta,\textswab{d}}(\sigma:\sigma_0)}{\mathbb{P}_{\Theta,\textswab{d}}{(\sigma':\sigma_0)} \bigg| 
-%     &\leq \theta | \textswab{d}(\sigma, \sigma_0) - \textswab{d}(\sigma', \sigma_0) |
-%  \end{align*}
-%  \end{proof}
-
-
- 
-%  The key component of the proof is that the ratio of probabilities 
-%  \begin{align*}
-%      \frac{\Pr[\bz | \by_{\sigma'}]}{\Pr[\bz | \by_\sigma]}
-%  \end{align*}
-% for any neighboring permutations $\sigma, \sigma'$ is given by 
-%  \begin{align*}
-%     \log \frac{\Pr[\bz | \by_{\sigma'}]}{\Pr[\bz | \by_\sigma]}
-%      &= \log \frac{\exp (-\theta \textswab{d}(\sigma, \sigma_0))} 
-%      {\exp (-\theta \textswab{d}(\sigma', \sigma_0)} \\
-%      &\leq \theta \big| \textswab{d}(\sigma, \sigma_0) - \textswab{d}(\sigma', \sigma_0) \big| 
-%  \end{align*}
- 
-\subsection{Proof of Thm. \ref{thm:generalized:privacy}} \label{app:thm:generalized}
-
-\textbf{Theorem \ref{thm:generalized:privacy}} \emph{
-Alg. 1 satisfies $(\alpha',\calG')$-\name privacy for any group assignment $\calG'$ where  $ \alpha'=\alpha\frac{\Delta(\sigma_0 : \textswab{d}, \calG')}{\Delta(\sigma_0 : \textswab{d}, \calG)}$ 
-}
+Finally, to prove Theorem \ref{thm:upper_bound_general}, we note that the proof of Theorem \ref{thm:upper_bound1} essentially works. The only differences are that instead of bounding the robust VC dimension of $\cH$ with respect to $V_X$ in terms of $v$, we must use $v_{ball}$ as we are now considering unions of balls rather than points. As a detail, note that we are using the following minor modification of Proposition \ref{prop:finite-RVC} to bound the robust VC dimension of unions of balls using the robust VC dimension for balls. 
+\begin{prop}
+Let $(\cX,\cH)$ be a hypothesis class whose robust loss class with respect to $r$-balls has VC dimension $v_{\text{ball}}^r$. Then the loss class of $(\cX,\cH)$ with respect to perturbations that are a union of at most $k$ $r$-balls has VC dimension at most $O(v_{\text{ball}}^r\log(v_{\text{ball}}^rk))$.
+\end{prop}
 \begin{proof}
-Recall from Property \ref{prop:1} that we satisfy $(\alpha, \calG)$ \name-privacy by setting $\theta = \alpha / \Delta(\sigma_0:\textswab{d}, \calG)$. Given alternative grouping $\calG'$ with sensitivity $\Delta(\sigma_0:\textswab{d}, \calG')$, this same mechanism provides 
-\begin{align*}
-    \alpha' 
-    &= \frac{\theta}{\Delta(\sigma_0:\textswab{d}, \calG')} \\
-    &= \frac{\alpha / \Delta(\sigma_0:\textswab{d}, \calG)}{\Delta(\sigma_0:\textswab{d}, \calG')} \\
-    &= \alpha \frac{\Delta(\sigma_0:\textswab{d}, \calG')}{\Delta(\sigma_0:\textswab{d}, \calG)}
-\end{align*}
-\end{proof}
-
-
-\subsection{Formal Utility Analysis of Alg. 1}\label{app:utility:formal}
-\begin{thm}For a given set $S \subset [n]$ and Hamming distance metric,  $\textswab{d}_H(\cdot)$,   Alg. 1 is $(\eta,\delta)$-preserving for $\delta=\frac{1}{\psi(\theta, \textswab{d}_H)}\sum_{h=2k+1}^{n} (e^{-\theta\cdot h} \cdot c_h)$ where \scalebox{0.9}{$k=\lceil(1-\eta)\cdot |S|\rceil$} and $c_h$ is the number of permutations with hamming distance $h$ from the reference permutation that do not preserve \scalebox{0.9}{$\eta\%$} of $S$ and is given by
-\begin{gather*}c_h=\sum_{j=k+1}^{\max(l_s,\lfloor h/2\rfloor)}\binom{l_s}{j}\cdot \binom{n-l_s}{j}\cdot \Bigg[\sum_{i=0}^{\min(l_s-j,h-2j)}\binom{l_s-j}{i}\\\cdot \binom{i+j}{j}\cdot f(i,j)\cdot\binom{n-l_s-j}{h-2j-i} \cdot f(h-2j-i,j)!\Bigg]\end{gather*}\begin{gather*}
-f(i,0)=!i, f(0,q)=q!\\
-f(i,j)=\sum_{q=0}^{\min(i,j)}\Bigg[\binom{i}{q}\cdot\binom{j}{j-q}\cdot j! \cdot f(i-q,q)\Bigg]\\l_s=|S|, k=(1-\eta)\cdot l_s, !n=\lfloor \frac{n!}{e}+\frac{1}{2}\rfloor\end{gather*}\end{thm}
-\begin{proof} Let $l_s=|S|$ denote the size of the set $S$ and $k=\lceil (1-\eta)\cdot l_S\rceil$ denote the maximum number of correct values that can be missing from $S$. Now, for a given permutation $\sigma \in \mathrm{S}_n$, let $h$ denote its Hamming distance from the reference permutation $\sigma_0$, i.e, $h=\textswab{d}_H(\sigma,\sigma_0)$. This means that $\sigma$ and $\sigma_0$ differ in $h$ indices.  Now, $h$ can be analysed in the  the following two cases, 
-\par
-\textbf{Case I. $h\leq 2k+1$}
-
-For $(1-\eta)$ fraction of indices to be removed from $S$, we need at least $k+1$ indices from $S$ to be replaced by $k+1$ values from outside $S$. This is clearly not possible for $h\leq 2k+1$. Hence, here $c_h=0$. 
-\par
-\textbf{Case II. $h > 2k$}
-
-For the following analysis we consider we treat the permutations as strings (multi-digit numbers are treated as a single string character). Now,   
- Let $\mathbb{S}_{\sigma_0}$ denote the non-contiguous substring of $\sigma_0$ such that it consists of all the  elements of $S$, i.e., \begin{gather}|\mathbb{S}|=l_S\\
- \forall i \in [l_S], \mathbb{S}_{\sigma_0}[i] \in S \end{gather}  Let $\mathbb{S}_{\sigma}$ denote the substring corresponding to the positions occupied by $\mathbb{S}_{\sigma_0}$ in $\sigma$. Formally,
- \begin{gather}|\mathbb{S}_{\sigma}|=l_S\\
- \forall i \in [l_S], \mathbb{S}_{\sigma_0}[i] = \sigma(\sigma_0^{-1}(\mathbb{S}_{\sigma_0}[i])) \end{gather}  For example, for $\sigma_0=(1\:2\:3\:5\:4\:7\:8\:10\:9\:6), \sigma=(1\:3\:2\:7\:8\:5\:4\:6\:10\:9)$ and $S=\{2,4,5,8\}$, we have $\mathbb{S}_{\sigma_0}=2548$ and $S_{\sigma}=3784$ where $h=\textswab{d}_H(\sigma,\sigma_0)=9$.  Let $\{\mathbb{S}_{\sigma}\}$ denote the set of the elements of string $\mathbb{S}_{\sigma}$.
- Let $A$ be the set of characters in  $\mathbb{S}_{\sigma}$ such that they do not belong to $S$, i.e, $A=\{\mathbb{S}_{\sigma}[i]|\mathbb{S}_{\sigma}[i] \not \in S, i \in [l_S]\}$. Let $B$ be the set of characters in $\mathbb{S}_{\sigma}$ that belong to $S$ but differ from $\mathbb{S}_{\sigma_0}$ in position, i.e., $B=\{\mathbb{S}_{\sigma}[i]|\mathbb{S}_{\sigma}[i] \in S, \mathbb{S}_{\sigma}[i]\neq \mathbb{S}_{\sigma_0}[i], i \in [l_S]\}$. Additionally, let $C=S-\{\mathbb{S}_{\sigma}\}$. For instance, in the above example, $A=\{3,7\}, B=\{4,8\}, C=\{2,5\}$. Now consider  an initial arrangement of $p+m$ distinct objects that are subdivided into two types -- $p$ objects of Type A and m objects of Type B. Let $f(p,m)$ denote the number of permutations of these $p+m$ objects such that the $m$ Type B objects can occupy any position but no object of Type A can occupy its original position. For example, for $f(p,0)$ this becomes the number of derangements \cite{derangement} denoted as $!p=\lfloor \frac{p!}{e} +\frac{1}{2} \rfloor$. Therefore, $f(|B|,|A|)$ denotes the number of permutations of $\mathbb{S}_\sigma$ such that $\textswab{d}_H(\mathbb{S}_{\sigma_0},\mathbb{S}_{\sigma})=|A|+|B|$. This is because if elements of $B$ are allowed to occupy their original position then this will reduce the Hamming distance.  
- \par Now, let $\bar{\mathbb{S}}_{\sigma}$ ($\bar{\mathbb{S}}_{\sigma_0}$) denote the substring left out after extracting from $\mathbb{S}_{\sigma}$ ($\mathbb{S}_{\sigma_0}$) from $\sigma$ ($\sigma_0$). For example, $\bar{\mathbb{S}}_{\sigma}=1256 10 9$ and $\bar{\mathbb{S}}_{\sigma_0}=13710 9 6$ in the above example. Let $D$ be the set of elements outside of $S$  and $A$ that occupy different positions in $\bar{\mathbb{S}}_\sigma$ and $\bar{\mathbb{S}}_{\sigma_0}$ (thereby contributing to the hamming distance), i.e., $D=\{\bar{\mathbb{S}}_{\sigma_0[i]}|\bar{\mathbb{S}}_{\sigma_0[i]} \not \in S, \bar{\mathbb{S}}_{\sigma_0[i]} \neq \bar{\mathbb{S}}_{\sigma[i]}, i \in [n-l_S]\}$. For instance, in the above example $D=\{9,6,10\}$. Hence, $h=\textswab{d}_{H}(\sigma,\sigma_0)=|A|+|B|+|C|+|D|$ and clearly $f(|D|,|C|)$ represents the number of permutations of $\bar{\mathbb{S}}_{\sigma}$ such that $\textswab{d}_H(\bar{\mathbb{S}}_{\sigma},\bar{\mathbb{S}}_{\sigma_0})=|C|+|D|$. Finally, we have 
-\begin{gather*}c_h=\sum_{j=k+1}^{\max(l_s,\lfloor h/2\rfloor)}\underbrace{\binom{l_s}{j}}_{\text{\# ways of selecting set $C$}}\cdot \underbrace{\binom{n-l_s}{j}}_{\text{\# ways of selecting set $A$}}\cdot \Bigg[\\\sum_{i=0}^{\min(l_s-j,h-2j)}\underbrace{\binom{l_s-j}{i}}_{\text{\# ways of selecting set $B$}}\cdot f(i,j)\\\cdot\underbrace{\binom{n-l_s-j}{h-2j-i}}_{\text{\# ways of selecting set $D$}} \cdot f(h-2j-i,j)\Bigg]\end{gather*}
-Now, for $f(i,j)$ let $E$ be the set of original positions of Type A that are occupied by Type B objects in the resulting permutation. Additionally, let $F$ be the set of the original positions of Type B objects that are still occupied by some Type B object. Clearly, Type B objects can occupy these $|E
-|+|F|=m$ in any way they like. However, the type A objects can only result in $f(p-q,q)$ permutations. Therefore, $f(p,m)$ is given by the following recursive function \begin{gather*}
-f(p,0)=!p\\
-f(0,m)=m!\\
-f(p,m)=\sum_{q=0}^{\min{p,m}}\Bigg(\underbrace{\binom{p}{q}}_{\text{\# ways of selecting set $E$}}\cdot\underbrace{\binom{m}{m-q}}_{\text{\# ways of selecting set $F$}}\\\cdot m! \cdot f(p-q,q)\Bigg)\end{gather*}
-
-Thus, the total probability of failure is given by 
-\begin{gather}\delta=\frac{1}{\psi(\theta, \textswab{d}_H)}\sum_{h=2k+2}^{n} (e^{-\theta\cdot h} \cdot c_h)\end{gather}
+The proof is largely the same as \ref{prop:finite-RVC}. Denote the original perturbation family as $U$, and the $k$-union perturbation family by $U^k$. Given a sample $S=(x_1,y_1),\ldots,(x_m,y_m)$, let $C_i$ denote the centers of the at most $k$ balls appearing in the perturbation set of $x_i$. It is enough to observe that any two distinct labelings of $S=(x_1,y_1),\ldots,(x_m,y_m)$ by $\mathcal{L}^{U^k}_{\cH}$ correspond to distinct labelings of the extended sample $T=\bigcup_{i=1}^m (C_i,y_i)$ with respect to $\mathcal{L}^{U}_{\cH}$, where $(C_i,y_i)$ denotes the sample $\bigcup_{c \in C_i} (c,y_1)$. The bound then follows from the same double counting argument as in Proposition \ref{prop:finite-RVC}.
 \end{proof}
 
 
@@ -890,150 +327,10 @@ Thus, the total probability of failure is given by
 
 
 
-%newpage
-\subsection{Additional Experimental Details}\label{app:extraresults}
-\subsubsection{Evaluation of $(\eta,\delta)$-preservation}\label{app:numerical}
-
-\begin{figure*}[ht]
-    \begin{subfigure}[b]{0.32\linewidth}\centering
-    \includegraphics[width=\linewidth]{./figures/eta_alpha.png}
-        \caption{Variation with $\alpha$}
-        \label{fig:eta:alpha}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.32\linewidth}\centering
-    \includegraphics[width=\linewidth]{./figures/eta_width.png}
-        \caption{Variation with $\omega$; $\alpha = 3$}
-        \label{fig:eta:width}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.32\linewidth}\centering
-    \includegraphics[width=\linewidth]{./figures/eta_subset.png}
-        \caption{Variation with $l_S$; $\alpha = 3$}
-        \label{fig:eta:subset}
-    \end{subfigure}
-        \caption{$(\eta,\delta)$-Preservation Analysis}
-        \label{fig: eta delta preservation}
-\end{figure*}
-% \subsubsection{Twitch Dataset Details}
-% \begin{figure}[h]
-% \begin{subfigure}[b]{\columnwidth}\centering
-%     \includegraphics[width=0.8\columnwidth]{Twitch_attack.png}
-%         \caption{Twitch: Attack}
-%         \label{fig:Twitch:attack:1}
-%     \end{subfigure}\\
-%     \begin{subfigure}[b]{\columnwidth}\centering
-%     \includegraphics[width=0.8\columnwidth]{Twitch_utility.png}
-%         \caption{Twitch: Utility}
-%         \label{fig:Twitch:utility:1}
-%     \end{subfigure}
-%     \caption{Twitch dataset results.}
-%     \label{fig:Twitch:dataset}
-% \end{figure}
-
-
-% Here, we present experimental results on an additional dataset based on the \emph{Twitch} social media platform \cite{twitch}. Here, the publicly available information is a social media graph, wherein each node represents a user and each edge represents a mutual friendship. So $t_i$ is the set of mutual friendships for data owner $\DO_i$; the $i$'th row of the graph's adjacency matrix. We have binary sensitive attributes of each user $x_i$ that indicates whether or not the user uses explicit language. The dataset includes 9,498 edges. 
-
-% We let the distance between data owners, $d(t_i, t_j)$, be the path length between them. So if data owners $\DO_i$ and $\DO_j$ mutually follow each other, then $d(t_i, t_j) = 1$. For this dataset, we construct the reference permutation using Alg. 1 with $r = 1$, so the reference permutation $\sigma_0$ is constructed to place $\DO_i$'s friends as close as possible in the reference permutation (and thus are most likely to shuffle together). 
-
-% We formalize the group assignment based on the distance threshold $r$ in Sec. \ref{sec:privacy:def} for the ease of exposition. Notably, the actual privacy definition (Def. \ref{def:privacy}) does not dependent on this formalization -- any arbitrary group assignment for $\calG$ is admissible. Hence, exploring other systematic group assignment policies is an interesting future direction. To this end, in this experiment we present another alternative group assignment policy, where for a fixed group size $g$,
-% \begin{gather*}G_i=\{\text{Top $g$ closest neighbors of $\DO_i$ as measured via $d(\cdot)$} \}\end{gather*}
-% Thus, each data owner $\DO_i$ is assigned an equal sized group $|G_i|$ consisting of its closest `friends' on Twitch. 
-
-% The results are presented in Fig. \ref{fig:Twitch:dataset}. We see that, as we increases the group size afforded to each user, the attack efficacy and utility both gradually decline. Note that, instead of the GBDT calibration model used in the previous experiments, we simply report the empirical distribution of user $i$'s group after shuffling, $\bz_{G_i}$. The utility offered by small to medium group sizes suggests that we can maintain the distribution of sensitive attributes as it varies across the graph.
 
 
 
-
-In this section, we evaluate the characteristics of the  $(\eta,\delta)$-preservation for Kendall's $\tau$ distance $\textswab{d}_\tau(\cdot, \cdot)$.
-
-Each sweep of Fig. \ref{fig: eta delta preservation} fixes $\delta = 0.01$, and observes $\eta$. We consider a dataset of size $n = 10K$ and a subset $S$ of size $l_S$ corresponding to the indices in the middle of the reference permutation $\sigma_0$ (the actual value of the reference permutation is not significant for measuring preservation). For the rest of the discussion, we denote the width of a permutation by $\omega$ for notational brevity. For each value of the independent axis, we generate $50$ trials of the permutation $\sigma$ from a Mallows model with the appropriate $\theta$ (given the $\omega$ and $\alpha$ parameters). We then report the largest $\eta$ (fraction of subset preserved) that at least 99\% of trials satisfy. 
-
-In Fig. \ref{fig:eta:alpha}, we see that preservation is highest for higher $\alpha$ and increases gradually with declining width $\omega$ and increasing subset size $l_s$. 
-
-Fig. \ref{fig:eta:width} demonstrates that preservation declines with increasing width. $\Delta$ increases quadratically with width $\omega$ for $\textswab{d}_\tau$, resulting in declining $\theta$ and increasing randomness. We also see that larger subset sizes result in a more gradual decline in $\eta$. This is due to the fact that the worst-case preservation (uniform random shuffling) is better for larger subsets. i.e. we cannot do worse than $80\%$ preservation for a subset that is $80\%$ of indices. 
-
-Finally, Fig. \ref{fig:eta:subset} demonstrates how preservation grows rapidly with increasing subset size. For large widths, we are nearly uniformly randomly permuting, so preservation will equal the size of the subset relative to the dataset size. For smaller widths, we see that preservation offers diminishing returns as we grow subset size past some critical $l_s$. For $\omega = 30$, we see that subset sizes much larger than a quarter of the dataset gain little in preservation. 
-
-\subsubsection{Adult Dataset}
-\label{app:adult experiments}
-\begin{figure*}[ht]
-    \begin{subfigure}[b]{0.32\linewidth}\centering
-        \includegraphics[width=\linewidth]{./figures/Adult_attack_new.png}
-        %\vspace{-0.15cm}
-        \caption{\textit{Adult}: Attack }%($r$)}
-        \label{fig:Adult:attack}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.32\linewidth}\centering
-    \includegraphics[width=\linewidth]{./figures/Adult_alpha.png}
-        %   \vspace{-0.15cm} 
-        \caption{\textit{Adult}: Attack ($\alpha$)}
-        \label{fig:Adult:alpha}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.32\linewidth}\centering
-   \includegraphics[width=\linewidth]{./figures/Adult_utility_1.png}
-        %\vspace{-0.15cm}
-        \caption{\textit{Adult}: Learnability}
-        \label{fig:Adult:utility}
-    \end{subfigure}
-        \caption{Adult dataset experiments}
-        \label{fig: adult experiments}
-\end{figure*}
-
-
-
-
-
-
-\subsection{Additional Related Work}\label{app:related}
-In this section, we discuss the relevant existing work. \par  The anonymization of noisy responses  to improve differential privacy was first proposed by Bittau et al. \cite{Bittau2017} who proposed a principled system architecture for shuffling. This model was formally studied later in \cite{shuffling1, shuffle2}. Erlingsson et al. \cite{shuffling1} showed that for arbitrary $\epsilon$-\ldp randomizers, random shuffling results in privacy amplification. Cheu et al. \cite{shuffle2} formally defined the shuffle \DP model
-and analyzed the privacy guarantees of the binary randomized response in this model.
-The shuffle \DP model differs from our approach in  two ways. First, it focuses completely on the \DP guarantee. %\ldp is characterized by a privacy parameter (see Section \ref{sec:background}) $\epsilon$, lower the value of $\epsilon$ stronger is the guarantee achieved. 
-The privacy amplification is manifested in the from of a lower $\epsilon$ (roughly a factor of $\sqrt{n}$) when viewed in an alternative \DP model known as the central \DP model. \cite{shuffling1,shuffle2,blanket,feldman2020hiding,Bittau2017,Balcer2020SeparatingL}.  
-However, our result caters to local inferential privacy. Second, the shuffle model involves an uniform random shuffling of the entire dataset. In contrast, our approach the granularity at which the data is shuffled is tunable which delineates a threshold for the learnability of the data. 
-\par A steady line of work has sudied the inferential privacy setting \cite{semantics, Kifer,  IP, Dalenius:1977, dwork2010on, sok}. Kifer et al. \cite{Kifer} formally studied privacy degradation in the face of data correlations and later proposed a  privacy framework, Pufferfish \cite{Pufferfish, Song,Blowfish}, for analyzing inferential privacy. Subsequently, several other privacy definitions have also been proposed for the inferential privacy setting \cite{DDP,BDP,correlated,correlated2,CWP}. For instance, Gehrke et al.  proposed a zero-knowledge privacy \cite{ZKPrivacy,crowd} which is based on simulation semantics. Bhaskar et al. proposed  noiseless privacy \cite{noiseless, TNP} by restricting the set of prior
-distributions that the adversary may have access to.  A recent work by Zhang et al. proposes attribute privacy \cite{AP} which focuses on the sensitive properties of a whole dataset. In another recent work, Ligett et al. study a relaxation of \DP that accounts for mechanisms that leak
-some additional, bounded information about the database 
-\cite{bounded}. Some early work in local inferential privacy include profile-based privacy \cite{profile} by Gehmke et al. where the problem setting comes with a graph of data generating distributions, whose edges encode sensitive pairs of distributions that should be made indistinguishable. In another work by Kawamoto et al., the authors propose distribution privacy \cite{takao} -- local differential privacy for probability distributions.    The major difference between our work and prior research is that we provide local inferential privacy through a new angle -- data shuffling. 
-
-Finally, older works such as $k$-anonymity \cite{kanon},  $l$-diversity \cite{ldiv}, and Anatomy \cite{anatomy} and other \cite{older1, older2, older3, older4, older5} have studied the privacy risk of non-sensitive auxiliary information, or `quasi identifiers' (QIs). In practice, these works focus on the setting of dataset release, where we focus on dataset collection. As such, QIs can be manipulated and controlled, whereas we place no restriction on the amount or type of auxiliary information accessible to the adversary, nor do we control it. Additionally, our work offers each individual formal inferential guarantees against informed adversaries, whereas those works do not. We emphasize this last point since formalized guarantees are critical for providing meaningful privacy definitions. As established by Kifer and Lin in \emph{An Axiomatic View of Statistical Privacy and Utility} (2012), privacy definitions ought to at least satisfy post-processing and convexity properties which our formal definition does.
 
 
 
  
-%Relations between differential privacy andthat has given rise to a set of privacy definitions \cite{DDP,BDP,correlated, correlated2, CWP} (not an exhaustive list)  including zero-knowledge privacy \cite{ZKPrivacy}, crowd-blending privacy \cite{crowd}, noiseless privacy \cite{noiseless, TNP}, Pufferfish framework \cite{Pufferfish, Blowfish, Song} and attribute privacy \cite{AP}. 
-\newpage
-
-
-\subsection{Evaluation of Heuristic}
-\label{apx:heuristic eval}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width = \linewidth]{./figures/heuristic_optimal.png}
-    \caption[Comparison of our heuristic's performance with that of an optimal reference permutation $\sigma^*_0$.]{Comparison of our heuristic's performance with that of an optimal reference permutation $\sigma^*_0$. An optimal $\sigma^*_0$ is generated with every group having size $w$. A graph is generated from this optimal $\sigma^*_0$ from which our heuristic (blue) attempts to reconstruct the optimal permutation. For baselining, the performance of a random $\sigma_0$ selection is plotted (orange). We observe that at worst, our heuristic picks a reference permutation with width $2.5\times$ that of the optimal reference permutation (green). See Section \ref{sec:mechanism} for definition of terms.}
-    \label{fig:heuristic optimal}
-\end{figure}
-
-Algorithm \ref{algo:main} is designed to find a reference permutation $\sigma_0$ with low width $\omega_\calG^\sigma$ w.r.t. the given grouping $\calG$. A low width is desirable, since it leads to low sensitivity $\Delta(\sigma_0 : \textswab{d}, \calG)$, which in turn leads to higher dispersion parameter $\theta = \alpha / \Delta$, and thus less randomness over permutations (higher utility). Theorem \ref{thm:NP} proves that computing the optimal reference permutation (minimum width) is NP-hard. As such, we propose a BFS-based heuristic. 
-
-\textbf{Comparison with optimal reference permutation}\\
-To demonstrate the value of the heuristic used in Alg. \ref{algo:main}, we provide two evaluations of its performance. 
-For our first evaluation, we compare the performance of our heuristic BFS reference permutation selection ($\sigma_0$) with that of the optimal reference permutation  and that of a random reference permutation. As identified by Theorem \ref{thm:NP}, finding the optimal reference permutation for a given grouping $\calG$ is NP-hard. For these experiments, we first create an optimal reference permutation, where each group $G_i \in \calG$ is equally sized $w$ and maximally compact. The optimal width, $\omega_\calG^\sigma$, is then $\min(n, w)$. We then generate a graph from this optimal reference permutation. Finally, we run the BFS reference permutation computation described in Alg. \ref{algo:main} attempting to approximate the optimal $\sigma^*_0$, and compute its width. 
-
-To compare with a naive approach, we also plot the performance of a randomly chosen reference permutation. We expect the maximum width across groups $\omega_\calG^\sigma$ to be large for this technique. If one of the $n$ groups has a single entry low (near 0) in $\sigma_0$ and a single entry high (near $n$) in $\sigma_0$, the width will be near $n$. The random baseline is averaged over 10 trials with a 1 standard deviation envelope plotted (but difficult to see, since the variance is low). 
-
-Figure \ref{fig:heuristic optimal} depicts our findings. Each plot has a different group size $w$, listed at the top, used in the optimal reference permutation. We find that the random baseline (orange) consistently chooses a reference permutation such that $\omega_\calG^\sigma$ is near $n$, as expected. Our method (blue), on the other hand, closely tracks the optimal solution (green). We find that in the worst case, our algorithm's solution has a width $\leq 2.5 \times$ larger than the optimal. Note that for $r = 0$ (upper left), all methods trivially have a width of one, since the corresponding graph has no edges. While there may be room for improvement, we find this to be sufficient for the present work. 
-
-% \newpage
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width = \linewidth]{./figures/heuristic_random.png}
-    \caption[example of our heuristic's performance on randomly generated graphs.]{example of our heuristic's performance on randomly generated graphs. As $r$ increases, so does the connectivity of the random graphs and the average group size (green). As shown by Theorem \ref{thm:NP}, computing the optimal $\omega_\calG^\sigma$ is NP-hard. The average group size (green) in $\calG$ is a loose lower bound on the optimal $\omega_\calG^\sigma$. The performance of a random $\sigma_0$ assignment (orange) is also plotted for reference. Our heuristic BFS algorithm (blue) consistently outperforms the random baseline.}
-    \label{fig:heuristic random}
-\end{figure}
-
-\textbf{Performance on randomly generated graphs}\\
-For our second evaluation, we observe how well our BFS heuristic (in Algorithm \ref{algo:main}) performs on randomly generated graphs. Here, we sample $n$ points uniformly on the unit interval. We then say that the $i$th point's group, $G_i$, consists of all other points within $r$ of it. As $r$ increases, so does the groups size. Since computing the optimal reference permutation is NP-hard (Theorem \ref{thm:NP}), we do not show the optimal width. Instead, we show a loose lower bound of the optimal width (green) by plotting the average group size for a given $r$ (recall that the width is greater than or equal to the largest group size, so we expect this to be a loose lower bound, solely for reference). For comparison, we evaluate the performance of a random $\sigma_0$ choice as well. For both of these methods, we run 10 trials of generating a random graph (and picking a random $\sigma_0$) at each value of $n$ and plot the mean along with a 1 standard deviation envelope, which is difficult to see due to low variance. 
-
-Figure \ref{fig:heuristic random} depicts our findings. We find that --- across values of $n$ and $r$ --- our heuristic (blue) significantly outperforms the random baseline (orange). Additionally, we observe the trends we expect. For a low $r$ values, our heuristic BFS algorithm chooses a $\sigma_0$ with width close to the lower bound (green) of the optimal width $\omega_{\calG}^\sigma$. As $r$ increases, the graph become significantly more connected. Both the lower bound and our heuristic move closer to the width of the random baseline. Note that for $r = 0$ (upper left), all methods trivially have a width of one, since the corresponding graph has no edges. Ultimately, these findings indicate that our heuristic for computing $\sigma_0$ significantly outperforms a naive random choice, and follows the same trend as the lower bound of the optimal. 

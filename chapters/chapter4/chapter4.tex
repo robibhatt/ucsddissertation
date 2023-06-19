@@ -1,8 +1,451 @@
-\graphicspath{{./chapters/chapter4/}}
-\chapter{Privacy Implications of Shuffling}
+\graphicspath{{./chapters/chapter3/}}
+%\newtheorem{thm}{Theorem}
+%\newtheorem{lem}[thm]{Lemma}
+%\DeclareMathOperator*{\argmax}{arg\,max}
+%\DeclareMathOperator*{\argmin}{arg\,min}
 
-\input{chapters/chapter4/defs}
-\input{chapters/chapter4/intro}
-\input{chapters/chapter4/background}
-\input{chapters/chapter4/methods}
-\input{chapters/chapter4/evaluation}
+\newtheorem*{rep@theorem}{\rep@title}
+\newcommand{\newreptheorem}[2]{%
+\newenvironment{rep#1}[1]{%
+ \def\rep@title{#2 \ref{##1}}%
+ \begin{rep@theorem}}%
+ {\end{rep@theorem}}}
+\makeatother
+%\newtheorem{thm}{Theorem}
+\newreptheorem{thm}{Theorem}
+%\newtheorem{lem}[thm]{Lemma}
+\newreptheorem{lem}{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newreptheorem{prop}{Proposition}
+%\newtheorem{cor}[thm]{Corollary}
+\newreptheorem{cor}{Corollary}
+\newtheorem{claim}{Claim}
+
+\newtheorem{innercustomgeneric}{\customgenericname}
+\providecommand{\customgenericname}{}
+\newcommand{\newcustomtheorem}[2]{%
+  \newenvironment{#1}[1]
+  {%
+   \renewcommand\customgenericname{#2}%
+   \renewcommand\theinnercustomgeneric{##1}%
+   \innercustomgeneric
+  }
+  {\endinnercustomgeneric}
+}
+
+\newcustomtheorem{customthm}{Theorem}
+\newcustomtheorem{customlemma}{Lemma}
+\newcustomtheorem{customprop}{Proposition}
+
+\newcommand{\defref}[1]{Definition~\ref{#1}}
+\newcommand{\tabref}[1]{Table~\ref{#1}}
+\newcommand{\figref}[1]{Fig.~\ref{#1}}
+\newcommand{\eqnref}[1]{\text{Eq.}~(\ref{#1})}
+\newcommand{\secref}[1]{\textnormal{Section}~\ref{#1}}
+\newcommand{\appref}[1]{Appendix \ref{#1}}
+\newcommand{\stepref}[1]{Step \ref{#1}}
+%\newcommand{\appref}[1]{the Appendix} % for short version of the paper
+\newcommand{\thmref}[1]{Theorem~\ref{#1}}
+\newcommand{\corref}[1]{Corollary~\ref{#1}}
+\newcommand{\propref}[1]{Proposition~\ref{#1}}
+\newcommand{\lemref}[1]{Lemma~\ref{#1}}
+\newcommand{\conref}[1]{Condition~\ref{#1}}
+\newcommand{\assref}[1]{Assumption~\ref{#1}}
+\newcommand{\algref}[1]{Algorithm~\ref{#1}}
+\newcommand{\egref}[1]{Example~\ref{#1}}
+\newcommand{\algoref}[1]{Algorithm~\ref{#1}}
+
+\newcommand{\op}[1]{\operatorname{#1}}
+\newcommand{\paren} [1] {\ensuremath{ \left( {#1} \right) }}
+\newcommand{\parenb} [1] {\ensuremath{ \big( {#1} \big) }}
+\newcommand{\bigparen} [1] {\ensuremath{ \Big( {#1} \Big) }}
+\newcommand{\biggparen} [1] {\ensuremath{ \bigg( {#1} \bigg) }}
+\newcommand{\Biggparen} [1] {\ensuremath{ \Bigg( {#1} \Bigg) }}
+\newcommand{\bracket}[1]{\left[#1\right]}
+\newcommand{\tuple}[1]{\ensuremath{\left\langle #1 \right\rangle}}
+\newcommand{\set}[1]{\ensuremath{\left\{#1\right\}}}
+\newcommand{\curlybracket}[1]{\ensuremath{\left\{#1\right\}}}
+\newcommand{\norm}[2]{\ensuremath{\left\langle#1,\:#2\right\rangle_{\cH_{\rK}}}}
+\newcommand{\normg}[2]{\ensuremath{\left\langle#1,\:#2\right\rangle}}
+\newcommand{\condcurlybracket}[2]{\ensuremath{\left\{#1\left\lvert\:#2\right.\right\}}}
+\newcommand{\inmod}[1]{\ensuremath{\left\lvert\left\lvert#1\right\rvert\right\rvert}}
+\newcommand{\boldalpha}{\ensuremath{\boldsymbol{\alpha}}}
+
+\def\ind{\mathbbm{1}}
+\def\oc{Online\_Cluster}
+\def\ocns{No\_Sub\_Cluster}
+\def\mem{\mathcal M}
+\def\E{\mathbb{E}}
+\def\R{\mathbb{R}}
+\def\OC{\text{OC}}
+\def\cH{\mathcal H}
+\def\reals{\mathbb{R}}
+\def\cD{\mathcal D}
+\def\Ev{\mathbb{E}}
+\def\cO{\mathcal O}
+\def\cX{\mathcal X}
+\def\cU{\mathcal U}
+\def\cM{\mathcal M}
+
+
+
+\chapter{Robust Empirical Risk Minimization with Tolerance} 
+
+\section{Introduction}
+
+Adversarially robust classification is a staple of modern machine learning. In the robust setting, along with meeting standard accuracy guarantees, predictions made by a learner at test time must additionally be robust to adversarial perturbations to the input, typically defined by a fixed family $\mathcal{U}=\{U_x\}_{x \in X}$ of possible perturbations. Developing robust algorithms with provable guarantees has been an important research direction in recent years, both for parametric \cite{loh18, attias19, Srebro19, bartlett19, pathak20} and non-parametric \cite{WJC18, YRWC19, Bhattacharjee20, Bhattacharjee21} classifiers, but understanding the performance of even the most basic algorithms in the setting remains open.
+
+In this work, we study one of the simplest, most fundamental algorithmic paradigms in learning, a classical method called \textit{empirical risk minimization} (ERM). In the robust setting, an algorithm is said to be an empirical risk minimizer (RERM) if it always outputs a hypothesis in the class with minimal \textit{robust} risk over its training data. In the standard setting, it is a classical result that any learnable class is learnable (near-optimally) by any ERM. Unfortunately, this is known to fail drastically in the robust setting---\citet{Srebro19} showed that there exist finite VC classes, $\mathcal{H}$, where no algorithm outputting hypotheses in $\mathcal{H}$ (called a \textit{proper} learner) can converge towards the optimal classifier, even with arbitrary amounts of training data. Conversely, such classes \textit{are} in fact robustly learnable, but require complicated improper learning rules and a potentially exponential number of samples.
+
+The failure of Robust ERM for general classes raises an interesting question: \textit{are there natural sufficient conditions for the success of RERM?} One obvious answer to this question is the notion of robust VC dimension, a combinatorial parameter promising the success of RERM. However, bounding robust VC is typically difficult, and such results are only known for very specialized examples of classifiers and robustness regions (e.g.\ linear classifiers under fixed-radius balls \citep{Cullina18} or other simple margin structures \cite{pathak20}, or VC-classes under finite perturbation sets \citep{attias19}). To our knowledge there are no corresponding results for more general robustness regions and hypothesis classes beyond these special cases.
+
+% Although there is some recent work indicating this may be possible (for example  gives sample complexity bounds for learning robust linear classifiers), these works are typically restricted to specific examples of classifiers and robustness regions, with the most common example being the case that all robustness regions are ball within some norm of a fixed radius. 
+% However, to our knowledge, there are no corresponding results for the general case of arbitrary robustness region.
+
+Given the current failure of combinatorial techniques in this setting, one might instead hope to show RERM works given sufficiently nice \textit{geometric} conditions on the hypothesis class. Sadly, this is not the case. We show that there exist robustness regions for which RERM (indeed any proper algorithm) fails even for settings as simple as (bounded) linear classifiers.
+\begin{thm}[Failure of RERM for Linear Classifiers]\label{thm:intro1}
+For any $W>0$ and $d>1$, let $\cH_W$ denote the set of linear classifiers with distance at most $W$ from the origin. Then there exists a set of robustness regions $U$ over $\R^d$ such that for any proper learning algorithm $L$ there exists a distribution $\cD$ for which the following hold:
+\begin{itemize}
+	\item \textbf{$\cD$ is realizable}: There exists $h^* \in \cH_W$ such that $\ell_U(h^*, \cD) = 0$.
+	\item \textbf{$L$ has high error}: With probability at least $\frac{1}{7}$ over $S \sim \cD^m$, $\ell_U(L(S), \cD) > \frac{1}{8}$. 
+\end{itemize}
+\end{thm}
+
+With this in mind, we turn our attention to a different approach: relaxing the notion of robustness itself. We'll consider a recent model of \citet{Urner22} called \textit{tolerant} robust learning. In the tolerant setting, the learner is only required to compete with the best loss over a relaxed family of perturbation sets $\mathcal{U}^\gamma$ for a (potentially arbitrary) tolerance parameter $\gamma >0$. \citet{Urner22} studied this setting in the special case of radius $r$ balls, where the learner competes with robust error against $r(1 + \gamma)$-balls. Under this framework, \citet{Urner22} give an algorithm with PAC-guarantees for VC classes using significantly fewer samples, but their techniques remain improper and only hold for the simplest robustness setting.
+
+In this work, we show that a simple variant of RERM in the tolerant model indeed succeeds under natural geometric conditions on the hypothesis class. In particular, we study a notion of smoothness called \textit{regularity}, which roughly promises that every point in the instance space should be contained in some ball of the same label. This captures many well-studied settings, such as cases where the decision boundaries are compact, differential manifolds in $\mathbb{R}^d$.
+\begin{thm}[Tolerant RERM for Regular Classes]\label{thm:upper_bound1}
+Let $\cH$ be a regular hypothesis class with VC dimension $v$ over $\mathbb{R}^d$, and let $\mathcal{U}$ be any set of robustness regions. Then $TolRERM$ tolerantly PAC-learns $(\cH, \mathcal{U})$ with tolerant sample complexity 
+\[
+m(\epsilon, \delta, \gamma)  = O\left( \frac{vd\log \frac{d\text{Diam}(U)}{\epsilon\gamma\delta}}{\epsilon^2}\right),
+\]
+where $\text{Diam}(U)$ denotes the maximum $\ell_2$ diameter across robustness regions $U_x$. 
+\end{thm}
+Theorem \ref{thm:upper_bound1} matches the sample complexity given in \citet{Urner22} up to logarithmic factors and enjoys the additional benefits of applying to more general robustness regions along with its properness and general algorithmic simplicity. For completeness, we also analyze our algorithm's performance over non-regular classifiers in Appendix \ref{sec:proof_extension}, and show that it has a similar performance albeit at the cost of replacing the VC-dimension with $v_{\text{ball}}$, the robust VC dimension of $\cH$ over balls of a fixed radius. Thus, for non-regular hypothesis classes, our algorithm gives a reduction from arbitrary robustness regions to the case where they are all balls of a fixed radius.
+
+Finally it's worth noting that while \citet{Urner22} only requires sampling access to the perturbation sets, stronger access such as an empirical risk minimizer is inevitable in the general setting where $\mathcal{U}$ is unknown. We show that there exists hypothesis classes where $\Omega((\frac{D}{\gamma})^d)$ queries to a sampling oracle are required for robust learning with tolerance if no other interaction with $U_x$ is permitted.
+
+While Theorem \ref{thm:upper_bound1} gives a natural sufficient condition for the success of RERM in relaxed settings, many questions in this direction remain wide open. It would be interesting to identify a necessary condition for the success of RERM, both in the tolerant and original robust models. Furthermore, it should be noted that while we prove RERM fails to learn nice classes in the latter, the perturbation family we use to achieve this is highly combinatorial. As such, there is still hope that RERM may be sufficient in the traditional setting under \textit{joint} niceness conditions on $\mathcal{H}$ and $\mathcal{U}$, though the close interplay between the two families seems to make identifying such a condition difficult, if it is indeed possible at all.
+
+
+\section{Related Work}
+
+Much of the work on adversarial robustness \citep{Carlini17, Liu17, Papernot17, Papernot16, Szegedy14, Hein17, Katz17, Wu16,Steinhardt18, Sinha18} is done in the context of neural networks.
+
+On the theoretical side, there has been a recent focus on developing algorithms with guarantees in convergence towards an optimal classifier. On the parametric side, several works \citep{loh18, attias19, Srebro19, bartlett19, pathak20, Cullina18} have focused on distribution agnostic bounds on the amount of data required to converge towards the optimal classifier in a given hypothesis class. For example, \citet{Srebro19} showed through an example that the VC dimension of robust learning may be much larger than standard or accurate learning indicating that the sample complexity bounds may be higher. There has also been some work considering the computation complexity required for robust learning such as \citet{Kane20}.
+
+
+Aside from \citet{Urner22}, there are several works which also consider variations on robust learning with tolerance. \citet{YRWC19} and \citet{Bhattacharjee20} show that certain non-parametric algorithms exhibit a type of tolerant behavior when robustness regions are constrained to be balls of radius $r$. \citet{Omar22} considers robustness in the \textit{transductive learning setting}. Their work employs a similar idea to \citet{Urner22} in that they consider expanded perturbation sets when giving their formal guarantees. However, their expansions are not based on tolerance $\gamma > 0$.
+
+\section{Preliminaries}
+Let $\cH$ be a family of binary classifiers $\{h: \mathbb{R}^d \to \{\pm 1\}\}$, and $U = \{U_x \subseteq \R^d: x \in \reals^d\}$ any set of robustness regions. 
+% We make no assumptions about $U$ except for each $U_x$ having $\ell_2$ diameter at most $D$. 
+We define the robust loss function with respect to $U$ as follows.
+\begin{defn}
+Let $h \in \cH$ be a classifier and $(x,y) \in \reals^d \times \{\pm 1\}$ be a labeled point. Then the \textbf{robust loss} of $h$ over $(x, y)$, denoted $\ell_U(h, (x,y))$, is defined as 
+\begin{align*}
+  \ell_{U}(h, (x,y)) = \begin{cases} 1 & \exists x' \in U_x\text{ such that }h(x') \neq y \\0 & \text{otherwise.} \end{cases}.  
+\end{align*}
+%$$$$ 
+That is, $h$ achieves a loss of $0$ only if it labels all points in $U_x$ as $y$. 
+\end{defn}
+
+For a distribution, $\cD$ over $\reals^d \times \{\pm 1\}$, we let $ \ell_U(h, \cD)$ denote the expected loss $h$ pays over a labeled point drawn from $\cD$. That is, $\ell_U(h, \cD) = \Ev_{(x,y) \sim \cD}[\ell_U(h, (x,y))]$. 
+
+Similarly, for a set of $n$ labeled points, $S$, we let $\ell_U(h, S)$ denote the average robust loss $h$ pays over $S$. that is, $\ell_U(h, S) = \frac{1}{n} \sum_{i=1}^n \ell_U(h, (x_i, y_i))$. 
+
+We will also use $||x - x'||$ to denote the $\ell_2$ distance between $x$ and $x'$, and $B(x, r)$ to denote the (closed) $\ell_2$ ball centered at $x$ with radius $r$.
+
+\subsection{Robust PAC-learning}
+
+We now review a natural generalization of PAC learning to the robust setting called robust PAC-learning \citep{Srebro19}. 
+
+\begin{defn}\label{defn:rob_pac}
+Let $\cH$ be a hypothesis class and $U$ be a set of robustness regions. A learner $L$ \textbf{robustly PAC-learns} $(\cH, U)$ if for every  $\epsilon, \delta > 0$, there exists $m(\epsilon, \delta)$ such that for all $n \geq m(\epsilon, \delta)$, for all data distributions, $\cD$, with probability $1-\delta$ over $S \sim \cD^n$, $$\ell_{U}(\hat{h}, \cD) \leq \min_{h \in \cH} \ell_{U}(h, \cD) + \epsilon,$$ where $\hat{h} = L(S)$ denotes the classifier in $\cH$ outputted by $L$ from training sample $S$. $m(\epsilon, \delta)$ is said to be the \textbf{sample complexity} of $L$ with respect to $(\cH, U)$. 
+\end{defn}
+
+Algorithms that are able to robustly PAC-learn a pair $(\cH, U)$ are the natural robust analogs of standard learning algorithms, and thus an important question is understanding how the sample complexities, $m(\epsilon, \delta)$, for doing so are bounded.
+
+\section{Robust Empirical Risk Minimization on Linear Classifiers}
+
+\looseness-1\citet{Srebro19} showed that there exist hypothesis classes $\cH$ with bounded VC dimension, and robustness regions $U$, such that proper robust PAC-learning is not possible, meaning no matter how much data one is allowed, there always exists a distribution where the learner will suffer high robust loss.
+
+However, for many practical examples, this does not appear to be the case -- for example, \cite{Cullina18} showed that when $\cH$ is the set of all linear classifiers and $U$ is the set of robustness regions with $U_x = B(x, r)$, the sample complexity of robustly learning with RERM is at most $m(\epsilon, \delta) = \tilde{O}\left(\frac{d}{\epsilon^2}\right)$, matching the standard complexity for linear classification. 
+
+Motivated by recent interest in more general robustness regions than balls of a fixed radius, we consider the case where $\cH$ is a natural hypothesis class, but $U$ is a potentially arbitrary robustness region. That is, we ask the following question: are there examples of natural hypothesis classes for which there exist robustness regions leading to arbitrary high sample complexities?
+
+Unfortunately, the answer turns out to be yes. To show this, we begin by defining the natural hypothesis class of \textit{bounded} linear classifiers.
+\begin{defn}\label{defn:bounded_linear}
+A $W$-bounded linear classifier, $f: \R^d \to \R^d$, is a linear classifier $h$ whose decision boundary has distance at most $W$ from the origin. That is, there exist $w \in \R^d$ and , $b\in \R$ with $\frac{|b|}{||w||} \leq W$ such that $$h(x) = \begin{cases}1 & \langle w, x \rangle + b \geq 0 \\ -1 & otherwise \end{cases}.$$ We let $\cH_W$ denote the class of all $W$-bounded linear classifiers
+\end{defn}
+The boundedness condition, $W$, can be thought of as a regularization term which is common during any kind of practical optimization.
+
+We now show that there exist robustness regions, $U$, for which $(\cH_W, U)$ is not robustly PAC-learnable, even in the realizable setting. For convenience, we restate Theorem \ref{thm:lower_bound1} from the introduction.
+
+% \begin{theorem}\label{thm:lower_bound}
+% Let $W > 0$ be arbitrary and let $m > 0$ be any integer. Then there exists a set of robustness regions $U$ over $\R^d$ such that for any learning algorithm $L$, there exists a distribution $\cD$ for which the following hold:
+% \begin{itemize}
+% 	\item There exists $h^* \in \cH_W$ such that $\ell_U(h^*, \cD) = 0$.
+% 	\item With probability at least $\frac{1}{7}$ over $S \sim \cD^m$, $\ell_U(L(S), \cD) > \frac{1}{8}$. 
+% \end{itemize}
+% \end{theorem}
+\begin{thm}\label{thm:lower_bound1}
+For any $W>0$ and $d>1$, there exists a set of robustness regions $U$ over $\R^d$ such that for any learning algorithm $L$ there exists a distribution $\cD$ for which the following hold:
+\begin{itemize}
+	\item \textbf{$\cD$ is realizable}: There exists $h^* \in \cH_W$ such that $\ell_U(h^*, \cD) = 0$.
+	\item \textbf{$L$ has high error}: With probability at least $\frac{1}{7}$ over $S \sim \cD^m$, $\ell_U(L(S), \cD) > \frac{1}{8}$. 
+\end{itemize}
+\end{thm}
+
+% Theorem \ref{thm:lower_bound} immediately implies that there exist $U$ for which the sample complexity, $m(\epsilon, \delta)$ is arbitrarily high for any learner.
+Theorem \ref{thm:lower_bound1} consequently shows that the observations made in \cite{Srebro19} hold even over practical hypothesis classes such as (bounded) linear classifiers.
+
+To prove Theorem \ref{thm:lower_bound1}, we begin with the following critical lemma.
+\begin{lem}\label{lem:finding_shatter}
+For every $M \in \mathbb{N}$ there exists a family of $M$ subsets of $\R^d$
+\[
+Z^{(M)} \coloneqq \left\{Z^{(M)}_1, Z^{(M)}_2, \dots, Z^{(M)}_M\right\}
+\]
+satisfying the following conditions:
+\begin{itemize}
+	\item For every $h \in \cH_W$, there exists $z \in Z^{(M)}$ such that $h(z) = 1$.
+	\item For every $1 \leq i \leq M$, there exists $h_i \in \cH_W$ such that $h_i(z) = -1$ for all $z \in \cup_{j \neq i} Z^{(M)}_j$.
+	\item The sets $\{Z^{(M)}\}_{M \in \mathbb{N}}$ are mutually disjoint.
+\end{itemize}
+\end{lem}
+
+\begin{proof}
+Let $\{\beta_i\}_{i \in \mathbb{N}} > 0$ be a strictly decreasing sequence of sufficiently small real numbers (that we will specify later). For notational simplicity, fix an $M \in \mathbb{N}$ and write $\beta=\beta_M$ and $W' = (1 + \beta)W$. For any $r > 0$, let $S_r^{d-1}$ denote the $(d-1)$-sphere centered at the origin of radius $r$.
+
+Observe that for any $x \in S_W^{d-1}$, there exists a unique classifier $h \in \cH_W$ whose decision boundary is tangent to $S_W^{d-1}$ at $x$ so that $h(x) = 1$. We denote this classifier as $h_x$. It follows that the set of all points on $S_{W'}^{d-1}$ that $h_x$ classifies as $1$ can be easily characterized in terms of $x$. In particular, by the definition of $h_x$, it follows from geometry that
+\begin{equation}\label{eqn:lol_i_literally_used_law_of_cosines}
+\curlybracket{z: h_x(z) = 1, z \in S_{W'}^{d-1}} = \curlybracket{z: ||z - (1+\beta)x|| \leq W\sqrt{2\beta(\beta + 1)}, z \in S_{W'}^{d-1}}.
+\end{equation}
+
+Let $r_\beta = 2W\sqrt{2\beta(\beta + 1)}$, and let $z_1, z_2, \dots, z_{M_{\beta}}$ denote a a greedy $r_\beta$ cover of $S_{W'}^{d-1}$, meaning that points are successively selected from $S_{W'}^{d-1}$ until no point with distance strictly greater than $r_\beta$ from all other points can be selected. Finally, define $Z_i=Z_i^{(M)}$ as the set of elements in $S_{W'}^{d-1}$ with nearest neighbor $z_i$ (ties broken arbitrarily).
+
+We claim that this construction suffices for $M_\beta \geq M$. First, observe that $\lim_{\beta \to 0} r_\beta = 0$, which means that for sufficiently small $\beta$ that $M_\beta$ will be arbitrarily large (thus satisfying $M_\beta \geq M$). So select any $\beta$ for which this hold, and merge enough regions so that we are left with exactly $M$ regions (i.e. set $Z_{M} = \cup_{i = M}^{M_\beta} Z_i$). Note that we can always choose $0<\beta< \beta_{M-1}$ since the naturals can be embedded into any interval. We now verify the two stipulations of Lemma \ref{lem:finding_shatter}. 
+
+The first stipulation clearly holds since $\{Z_i\}_{i=1}^M$ partition $S_{W'}^{d-1}$ and every halfspace $h \in \cH_W$ intersects the latter by construction.
+
+For the second stipulation, observe that for any $i$, the ball centered at $z_i$ of radius $\frac{r_\beta}{2}$, $B\left(z_i, \frac{r_\beta}{2}\right)$, does not intersect $Z_j$ for any $i \neq j$. This is because such an intersection would imply by the triangle inequality that $||z_i - z_j|| \leq r_\beta$, which is a contradiction. This observation allows us to find a classifier, $h_i$, as desired --  we set $h_i$ to be the previously defined classifier, $h_{\frac{z_i}{1 + \beta}}$. Equation \ref{eqn:lol_i_literally_used_law_of_cosines} implies that the only points in $S_{W'}^{d-1}$ that it will classify as $1$ are precisely the points in $B\left(z_i, \frac{r_\beta}{2}\right) \cap S_{W'}^{d-1}$. Since this is a subset of $Z_i$, the second stipulation is met, as desired.
+
+Finally, it is left to observe that over each choice of $M$ these $Z^{(M)}$ are mutually disjoint. This is true so long as the choices of $\beta$ themselves are disjoint, since $Z^{(M)}$ lies in the sphere of radius $W(1+\beta_M)$. As noted previously it is easy to see $\{\beta_M\}$ can be chosen in this manner in an inductive fashion.
+\end{proof}
+
+We are now sketching a proof for Theorem \ref{thm:lower_bound1}, with the full proof deferred Appendix \ref{sec:lower_bound_proof}.
+
+\paragraph{Proof Sketch: (Theorem \ref{thm:lower_bound1})} 
+
+Our goal is to show that for any $m \in \mathbb{N}$, any learner on $m$ samples must fail with constant probability. Fix any $m$. The main idea will be to construct a set of robustness regions, $U_{x_1}, U_{x_2}, \dots, U_{x_{3m}}$ such that any classifier in $\cH_W$ will lack robustness on at least $m$ of them.  T
+
+Toward this end, set $M = \binom{3m}{m}$, and let $Z^{(M)}_1, Z^{(M)}_2, \dots, Z^{(M)}_M$ be subsets of $\R^d$ as described by Lemma \ref{lem:finding_shatter} (we will drop the superscript in what follows). Let $\mathcal{M}$ denote the set of all subsets of $\{1, \dots, 3m\}$ with exactly $m$ elements. Associate with each $Z_i$ a unique element of $\mathcal{M}$, thus allowing us to rename our subsets as $\{Z_T: T \in \mathcal{M}\}.$ We now define $$U_{x_i} = \cup_{T: i \in T} Z_T,$$ where $x_i$ is an arbitrary point inside $U_{x_i}$.
+
+Lemma \ref{lem:finding_shatter} that if all $x_i$ are given a label of $-1$, then any $h \in \cH_W$ will label some (for some set $T$) some $z \in Z_T$ as $+1$, thus causing it to lack robustness on \textit{all} $i \in T$. Conversely, we see that for any $T$, there is a classifier $h_T \in \cH_W$ that is accurate and robust at all $x_i$ with $i \notin T$. 
+
+
+With these observations, we are now prepared to show that for any learner $L$, there exists a distribution $D$ for which $L$ has large expected robust loss. To do this, we use a standard lower bound technique found in \cite{ml_book} that was adapted to the robust setting in \cite{Srebro19}. The idea will be to pick $D$ to be the uniform distribution over a random subset of $2m$ points in $\{x_1, \dots, x_{3m}\}$. We will then argue that because $L$ only has access to $m$ points from $D$, it won't be able to distinguish which subset $D$ corresponds to, and this will lead to a large expected loss. $\square$
+
+As demonstrated in Lemma \ref{lem:finding_shatter}, the robustness regions $U$ used in our lower bound are combinatorial in nature and unlikely to represent any practical kinds of robustness regions. Nevertheless, our lower bound does show that naturality assumptions on the hypothesis class alone are \textit{not} sufficient for ensuring robust PAC-learnability.
+
+A natural next step would be to fully characterizes pairs $(\cH, U)$ for which proper robust PAC-learnability is possible, but we leave this as a direction for future work. We instead turn towards relaxing the requirements of the robust PAC-learning model in order to find algorithms that are able to succeed in the case that $\cH$ is natural but $U$ is arbitrary. 
+
+\section{Tolerant PAC learning}
+
+Theorem \ref{thm:lower_bound1} implies that for complex robustness regions, robust PAC-learning (Definition \ref{defn:rob_pac}) is not possible, even when $\cH$ is a simple hypothesis class. Thus, robust learning will require other ideas.
+
+One such idea is Tolerant PAC-learning, introduced in \citet{Urner22}. Here, the idea is to relax the goal of robust PAC-learning by introducing a tolerance parameter $\gamma$ representing the amount of ``slack" the learner gets with respect to the robustness regions $U$. We now expand their definition to arbitrary robustness regions by introducing \textit{perturbed regions}, $U^\gamma$, which are defined as follows.  
+
+\begin{defn}
+Let $U$ be a set of robustness regions and $\gamma > 0$ be a distance. For any point $x \in \reals^d$, define $U_x^\gamma$ as the set of all points with distance at most $\gamma$ from $U_x$. That is, $$U_x^\gamma = \{x': ||x' - U_x|| \leq \gamma\}.$$ Finally, we let $U^\gamma = \{U_x^{\gamma}: x \in \reals^d\}$ denote the set of \textbf{$\gamma$-perturbed regions} of $U$. 
+\end{defn}
+
+Tolerant PAC-learning is then defined as follows
+\begin{defn}\label{defn:tol_pac}
+Let $\cH$ be a hypothesis class and $U$ a set of robustness regions. A learner $L$ \textbf{tolerantly PAC-learns} $(\cH, U)$ if for every  $\epsilon, \delta, \gamma > 0$, there exists $m(\epsilon, \delta, \gamma)$ such that for all $n \geq m(\epsilon, \delta, \gamma)$, for all data distributions, $\cD$, with probability $1-\delta$ over $S \sim \cD^n$, $$\ell_U(\hat{h}, \cD) \leq \min_{h \in \cH} \ell_{U^\gamma}(h, \cD) + \epsilon,$$ where $\hat{h} = L(S)$ denotes the classifier outputted by $L$ from training sample $S$. As before, we let $m(\epsilon, \delta, \gamma)$ denote the \textbf{tolerant sample complexity} of $L$ with respect to $(\cH, U)$. 
+\end{defn}
+
+\subsection{Tolerant RERM oracles}
+
+Because our robustness regions, $U_x$, are arbitrary subsets of $\R^d$, any learning algorithm will require some sort of access to $U$. We describe this access through an oracle for $U$. 
+
+\citet{Urner22} employs a \textit{sampling oracle} for $U$ which allows the learner to sample points at uniform from the set $U_x$ for any point $x$. In their setting, $U_x$ is constrained to be a closed ball of known radius centered at $x$, and consequently the sampling oracle selects points from the uniform distribution over the ball. We say that a robust learner is in the \textit{sampling model} if its only way of interacting with the regions $U_x$ is through a sampling oracle.
+
+In our setting, where $U_x$ can be an arbitrary regions, sampling oracles pose a significant challenge -- there exists choices of $U$ for which tolerant PAC learning requires an exponential number of queries to the sampling oracle. We state this as a proposition with the proof in Appendix \ref{app: lower bound}.
+\begin{prop}\label{prop: lowerbound}
+For any $D>10\gamma > 0$, there exists a hypothesis class $\mathcal{H}$ and a set of robustness regions, $U$ such that the following holds. There exist constants $\epsilon$ and $\delta$, along with a data distribution $\cD$, such that for any $n > 0$, any learner $L$ that achieves $$\ell_U(L(S), \cD) \leq \min_{h \in \cH} \ell_{U^\gamma}(h, \cD) + \epsilon$$ with probability at least $1-\delta$ over $S \sim \cD^n$ must make at least $\Omega\left(\left(\frac{D}{\gamma}\right)^d\right)$ sampling oracle calls.
+\end{prop}
+
+To circumvent this issue, we turn our attention to a different natural oracle first proposed in \citet{Srebro19} that is based on Robust Empirical Risk Minimization (RERM). An RERM oracle, $\cO_{U, \cH}(S)$, is a function that returns the classifier $h \in \cH$ with minimal robust empirical risk over $S$. That is, $$\cO_{U, \cH}(S) = \argmin_{h \in \cH} \ell_U(h, S).$$ In our work, we will assume access to a mild strengthening of this oracle that allows empirical risk minimization over any perturbed robustness region, $U^r$.
+
+\begin{defn}\label{defn:oracle}
+\textbf{A tolerant RERM-oracle} for robustness regions $U$ and hypothesis class $\cH$ is a function $\cO_{U, \cH}(S, r)$ that maps any set of labeled points $S$ and any distance $r > 0$ to the classifier with minimal empirical risk over $S$ with respect to $U^r$. That is, $$\cO_{U, \cH}(S, r) = \argmin_{h \in H} \ell_{U^r}(h, S).$$
+\end{defn}
+
+Observe that in the case that $U$ consists of balls of radius $r$, a tolerant oracle merely implies we can also minimize empirical risk for balls of larger radii. 
+
+\section{Tolerant PAC learning for Regular Hypothesis Classes}
+
+Before presenting our algorithm, we first present a key assumption on our hypothesis class, $\cH$, that we refer to as \textit{regularity.}
+
+\subsection{Regular hypothesis classes}
+
+\begin{defn}
+We say that a hypothesis class, $\cH$ is \textbf{$\alpha$-regular} for $\alpha > 0$ if for all $h \in \cH$ and for all $x \in \reals^d$, there exists a closed ball $B$ of radius $\alpha$ containing $x$ such that $h(x') = h(x)$ for all $x' \in B$. We also say that $\cH$ is \textbf{regular} if it is $\alpha$-regular for some $\alpha > 0$. 
+\end{defn}
+
+One important example is hypothesis classes with relatively smooth manifolds as decision boundaries. In particular, the parameter $\alpha$ can be tied to the smoothness measure of a manifold known as its \textit{reach}.
+
+\begin{defn}
+Let $M$ be a closed manifold embedded in $\reals^d$. The \textbf{reach} of $M$ is the largest $\alpha > 0$ such that for all $x \in \reals^d$, if $||x - M|| \leq \alpha$, then $x$ has a unique nearest neighbor in $M$.
+\end{defn}
+
+This parameter directly translates to regularity.
+
+\begin{prop}\label{prop:reach}
+Let $h$ be a classifier with decision boundary $M$. Suppose that $M$ is a closed $(d-1)$-dimensional submanifold over $\R^d$ with reach $\alpha$. Then $h$ is $\alpha/2$-regular. 
+\end{prop}
+
+\begin{proof}
+Let  $h \in \cH$ be a classifier with decision boundary $M$. Let $x$ be an arbitrary point with $h(x) = y$. We desire to exhibit a ball $B$ of radius $\alpha/2$ containing $x$ for which $h$ is uniformly $y$. 
+
+Let $\rho: \reals^d \to \reals_{\geq 0}$ be the distance function $\rho(x) = ||x - M||$. It is well known that this function is everywhere continuous and has a continuous derivative over $\{x: 0 < \rho(x) < \alpha\}.$
+
+If $\rho(x) > \alpha/2$, then we can simply take $B= B(x, \alpha/2)$ as all points here must be classified as $y$ by the definition of a decision boundary. Thus, assume $\rho(x) \leq \alpha/2$. 
+
+Let $V$ be the gradient vector field of $\rho$ defined over $\{x: \rho(x) < \alpha\}$. Since all points in this region have a unique nearest neighbor in $M$, the gradient has magnitude $1$ for all such points, and the direction is precisely opposite the straight line path from the point's nearest neighbor in $M$. 
+
+\looseness-1Since $V$ is continuous, (and Lipshitz over a bounded region), there exists a unique curve $\tau$ starting at $x$ of length $\frac{\alpha}{2}$ that is always tangent to $V$. It follows that the endpoint of this path, $x'$ must satisfy $\rho(x') = \frac{\alpha}{2} + \rho(x) > \frac{\alpha}{2}$ and $||x - x'|| \leq \frac{\alpha}{2}$. This means that $B = B(x', \frac{\alpha}{2})$ suffices, as desired. 
+\end{proof}
+
+\vspace{-5mm}
+\subsection{Our Algorithm} 
+
+\looseness-1 We now give a tolerant PAC learning algorithm called $TolRERM$ (Algorithm \ref{alg:estimate}) which assumes access to a tolerant RERM oracle (Definition \ref{defn:oracle}). $TolRERM$ is essentially robust empirically risk minimization with a slight modification: rather than using the original robustness regions, $U$, we use the perturbed regions, $U^r$ where $0 < r < \gamma$ is chosen at random. $TolRERM$'s performance is given by Theorem \ref{thm:upper_bound1}, which is restated here for convenience. 
+\begin{thm}
+\looseness-1Let $\cH$ be a regular hypothesis class with VC dimension $v$, and let $U$ be a set of robustness regions. Then $TolRERM$ tolerantly PAC-learns $(\cH, U)$ with tolerant sample complexity, $m(\epsilon, \delta, \gamma)  = O\left( \frac{vd\log \frac{dD}{\epsilon\gamma\delta}}{\epsilon^2}\right)$, where $D$ denotes the maximum $\ell_2$ diameter of any region, $U_x$. 
+\end{thm}
+\vspace{-2mm}
+\begin{algorithm}
+   \caption{$TolRERM(\cD, \epsilon, \delta, \gamma, n)$}
+   \label{alg:estimate}
+
+   Sample $r \sim [\frac{\epsilon\delta\gamma}{7}, \gamma]$ at uniform\;
+   
+   Sample $S \sim \cD^n$\;
+    
+   Output $\hat{h} = \cO_{U, \cH}(S, r)$\;
+
+\end{algorithm}
+\vspace{-2mm}
+Since the set of bounded linear classifiers, $\cH_W$ (Definition \ref{defn:bounded_linear}) is clearly regular and has VC dimension $O(d)$, Theorem \ref{thm:upper_bound1} immediately implies the following corollary. 
+
+\begin{cor}
+For any set of robustness regions, $U$, $TolRERM$ tolerantly PAC-learns $(\cH_W, U)$ with tolerant sample complexity $m(\epsilon, \delta, \gamma) = O\left( \frac{d^2\log \frac{dD}{\epsilon\gamma\delta}}{\epsilon^2}\right)$, where $D$ denotes the maximum $\ell_2$ diameter of any robustness region, $U_x$.  
+\end{cor}
+
+$TolRERM$ matches the sample complexities for linear classifiers found in \cite{Srebro19} and \cite{Urner22}. However, it enjoys the advantage of being simpler (as it is essentially an empirical risk minimization algorithm) and a \textit{proper} learning algorithm (as it outputs a linear classifier). 
+
+
+
+
+
+
+\paragraph{Beyond regular hypothesis classes:} It turns out that Algorithm \ref{alg:estimate} has bounded sample complexity for \textit{any} hypothesis class with finite robust VC-dimension for balls (see Appendix \ref{sec:proof_extension} for a full description).
+% However, this comes at the expense of using the adversarial vc dimension, $v_{ball}$, which is the vc dimension of the loss function when the robustness regions are restricted to be balls of fixed radii centered at each point (see Appendix \ref{sec:proof_extension} for a full description). 
+Thus, Algorithm \ref{alg:estimate} can alternatively be thought of as a reduction from the sample complexity for learning robust classifiers over arbitrary robustness regions to the sample complexity for balls of fixed radii. This is expressed in the following result (proved in Appendix \ref{sec:proof_extension}). 
+
+\begin{thm}\label{thm:upper_bound_general}
+Let $\cH$ be any hypothesis class with maximal adversarial VC dimension $v_{ball}$, and let $U$ be any set of robustness regions. Then $TolRERM$ tolerantly PAC-learns $(\cH, U)$ with tolerant sample complexity $m(\epsilon, \delta, \gamma)  = O\left( \frac{v_{ball}d\log \frac{dD}{\epsilon\gamma\delta}}{\epsilon^2}\right),$ where $D$ denotes the maximum $\ell_2$ diameter of any robustness region, $U_x$. 
+\end{thm}
+
+\subsection{Proof of Theorem \ref{thm:upper_bound1}}
+
+We begin by showing that randomly choosing $r$ allows the optimal empirical loss $U^r$ to change relatively smoothly with respect to $r.$
+\begin{lem}\label{lem:r_works}
+For $r \in [0, \gamma]$, let $OPT_S^r = \min_{h \in H} \ell_{U^r}(h, S)$. Then with probability at least $1 - \frac{\delta}{2}$ over $r \sim [\frac{\epsilon\delta\gamma}{7}, \gamma]$, $OPT_S^r \leq OPT_S^{r -\frac{\epsilon\delta\gamma}{7}} + \frac{\epsilon}{3}.$
+\end{lem}
+\textit{Proof. }Let $\alpha = \frac{\epsilon\delta\gamma}{7}.$ Our goal is to show that $OPT_S^r - OPT_S^{r-\alpha}$ is likely to be small. Our strategy is to bound the expected value of $OPT_S^r - OPT_S^{r-\alpha}$ and then apply Markov's inequality. As a technical note, the function $r \mapsto OPT_S^r$ is monotonic and bounded, and consequently measurable, which ensures that our expectations are well defined. To this end, we have,
+\begin{equation*}
+\begin{split}
+\Ev[OPT_S^r &- OPT_S^{r-\alpha}] = \Ev[OPT_S^r] - \Ev[OPT_S^{r-\alpha}] \\
+&= \frac{1}{\gamma - \alpha}\left(\int_\alpha^\gamma OPT_S^rdr - \int_\alpha^\gamma OPT_S^{r-\alpha}dr \right) \\
+&= \frac{1}{\gamma - \alpha}\left(\int_\alpha^\gamma OPT_S^rdr - \int_0^{\gamma-\alpha} OPT_S^rdr \right) \\
+&= \frac{1}{\gamma - \alpha}\left(\int_{\gamma-\alpha}^\gamma OPT_S^rdr - \int_0^{\alpha} OPT_S^rdr \right) \\
+&\leq \frac{\alpha}{\gamma - \alpha} = \frac{\delta\epsilon\gamma}{7\gamma - \delta\epsilon\gamma} \leq \frac{\delta\epsilon}{6},
+\end{split}
+\end{equation*}
+since $\epsilon, \delta \leq 1$. Applying Markov's inequality, with probability at least $1 - \frac{\delta}{2}$, $OPT_S^r - OPT_S^{r-\alpha} \leq \frac{\epsilon}{3}$. $\square$.
+
+
+Next, we construct a set of robustness regions $V^r$ that have similar robust loss to $U^r$ and are also finite.
+
+\begin{lem}\label{lem:v_construct}
+Suppose that $\cH$ is $\gamma$-regular. For all $r \in [\frac{\epsilon\delta\gamma}{7}, \gamma]$, there exists a set of robustness regions $V^r = \{V_x^r: x \in \reals^d\}$ satisfying the following two properties.  
+\begin{enumerate}
+	\item $|V_x^r| = O\left(\left(\frac{D}{\epsilon\delta\gamma}\right)^d\right)$, where $D$ denotes the maximum diameter of $U_x$. 
+	\item Let $\alpha = \frac{\epsilon\delta\gamma}{7}$. For all labeled points $(x,y)$ and for all classifiers $h \in \cH$, $$\ell_{U^{r - \alpha}}(h, (x,y)) \leq \ell_{V^r}(h, (x,y)) \leq \ell_{U^r}(h, (x,y)).$$
+\end{enumerate}
+\end{lem}
+
+\begin{proof}
+For any $x \in \reals^d$, we will show how to construct $V_x$ so that it satisfies the two conditions above.
+
+Observe that $U_x^r$ is closed and bounded as it is a union of closed balls of radius $r$. Since each $U_x$ has diameter at most $D$, this means that $U_x^r$ is compact. Thus, there exists a finite set of balls of radius $\alpha/2$ that cover $U_x^r$. Note that these balls are \textit{not} necessarily contained within $U_x^r$ -- only that $U_x^r$ is a subset of their union. Let $C_x$ denote the set of all centers of the smallest such cover. We claims that $V_x = C_x \cap U_x^r$ suffices.
+
+First, $|C_x| \leq O\left((\frac{D}{\alpha})^d\right)$ because any ball of diameter $D$ can be covered by $O\left((\frac{D}{\alpha})^d\right)$ balls of radius $\alpha/2$, and $U_x^r$ is a subset of a ball of diameter $D+2r$. This implies that the first condition holds.
+
+Second, pick any labeled point $(x,y)$ and any classifier $h \in \cH$. If $\ell_{V^r}(h, (x,y)) = 1$, then we immediately have $\ell_{U^r}(h, (x,y) = 1$ since $V^r \subseteq U^r$. This implies that $\ell_{V^r}(h, (x,y)) \leq \ell_{U^r}(h, (x,y)$ giving the second half of the second condition.   
+
+If $\ell_{U^{r-\alpha}}(h, (x,y)) = 1$, then there exists $x' \in U_x^{r-\alpha}$ such that $h(x') \neq y$. It follows that since $h$ is $\gamma$-regular, $h$ must also be $\alpha$-regular (as $\alpha < \gamma$). This means that there exists a ball $B$ of radius $\alpha/2$ containing $x'$ such that $h$ does not output $y$ for any point in $B$. 
+
+By the triangle inequality, $B \subseteq U_x^r$, and since $C_x$ covers $U_x^r$, it follows that there exists $x^* \in C_x \cap B$. By definition, this also means $x^* \in V_x^r$. However, by the definition of $B$, we must have $h(x^*) \neq y$, and this means that $\ell_{V_x^r}(h, (x,y)) = 1$. Since $(x,y)$ was arbitrary, this proves the second half of the second condition. 
+\end{proof}
+
+We are now prepared to prove Theorem \ref{thm:upper_bound1}.
+
+\begin{proof}
+(\textbf{Theorem \ref{thm:upper_bound1}}) Let $\alpha = \frac{\epsilon\delta\gamma}{7}$. For all $s > 0$, let $h^s \in \cH$ denote any fixed choice of classifier with minimal empirical loss with respect to $U^s$. That is, $h^s = \argmin_{h \in \cH} \ell_{U^s}(h, S).$ Then by Lemma \ref{lem:r_works}, with probability at least $1 - \frac{\delta}{2}$ over $r \sim [\alpha, \gamma]$, 
+\begin{equation}\label{eqn:r_works}
+\ell_{U^{r}}(h^{r}, S) \leq \ell_{U^{r-\alpha}}(h^{r-\alpha}, S) + \frac{\epsilon}{3}.
+\end{equation}
+Next, let $V^r$ be as defined in Lemma \ref{lem:v_construct} and suppose that $\gamma$ is small enough so that $\cH$ is $\gamma$-regular (this must occur since $\cH$ is regular by assumption). By the second condition in the lemma, it follows that for all $h \in H$:
+\begin{equation}\label{eqn:v_bound_D}
+\ell_{U^{r-\alpha}}(h, \cD) \leq \ell_{V^r}(h, \cD) \leq \ell_{U^r}(h, \cD),
+\end{equation}
+\begin{equation}\label{eqn:v_bound}
+\ell_{U^{r-\alpha}}(h, S) \leq \ell_{V^r}(h, S) \leq \ell_{U^r}(h, S).
+\end{equation}
+ Next, since $|V_x| = O\left(\left(\frac{D}{\epsilon\delta\gamma}\right)^d\right)$, Proposition \ref{prop:finite-RVC} (proved in the Appendix \ref{app: robust vc bound}) implies that the Robust VC dimension of $\cH$ with respect to $V_x$ is at most $O\left(vd\log \frac{Dv}{\epsilon\delta\gamma} \right)$, where $v$ denotes the VC dimension of $\cH$. 
+ 
+ 
+Because $S$ is independent from $r$, there exists an absolute constant $C$ such that if $n \geq C\frac{vd\log \frac{Dv}{\epsilon\delta\gamma} +\log\frac{1}{\delta}}{\epsilon^2}$, then classical connections with uniform convergence \cite{vapnik1974theory} imply that with probability at least $1 - \frac{\delta}{2}$ over $S \sim \cD^n$, for all $h \in \cH$, 
+\begin{equation}\label{eqn:uniform}
+|\ell_{V^r}(h, S) - \ell_{V^r}(h, \cD)| \leq \frac{\epsilon}{3}.
+\end{equation}
+Applying a union bound, we see that for $n = \Omega\left( \frac{vd\log \frac{dD}{\epsilon\gamma\delta}}{\epsilon^2}\right)$, with probability at least $1-\delta$ over $r \sim [\alpha,\gamma]$ and $S \sim \cD^n$, Equations \ref{eqn:r_works},
+\ref{eqn:v_bound_D}, \ref{eqn:v_bound}, and \ref{eqn:uniform} simultaneously hold. Thus it suffices to show that under these assumptions, any $\hat{h} \in H$ minimizing the robust empirical risk of $S$ under $U^r$ satisfies $\ell_U(\hat{h}, \cD) \leq \min_{h \in \cH} \ell_{U^\gamma}(h^\gamma, \cD) + \epsilon,$ as this will imply that $m(\epsilon, \delta, \gamma) = O\left( \frac{vd\log \frac{dD}{\epsilon\gamma\delta}}{\epsilon^2}\right)$ as desired. 
+
+To do so, we use a series of manipulations applying Equations \ref{eqn:r_works} and \ref{eqn:uniform}. For convenience, we let $h^* = \argmin_{h \in \cH} \ell_{U^\gamma}(h, \cD)$. 
+% Also, note that our outputted classifier, $\hat{h}$, precisely equals $h^r$ as we are performing RERM over $U^r$.
+
+Since $U \subset U^r$ and $\ell_{U^r}$ is bounded by $\ell_{V^r}$ (Equation \ref{eqn:v_bound_D}), we have that $$\ell_U(h^r, \cD) \leq \ell_{U^r}(h^r, \cD) \leq \ell_{V^r}(h^r, \cD),$$ 
+and further by Equations \ref{eqn:uniform} and \ref{eqn:v_bound} that
+$$\ell_{V^r}(h^r, \cD) \leq \ell_{V^r}(h^r, S) + \frac{\epsilon}{3} \leq \ell_{U^r}(h^r, S) + \frac{\epsilon}{3}.$$
+Since $h^s$ is defined as the classifier of lowest empirical risk over $U^s$, it follows from Equation \ref{eqn:r_works} and this definition that 
+$$\ell_{U^r}(h^r, S) \leq \ell_{U^{r-\alpha}}(h^{r-\alpha}, S) + \frac{\epsilon}{3} \leq \ell_{U^{r-\alpha}}(h^*, S) + \frac{\epsilon}{3}.$$
+% where $h^*$ denotes the classifier with optimal true loss over $U^{\gamma}$. 
+Applying the same trick we did earlier with Equations \ref{eqn:v_bound} (bounding $U^{r-\alpha}$ with $V^r$) and \ref{eqn:uniform} (uniform convergence of the loss over $V^r$), we have $$\ell_{U^{r-\alpha}}(h^*, S) \leq \ell_{V^r}(h^*, S) \leq \ell_{V^r}(h^*, \cD) + \frac{\epsilon}{3}.$$ Finally, applying Equation \ref{eqn:v_bound_D} to bound the loss over $V^r$ with the loss over $U^r$ and then noting that $r \leq \gamma$, we have that $$\ell_{V^r}(h^*, \cD) \leq \ell_{U^r}(h^*, \cD) \leq \ell_{U^\gamma}(h^*, \cD).$$ Combining all of our observations with the transitive property, it follows that $$\ell_U(h^r, \cD) \leq \ell_{U^\gamma}(h^*, \cD) + \epsilon.$$ Finally, since this holds for any choice of $h^r$ minimizing $\ell_{U^r}(h^r,S)$, it holds for the particular choice of the Tolerant RERM oracle which completes the result.
+\end{proof}
+
+
+
+
+
+%\input{chapters/chapter1/macros}
+%\input{chapters/chapter1/introduction}
+%\input{chapters/chapter1/related}
+%\input{chapters/chapter1/definition}
+%\input{chapters/chapter1/quantifying}
+%\input{chapters/chapter1/visualizing}
+%\input{chapters/chapter1/mitigation}
