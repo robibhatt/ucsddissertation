@@ -135,7 +135,25 @@ For Mom, Dad, and Sormeh.
 % use. See the examples here. In addition, each chapter ack needs to
 % be repeated at the end of the relevant chapter.
 \begin{acknowledgements}
-%Above all, I thank my advisor, Kamalika, for her mentorship over the last five years. Kamalika will do anything in her power to help her students find what success means to them, and build towards it. She puts her students' futures above all else. Part of that is mentoring her students to become thoughtful researchers. In hindsight, I see that we could have pursued much lower risk projects that made incremental gains on the hottest research directions. Instead, Kamalika guided me towards unusual and challenging problems that required me to examine my fundamentals and reconsider broad questions about the aims of data privacy. In doing so, I not only understand what solutions are effective in data privacy, but why we as a research community use them and --- in some cases --- why we have ignored them. 
+First and foremost, I thank my advisor, Kamalika, for her guidance over my time in graduate school. Much of what I understand about conducting and communicating machine learning research, I owe directly to her mentorship. Beyond research, Kamalika has always been genuine and forthcoming to me with advice and guidance for shaping my academic career. 
+
+I also thank my co-advisor, Sanjoy. His emphasis on simplicity and elegance has been a huge inspiration for my style of research. Additionally his willingness to listen to and give feedback for any of my half-baked ideas has been a consistent source of comfort and support. 
+
+None of my research would be possible without all of my amazing collaborators; I'm very grateful to have worked with all of them. I especially want to thank Yoav Freund for  his amazing enthusiastic energy for conducting research, and Michal Moshkovitz for her sharp mathematical insight and careful attention to detail.
+
+My time at UCSD would not have been anywhere near as enjoyable if it weren't for my lab-mates, Casey, Jacob, Yao-Yuan, Amrita, and Mary. I will miss our Wednesday lunches dearly. 
+
+I also want to give special thanks to two people from before my Phd that have deeply shaped my life. My father shared with me his love for mathematics for as long as I can remember. In many ways, this thesis is a direct result of that. Later, through middle school and high school, I prepared for math competitions under Andrew Kahng's guidance. Those years were formative in teaching me how to be a skilled problem solver.
+
+I would not have been able to accomplish anything without the loving support of my friends and family. I especially want to thank my brother Neil, my mother, and my friends Ahmed, Alex, and William. You guys have consistently been people I can rely on in any and all situations.
+
+Finally, to my fiancee Sormeh, none of this would be possible or worth doing without you. 
+
+
+
+
+
+
 %
 %I cannot overemphasize the gratitude I have to my collaborators as well. First, to my collaborators at FAIR. I thank Chuan Guo for showing me how to navigate incredibly challenging and open-ended ML problems. His Socratic approach to mentoring helped me explore my own instincts and take ownership of the project without letting me slip down the wrong path. Florian Bordes taught me the ins and outs of contemporary vision modeling. Pascal Vincent's insights on how to design deep learning experiments were truly formative; I sincerely appreciate his effort and time. I owe an enormous debt of gratitude to Ashwin Machanavajjhala at Tumult for mentoring me on how how to reason about different privacy definitions and guarantees in applied settings. 
 %
@@ -196,7 +214,7 @@ For Mom, Dad, and Sormeh.
 %generating the data, and a condensed summary of the findings of the
 %study. The abstract may continute onto a second page if necessary. The
 %text of the abstract must be double spaced.
-As data collection for machine learning (ML) tasks has become more pervasive, it has also become more heterogeneous: we share our writing, images, voices, and location online every day. Naturally, the associated privacy risks are just as complex and variable. My research advances practical data privacy through two avenues: 1) drafting provable privacy definitions and mechanisms for safely sharing data in different ML domains, and 2) empirically quantifying how ML models memorize their sensitive training data and thereby risk disclosing it. This dissertation details the various data domains/tasks considered, and the corresponding privacy methods proposed. 
+Machine learning models have become a ubiquitous part of society, and it has consequently become of paramount importance to understand how to design safe and reliable models. This dissertation attempts to take steps towards this direction by consider two specific problems in reliable machine learning: \textit{adversarial examples,} which are small test-time perturbations to the input designed to cause misclassification, and \textit{data-copying,} which occurs when a generative model simply memorizes its training data (giving poor generalization and dangerous security risks). 
 \end{dissertationabstract}
 
 % This is where the main body of your dissertation goes!
@@ -238,7 +256,7 @@ As data collection for machine learning (ML) tasks has become more pervasive, it
 \include{chapters/chapter3/chapter3}
 \include{chapters/chapter4/chapter4}
 %\include{chapters/chapter5/chapter5}
-%\include{conclusion}
+\include{conclusion}
 
 
 \appendix            
