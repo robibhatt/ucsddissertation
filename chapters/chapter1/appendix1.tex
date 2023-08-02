@@ -36,7 +36,7 @@ In this section, we precisely define weight functions, histogram classifiers and
 \begin{defn} \label{def:weight_chap_1} 
 \cite{devroye96} A \textbf{weight function} $W$ is a non-parametric classifier with the following properties.
 \begin{enumerate}
-	\item Given input $S = \{(x_1, y_1), (x_2, y_2,), \dots, (x_n, y_n)\} \sim \D^n$, $W$ constructs functions $w_1^S, w_2^S, \dots, w_n^S: \R^d \to [0, 1]$ such that for all $x \in \R^d$, $\sum_1^n w_i^S(x) = 1$. The functions $w_i^S$ are allowed to depend on $x_1, x_2, \dots x_n$ but must be independent of $y_1, y_2, \dots, y_n$. 
+	\item $W$ takes input $S = \{(x_1, y_1), \dots, (x_n, y_n)\} \sim \D^n$, and constructs functions $w_1^S, \dots, w_n^S$ that are from $\R^d \to [0, 1]$ such that for all $x \in \R^d$, $\sum_1^n w_i^S(x) = 1$. The functions $w_i^S$ are allowed to depend on $x_1, x_2, \dots x_n$ but must be independent of $y_1, y_2, \dots, y_n$. 
 	\item $W$ has output $W_S$ defined as \[ W_S(x) = \begin{cases} 
       +1 & \sum_1^n w_i^S(x)y_i > 0 \\
       -1 & \sum_1^n w_i^S(x)y_i \leq 0 \\
@@ -202,7 +202,7 @@ By property 4 of Lemma \ref{lem:u_is_npr}, $U_x = \{x\}$ for all $x \in \D_{1/2}
 \begin{equation*}
 \begin{split}
 A_\U(f, \D) &= \Pr_{(x,y) \sim \D} [f(x') = y\text{ for all }x' \in U_x] \\
-&= \Pr_{(x,y) \sim \D}[y = +1\text{ and }x \in (D^+ \cap D_f^+)] + \Pr_{(x,y) \sim \D}[y = -1\text{ and }x \in (D^- \cap D_f^-)] + \frac{1}{2}\Pr_{(x,y) \sim \D}[x \in \D_{1/2}]
+&= \Pr_{(x,y) \sim \D}[y = +1\text{ and }x \in (D^+ \cap D_f^+)]\\ &+ \Pr_{(x,y) \sim \D}[y = -1\text{ and }x \in (D^- \cap D_f^-)] \\ &+ \frac{1}{2}\Pr_{(x,y) \sim \D}[x \in \D_{1/2}]
 \end{split}
 \end{equation*}
 However, observe by the definitions of $\D^+, \D^-$ and $\D_{1/2}$ that $$A(g, \D) = \Pr_{(x,y) \sim \D}[y = +1\text{ and }x \in D^+] + \Pr_{(x,y) \sim \D}[y = -1\text{ and }x \in D^-] + \frac{1}{2}\Pr_{(x,y) \sim \D}[x \in \D_{1/2}].$$ Substituting this, we find that 

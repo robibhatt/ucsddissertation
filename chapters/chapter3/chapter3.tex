@@ -438,6 +438,10 @@ $$\ell_{U^r}(h^r, S) \leq \ell_{U^{r-\alpha}}(h^{r-\alpha}, S) + \frac{\epsilon}
 Applying the same trick we did earlier with Equations \ref{eqn:v_bound} (bounding $U^{r-\alpha}$ with $V^r$) and \ref{eqn:uniform} (uniform convergence of the loss over $V^r$), we have $$\ell_{U^{r-\alpha}}(h^*, S) \leq \ell_{V^r}(h^*, S) \leq \ell_{V^r}(h^*, \cD) + \frac{\epsilon}{3}.$$ Finally, applying Equation \ref{eqn:v_bound_D} to bound the loss over $V^r$ with the loss over $U^r$ and then noting that $r \leq \gamma$, we have that $$\ell_{V^r}(h^*, \cD) \leq \ell_{U^r}(h^*, \cD) \leq \ell_{U^\gamma}(h^*, \cD).$$ Combining all of our observations with the transitive property, it follows that $$\ell_U(h^r, \cD) \leq \ell_{U^\gamma}(h^*, \cD) + \epsilon.$$ Finally, since this holds for any choice of $h^r$ minimizing $\ell_{U^r}(h^r,S)$, it holds for the particular choice of the Tolerant RERM oracle which completes the result.
 \end{proof}
 
+\section*{Acknowledgments}
+
+\textbf{Chapter 4}, in full, is a reprint of the material as it appears in International Conference on Algorithmic Learning Theory, 2023. Robi Bhattacharjee, Max Hopkins, Akash Kumar, Hantao Yu, Kamalika Chaudhuri. \emph{Robust Empirical Risk Minimization with Tolerance}. The dissertation author is the primary investigator and author of this paper. 
+
 
 
 

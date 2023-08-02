@@ -301,7 +301,13 @@ t_1 + \epsilon &= t_2 \\
 \end{split}
 \end{equation*}
 
-Thus $\epsilon$ satisfies the necessary conditions for Lemma \ref{lem:lipschitz}. Since $\Phi$ is strictly convex, by Lemma \ref{lem:lipschitz}, there exist unique $\delta, \gamma > 0$ with $\delta+ \gamma = \epsilon$ such that $$\Phi(-\frac{2\Delta}{3} - g_2(t_1) - \delta) + \Phi(t_1 + \epsilon) + \Phi(\frac{2\Delta}{3} - g_1(t_1) - \gamma) = \Phi(-\frac{2\Delta}{3} - g_2(t_1)) + \Phi(t_1) + \Phi(\frac{2\Delta}{3} - g_1(t_1)).$$ However, by the definition of $g_1, g_2$, we see that both of these quantities are equal to $F(0,0,0)^q$. Moreover, again by the definition of $g_1, g_2$, we also have that $g_1(t_2)$ and $g_2(t_2)$ are the unique real numbers in $[0, \frac{\Delta}{3}$ that satisfy $$\Phi(-\frac{2\Delta}{3} - g_2(t_2)) + \Phi(t_2) + \Phi(\frac{2\Delta}{3}+g_1(t_2)) = F(0,0,0)^q.$$ Thus, it follows that $g_2(t_2) = g_2(t_1) + \delta$ and $g_1(t_2) = g_1(t_1) + \gamma$. However, $t_2 - t_1 = \epsilon$, and $\delta, \gamma < \epsilon$ (since they sum to $\epsilon$). Thus, we see that $|g_1(t_2) - g_1(t_1)| \leq |t_2 - t_1|$ and $|g_2(t_2) - g_2(t_1)| \leq |t_2 - t_1|$. Since $t_1$ and $t_2$ were arbitrary, it follows that $g_1$ and $g_2$ are both $1$-Lipschitz, as desired. 
+Thus $\epsilon$ satisfies the necessary conditions for Lemma \ref{lem:lipschitz}. Since $\Phi$ is strictly convex, by Lemma \ref{lem:lipschitz}, there exist unique $\delta, \gamma > 0$ with $\delta+ \gamma = \epsilon$ such that 
+\begin{equation*}
+\begin{split}
+&\Phi(-\frac{2\Delta}{3} - g_2(t_1) - \delta) + \Phi(t_1 + \epsilon) + \Phi(\frac{2\Delta}{3} - g_1(t_1) - \gamma)\\ &= \Phi(-\frac{2\Delta}{3} - g_2(t_1)) + \Phi(t_1) + \Phi(\frac{2\Delta}{3} - g_1(t_1)).
+\end{split}
+\end{equation*}
+However, by the definition of $g_1, g_2$, we see that both of these quantities are equal to $F(0,0,0)^q$. Moreover, again by the definition of $g_1, g_2$, we also have that $g_1(t_2)$ and $g_2(t_2)$ are the unique real numbers in $[0, \frac{\Delta}{3}$ that satisfy $$\Phi(-\frac{2\Delta}{3} - g_2(t_2)) + \Phi(t_2) + \Phi(\frac{2\Delta}{3}+g_1(t_2)) = F(0,0,0)^q.$$ Thus, it follows that $g_2(t_2) = g_2(t_1) + \delta$ and $g_1(t_2) = g_1(t_1) + \gamma$. However, $t_2 - t_1 = \epsilon$, and $\delta, \gamma < \epsilon$ (since they sum to $\epsilon$). Thus, we see that $|g_1(t_2) - g_1(t_1)| \leq |t_2 - t_1|$ and $|g_2(t_2) - g_2(t_1)| \leq |t_2 - t_1|$. Since $t_1$ and $t_2$ were arbitrary, it follows that $g_1$ and $g_2$ are both $1$-Lipschitz, as desired. 
 
 Finally, since $\delta, \gamma > 0$, it follows that $g_2(t_2) > g_2(t_1)$ and $g_1(t_2) > g_1(t_1)$. Since $t_1, t_2$ were arbitrary, it follows that $g_1, g_2$ are monotonically non-decreasing.
 
@@ -346,7 +352,6 @@ Recall that $\lambda_a = \frac{r}{R}f_q(a) = \frac{r}{R}\sqrt[q]{\sum_1^d |\frac
 \begin{equation*}
 \begin{split}
 \lambda_a &=  \frac{r}{R}\sqrt[q]{\sum_1^d |\frac{1}{\sqrt{d}} + \overline{a} - a_i|^q}\\
-&= \frac{r}{R}\sqrt[q]{\sum_{i=1}^{d/3} \left|\frac{1}{\sqrt{d}} + \frac{1}{2} - (\frac{1}{2} + t_i)\right|^q + \left|\frac{1}{\sqrt{d}} + \frac{1}{2} - \left(\frac{1}{2} + \frac{2\Delta}{3} - g_1(t_i)\right)\right|^q +  \left|\frac{1}{\sqrt{d}} + \frac{1}{2} - \left(\frac{1}{2} - \frac{2\Delta}{3} - g_2(t_i)\right)\right|^q} \\
  &= \frac{r}{R}\sqrt[q]{\sum_1^{d/3} \left|\frac{1}{\sqrt{d}} - t_i\right|^q + \left|\frac{1}{\sqrt{d}} + g_1(t_i) - \frac{2\Delta}{3}\right|^q + \left|\frac{1}{\sqrt{d}} + g_2(t_i) + \frac{2\Delta}{3}\right|^q} \\
 &= \frac{r}{R}\sqrt[q]{\sum_1^{d/3}F(t_i, g_1(t_i), g_2(t_i))^q}, \\
 \end{split}
@@ -613,7 +618,7 @@ Together, these observations imply the desired result, as it follows that $$[v_k
 
 \textit{Proof: }  Completely analogous to Claim 2. $\blacksquare$.
 
-Combining these claims, we see that if $t_k \in (t_k^* - \alpha, t_k^*] \cap (g_1^{-1}(g_1(t_k^*) - \beta), t_k^*] \cap  (g_2^{-1}(g_2(t_k^*) - \tau), t_k^*]$, then $t_k \in I_k^S$. Since these three intervals all have an endpoint in $t_k^*$, it follows that there is an interval with length $\eta$ that is a subset of $I_k^S$, where $$\eta = \min(\ell((t_k^* - \alpha, t_k^*])), \ell((g_1^{-1}(g_1(t_k^*) - \beta), t_k^*]), \ell((g_2^{-1}(g_2(t_k^*) - \tau), t_k^*])).$$ However, by substituting that $g_1, g_2$ are $1$-Lipschitz, we see that $\ell((g_1^{-1}(g_1(t_k^*) - \beta), t_k^*]) \geq \beta$ and $\ell((g_2^{-1}(g_2(t_k^*) - \tau), t_k^*])) \geq \tau$. Thus, it follows that $$\ell(I_k^S) \geq \eta \geq \min(\alpha, \beta, \tau).$$ Thus it suffices to show that $\E_{S \sim \D_{a^*}}[\min(\alpha, \beta, \tau)] \geq \Omega(\frac{d}{n})$. 
+Combining these claims, we see that $$t_k \in (t_k^* - \alpha, t_k^*] \cap (g_1^{-1}(g_1(t_k^*) - \beta), t_k^*] \cap  (g_2^{-1}(g_2(t_k^*) - \tau), t_k^*] \implies t_k \in I_k^S.$$ Since these three intervals all have an endpoint in $t_k^*$, it follows that there is an interval with length $\eta$ that is a subset of $I_k^S$, where $$\eta = \min(\ell((t_k^* - \alpha, t_k^*])), \ell((g_1^{-1}(g_1(t_k^*) - \beta), t_k^*]), \ell((g_2^{-1}(g_2(t_k^*) - \tau), t_k^*])).$$ However, by substituting that $g_1, g_2$ are $1$-Lipschitz, we see that $\ell((g_1^{-1}(g_1(t_k^*) - \beta), t_k^*]) \geq \beta$ and $\ell((g_2^{-1}(g_2(t_k^*) - \tau), t_k^*])) \geq \tau$. Thus, it follows that $$\ell(I_k^S) \geq \eta \geq \min(\alpha, \beta, \tau).$$ Thus it suffices to show that $\E_{S \sim \D_{a^*}}[\min(\alpha, \beta, \tau)] \geq \Omega(\frac{d}{n})$. 
 
 To do this, observe that
 \begin{itemize}
@@ -851,7 +856,7 @@ Let $K: \R^d \times \R^d \to \R^+$ be a kernel similarity function. Then there e
 The key idea of this section is that Kenrel classifiers correspond to linear classifiers in embedded space. This is the essence of the ``kernel trick." Formally, we have the following, well-known theorem. 
 
 \begin{thm}\label{thm:kernel_trick}
-Let $K:\R^d \times \R^d \to \R^+$ be a kernel similarity function. Let $T = \{(x_1, y_1), \dots, (x_m, y_m)\} \subset \R^d \times \{\pm 1\}$ be a set of labeled points, and $\alpha \in \R^m$ be a vector of $m$ real numbers. Then for all $x \in \R^d$, we have that $$\sum_{i = 1}^m \alpha_iy_iK(x_i, x) = \big \langle \sum_{i= 1}^m \alpha_iy_i\phi(x_i), \phi(x) \big \rangle.$$ Because of this, if we let $w = \sum_{i=1}^m \alpha_iy_i\phi(x_i)$, then the kernel classifier $f_{T, \alpha}^k$ satisfies $f_{T, \alpha}^k(x) = f_{w, 0}(\phi(x))$, where the latter classifier is the linear classifier in $H$ with weight vector $w$. 
+Let $T = \{(x_1, y_1), \dots, (x_m, y_m)\} \subset \R^d \times \{\pm 1\}$ be a set of labeled points. Let $K:\R^d \times \R^d \to \R^+$ be a kernel similarity function, and $\alpha \in \R^m$ be a vector of $m$ real numbers. Then for all $x \in \R^d$, we have that $$\sum_{i = 1}^m \alpha_iy_iK(x_i, x) = \big \langle \sum_{i= 1}^m \alpha_iy_i\phi(x_i), \phi(x) \big \rangle.$$ Because of this, if we let $w = \sum_{i=1}^m \alpha_iy_i\phi(x_i)$, then the kernel classifier $f_{T, \alpha}^k$ satisfies $f_{T, \alpha}^k(x) = f_{w, 0}(\phi(x))$, where the latter classifier is the linear classifier in $H$ with weight vector $w$. 
 \end{thm}
 
 The main idea behind Algorithm \ref{alg:upper_bound_kernel}, is that it corresponds to running Algorithm \ref{alg:upper_bound} inside the embedded space of the kernel $K$. In particular, the kernel-perceptron update step precisely corresponds to the dual-form of the perceptron-update step inside embedded space. It follows from Theorem \ref{thm:kernel_trick} that the following algorithm is identical to Algorithm \ref{alg:upper_bound_kernel}.

@@ -39,7 +39,7 @@ For generative models,~\cite{MCD2020} proposed a formal definition of memorizati
 \begin{figure}[ht]
 \centering
 	\includegraphics[width=.45\textwidth]{page_2_figure_yo.png}
-	\caption{In this figure, the blue points are sampled from the halfmoons dataset (with Gaussian noise). The red points are sampled from a generated distribution that is a mixture of (40 \%) blatant data copier (that outputs a random subset of the training set), and (60 \%) a noisy underfit version of halfmoons. Although the generated distribution is clearly doing some form of copying at points $x_1$ and $x_2$, detecting this is challenging because of the canceling effect of the underfit points.}
+	\caption{The blue points are from the noisey halfmoons dataset, and the red points from a generated distribution that is a mixture of (40 \%) blatant data copier, and (60 \%) a noisy underfit version of halfmoons. Detecting data-copying is challenging because of the canceling effect of the underfit points.}
 	
 	\label{fig:page_2_figure}
 \end{figure}
@@ -59,7 +59,7 @@ To parlay this definition into a global measure of data-copying, we define the o
 	\end{subfigure}\hspace*{\fill}
 	\begin{subfigure}{0.31\textwidth}\includegraphics[width=\linewidth]{data_copy.png}
 	\end{subfigure}
-	\caption{In the three panels above, the blue points are a training sample from $p$, and the red points are generated examples from $q$. In the middle panel, we highlight in green regions that are defined to be \textit{data-copying regions}, as $q$ overrepresents them with comparison to $p$. In the third panel, we then color all points from $q$ that are considered to be copied green.}
+	\caption{The blue points are a training sample from $p$, and the red points are generated examples from $q$. The green regions are the \textit{data-copying regions}, as $q$ overrepresents them with comparison to $p$. We indicate the points that are considered to be copied in the third panel.}
 	
 	\label{fig:triptic}
 \end{figure}
@@ -282,7 +282,7 @@ Let $p$ be a regular distribution, and let $\alpaca >0$ be arbitrary. Then if $n
 \end{algorithm}
 
 
-We now now leverage our subroutine, $Est$, to construct a data-copying detector, $Data\_Copy\_Detect$ (Algorithm \ref{alg:main}), that has bounded sample complexity when $p$ is a regular distribution. Like all data-copying detectors (Definition \ref{def:data_copy_detector}), $Data\_Copy\_Detect$ takes as input the training sample $S$, along with the ability to sample from a generated distribution $q$ that is trained from $S$. It then performs the following steps:
+We now leverage our subroutine, $Est$, to construct a data-copying detector called  $Data\_Copy\_Detect$ (Algorithm \ref{alg:main}), that has bounded sample complexity when $p$ is a regular distribution. Like all data-copying detectors (Definition \ref{def:data_copy_detector}), $Data\_Copy\_Detect$ takes as input the training sample $S$, along with the ability to sample from a generated distribution $q$ that is trained from $S$. It then performs the following steps:
 \begin{enumerate}
 	\item (line 1) Draw an i.i.d sample of $m = O\left(\frac{dn^2\ln \frac{nd}{\delta\epsilon}}{\epsilon^4}\right)$ points from $q$. 
 	\item (lines 6 - 10) For each training point, $x_i$, determine the largest radius $r_i$ for which 
@@ -370,6 +370,9 @@ Conversely, detecting data-copying only requires an \textit{overall} estimate fo
 In conclusion, we provide a new modified definition of ``data-copying'' or generating memorized training samples for generative models that addresses some of the failure modes of previous definitions~\cite{MCD2020}. We provide an algorithm for detecting data-copying according to our definition, establish performance guarantees, and show that at least some smoothness conditions are needed on the data distribution for successful detection. 
 
 With regards to future work, one important direction is in addressing the limitations discussed in section \ref{sec:limitations}. Our definition and algorithm are centered around the assumption that the goal of a generative model is to output $q$ that is close to $p$ in a mathematical sense. As a result, we are unable to handle cases where the generator tries to generate \textit{transformed} examples that lie outside the support of the training distribution. For example, a generator restricted to outputting black and white images (when trained on color images) would remain completely undetected by our algorithm regardless of the degree with which it copies its training data. To this end, we are very interested in finding generalizations of our framework that are able to capture such broader forms of data-copying. 
+
+\section*{Acknowledgments}
+\textbf{Chapter 5}, in full, is a reprint of the material as it appears in International Conference on Machine Learning, 2023. Robi Bhattacharjee, Sanjoy Dasgupta, Kamalika Chaudhuri. \emph{Data-Copying in Generative Models: A Formal Framework}. The dissertation author is the primary investigator and author of this paper. 
 
 
 

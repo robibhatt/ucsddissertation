@@ -337,7 +337,7 @@ Observe that this expected loss is still larger than the expected standard loss 
 Algorithm \ref{alg:upper_bound} can be thought of as the robust analog to the perceptron algorithm. We now generalize this algorithm to obtain a robust variant of the \textit{kernel perceptron algorithm}. We first briefly review kernel classifiers. A detailed explanation of our generalized algorithm along with requisite background material can be found in Appendix \ref{sec:kernel_appendix}
 
 \begin{defn}\label{defn:kernel}
-Let $K: \R^d \times \R^d \to \R$ be a kernel similarity function, $T = \{(x_1, y_1), \dots, (x_m, y_m)\} \subset \R^d \times \{\pm 1\}$ be a set of labeled points, and $\alpha \in \R^m$ be a vector of $m$ real numbers. Then the \textbf{kernel classifier} with similarity function $K$, parameters $T, \alpha$, and denoted by $f_{T, K}^\alpha$ is defined as $$f_{T, \alpha}^K(x) = \begin{cases} +1 &  \sum_1^m \alpha_iy_iK(x_i, x) \geq 0\\ -1 &  \sum_1^m \alpha_iy_iK(x_i, x) < 0  \end{cases}.$$
+Let $T = \{(x_1, y_1), \dots, (x_m, y_m)\}$ be a set of labeled points in $\subset \R^d \times \{\pm 1\}$, $K: \R^d \times \R^d \to \R$ be a kernel similarity function, and $\alpha \in \R^m$ be a vector of $m$ real numbers. Then the \textbf{kernel classifier} with similarity function $K$, parameters $T, \alpha$, and denoted by $f_{T, K}^\alpha$ is defined as $$f_{T, \alpha}^K(x) = \begin{cases} +1 &  \sum_1^m \alpha_iy_iK(x_i, x) \geq 0\\ -1 &  \sum_1^m \alpha_iy_iK(x_i, x) < 0  \end{cases}.$$
 \end{defn}
 
 Conceptually, kernel classifiers are linear classifiers operating in embedded space. With each kernel similarity function $K$, there is a map $\phi: \R^d \to H$ (where $H$ is some Hilbert space) such that $K(x, x') = \langle \phi(x), \phi(x') \rangle$. Thus we can think of kernel classifiers as having a linear decision boundary in $H$. 
@@ -380,6 +380,10 @@ Let $\D$ be a distribution with robust $K$-aspect ratio $\rho_r^K(\D)$. Then for
 \end{thm}
 
 This result indicates that for small values of $\rho_r^k(\D)$, we can achieve a very good robust sample complexity for kernel classifiers. However, as the size of the perturbations approach this margin, this quantity goes to infinity. This phenomenon mirrors the linearly separable case, and suggests that a similar overall dynamic holds for kernel classification. We leave finding a full generalization (including our lower bound) for a direction in future work.
+
+\section*{Acknowledgments}
+
+\textbf{Chapter 3}, in full, is a reprint of the material as it appears in International Conference on Machine Learning. 2022. Robi Bhattacharjee,  Somesh Jha, Kamalika Chaudhuri. \emph{Sample Complexity of Robust Linear Classification on Separated Data}. The dissertation author is the primary investigator and author of this paper.
 
 
 

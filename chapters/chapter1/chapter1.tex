@@ -46,7 +46,7 @@ In this work, we propose an alternative formulation of robust classification tha
 \caption{Small robustness radii} 
 \end{subfigure}
 
-\caption{A data distribution demonstrating the difficulties with fixed radius balls for robustness regions. The red represents negatively labeled points, and the blue positive. If the robustness radius is set too large (panel (a)), then the regions of A and B intersect leading to a loss of accuracy. If the radius is set too small (panel (b)), this leads to a loss of robustness at point C where in principle it should be possible to defend against a larger amount of adversarial attacks.}\label{fig:intro}
+\caption{The red represents negatively labeled points, and the blue positive. If the robustness radius is set too large (panel (a)), this leads to a loss of accuracy. If the radius is set too small (panel (b)), this leads to a loss of robustness at point C.}\label{fig:intro}
 \end{figure}
 
 %\begin{figure}[ht]
@@ -276,7 +276,7 @@ For an example of this, refer to Figure \ref{fig:histogram1}. Here we see a dist
 \caption{polynomial kernel} 
 \end{subfigure}
 
-\caption{Plots of astuteness against the training sample size. In both panels, accuracy is plotted in red, and the varying levels of robustness regions $(\kappa = 0.1, 0.3, 0.5)$ are givne in blue, green and purple. In panel (a), observe that as sample size increases, every measure of astuteness converges towards $0.8$ which is as predicted by Corollary \ref{cor:kern}. In panel (b), although the accuracy appears to converge, none of the robustness measure. In fact, they get progressively worse the larger $\kappa$ gets.}
+\caption{Accuracy is plotted in red, and the varying levels of robustness regions are in blue, green and purple. As sample size increases, every measure of astuteness converges towards $0.8$,as predicted by Corollary \ref{cor:kern}. In panel (b), although the accuracy appears to converge, robustness doesn't.}
 	\label{fig:validation}
 \end{figure}
 
@@ -323,6 +323,10 @@ Finally, our analysis builds on prior work on robust classification for non-para
 Theoretically, \cite{Bhattacharjee20} provide conditions under which weight functions converge towards the $r$-optimal classifier in the large sample limit. They show that for $r$-separated distributions, where points from different classes are at least distance $2r$ or more apart, nearest neighbors and kernel classifiers satisfy these conditions. In the more general case, they use Adversarial Pruning as a preprocessing step to ensure that the training data is $r$-separated, and show that this preprocessing step followed by nearest neighbors or kernel classifiers leads to solutions that are robust and accurate in the large sample limit. Our result fundamentally differs from theirs in that we analyze a different algorithm, and our proof techniques are quite different. In particular, the fundamental differences between the $r$-optimal classifier and the \natural\emph{ }Bayes optimal classifier call for different algorithms and different analysis techniques.
 
 In concurrent work, \cite{Chowdhury21} proposes a similar limit to the neighborhood preserving Bayes optimal which they refer to as the margin canonical Bayes. However, their work then focuses on a data augmentation technique that leads to convergence whereas we focus on proving the neighborhood consistency of classical non-parametric classifiers.
+
+\section*{Acknowledgments}
+
+\textbf{Chapter 2}, in full, is a reprint of the material as it appears in Neural Information Processing Systems, 2021. Robi Bhattacharjee, Kamalika Chaudhuri. \emph{Consistent Non-Parametric Methods for Maximizing Robustness}. The dissertation author is the primary investigator and author of this paper. 
 
 
 
